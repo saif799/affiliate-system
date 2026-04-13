@@ -10,11 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
+import { Route as DashboardIntegrationIndexRouteImport } from './routes/_dashboard/integration/index'
+import { Route as DashboardDashboardIndexRouteImport } from './routes/_dashboard/dashboard/index'
+import { Route as DashboardCommissionsIndexRouteImport } from './routes/_dashboard/commissions/index'
+import { Route as DashboardCampaignsIndexRouteImport } from './routes/_dashboard/campaigns/index'
+import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard/analytics/index'
+import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +34,120 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardIntegrationIndexRoute =
+  DashboardIntegrationIndexRouteImport.update({
+    id: '/integration/',
+    path: '/integration/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardDashboardIndexRoute = DashboardDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCommissionsIndexRoute =
+  DashboardCommissionsIndexRouteImport.update({
+    id: '/commissions/',
+    path: '/commissions/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardCampaignsIndexRoute = DashboardCampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAnalyticsIndexRoute = DashboardAnalyticsIndexRouteImport.update({
+  id: '/analytics/',
+  path: '/analytics/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAffiliatesIndexRoute =
+  DashboardAffiliatesIndexRouteImport.update({
+    id: '/affiliates/',
+    path: '/affiliates/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/affiliates/': typeof DashboardAffiliatesIndexRoute
+  '/analytics/': typeof DashboardAnalyticsIndexRoute
+  '/campaigns/': typeof DashboardCampaignsIndexRoute
+  '/commissions/': typeof DashboardCommissionsIndexRoute
+  '/dashboard/': typeof DashboardDashboardIndexRoute
+  '/integration/': typeof DashboardIntegrationIndexRoute
+  '/settings/': typeof DashboardSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/affiliates': typeof DashboardAffiliatesIndexRoute
+  '/analytics': typeof DashboardAnalyticsIndexRoute
+  '/campaigns': typeof DashboardCampaignsIndexRoute
+  '/commissions': typeof DashboardCommissionsIndexRoute
+  '/dashboard': typeof DashboardDashboardIndexRoute
+  '/integration': typeof DashboardIntegrationIndexRoute
+  '/settings': typeof DashboardSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_dashboard': typeof DashboardRouteWithChildren
   '/about': typeof AboutRoute
+  '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
+  '/_dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
+  '/_dashboard/campaigns/': typeof DashboardCampaignsIndexRoute
+  '/_dashboard/commissions/': typeof DashboardCommissionsIndexRoute
+  '/_dashboard/dashboard/': typeof DashboardDashboardIndexRoute
+  '/_dashboard/integration/': typeof DashboardIntegrationIndexRoute
+  '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/affiliates/'
+    | '/analytics/'
+    | '/campaigns/'
+    | '/commissions/'
+    | '/dashboard/'
+    | '/integration/'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to:
+    | '/'
+    | '/about'
+    | '/affiliates'
+    | '/analytics'
+    | '/campaigns'
+    | '/commissions'
+    | '/dashboard'
+    | '/integration'
+    | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/_dashboard'
+    | '/about'
+    | '/_dashboard/affiliates/'
+    | '/_dashboard/analytics/'
+    | '/_dashboard/campaigns/'
+    | '/_dashboard/commissions/'
+    | '/_dashboard/dashboard/'
+    | '/_dashboard/integration/'
+    | '/_dashboard/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   AboutRoute: typeof AboutRoute
 }
 
@@ -58,6 +160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,11 +174,85 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_dashboard/settings/': {
+      id: '/_dashboard/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/integration/': {
+      id: '/_dashboard/integration/'
+      path: '/integration'
+      fullPath: '/integration/'
+      preLoaderRoute: typeof DashboardIntegrationIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/dashboard/': {
+      id: '/_dashboard/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardDashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/commissions/': {
+      id: '/_dashboard/commissions/'
+      path: '/commissions'
+      fullPath: '/commissions/'
+      preLoaderRoute: typeof DashboardCommissionsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/campaigns/': {
+      id: '/_dashboard/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns/'
+      preLoaderRoute: typeof DashboardCampaignsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/analytics/': {
+      id: '/_dashboard/analytics/'
+      path: '/analytics'
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof DashboardAnalyticsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/affiliates/': {
+      id: '/_dashboard/affiliates/'
+      path: '/affiliates'
+      fullPath: '/affiliates/'
+      preLoaderRoute: typeof DashboardAffiliatesIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardAffiliatesIndexRoute: typeof DashboardAffiliatesIndexRoute
+  DashboardAnalyticsIndexRoute: typeof DashboardAnalyticsIndexRoute
+  DashboardCampaignsIndexRoute: typeof DashboardCampaignsIndexRoute
+  DashboardCommissionsIndexRoute: typeof DashboardCommissionsIndexRoute
+  DashboardDashboardIndexRoute: typeof DashboardDashboardIndexRoute
+  DashboardIntegrationIndexRoute: typeof DashboardIntegrationIndexRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAffiliatesIndexRoute: DashboardAffiliatesIndexRoute,
+  DashboardAnalyticsIndexRoute: DashboardAnalyticsIndexRoute,
+  DashboardCampaignsIndexRoute: DashboardCampaignsIndexRoute,
+  DashboardCommissionsIndexRoute: DashboardCommissionsIndexRoute,
+  DashboardDashboardIndexRoute: DashboardDashboardIndexRoute,
+  DashboardIntegrationIndexRoute: DashboardIntegrationIndexRoute,
+  DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   AboutRoute: AboutRoute,
 }
 export const routeTree = rootRouteImport
