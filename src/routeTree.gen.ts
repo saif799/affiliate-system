@@ -9,9 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SecondRouteImport } from './routes/second'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ThirdIndexRouteImport } from './routes/third/index'
+import { Route as TestingIdRouteImport } from './routes/testing.$id'
 
+const SecondRoute = SecondRouteImport.update({
+  id: '/second',
+  path: '/second',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -22,35 +30,64 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ThirdIndexRoute = ThirdIndexRouteImport.update({
+  id: '/third/',
+  path: '/third/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TestingIdRoute = TestingIdRouteImport.update({
+  id: '/testing/$id',
+  path: '/testing/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/second': typeof SecondRoute
+  '/testing/$id': typeof TestingIdRoute
+  '/third/': typeof ThirdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/second': typeof SecondRoute
+  '/testing/$id': typeof TestingIdRoute
+  '/third': typeof ThirdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/second': typeof SecondRoute
+  '/testing/$id': typeof TestingIdRoute
+  '/third/': typeof ThirdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths: '/' | '/about' | '/second' | '/testing/$id' | '/third/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to: '/' | '/about' | '/second' | '/testing/$id' | '/third'
+  id: '__root__' | '/' | '/about' | '/second' | '/testing/$id' | '/third/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  SecondRoute: typeof SecondRoute
+  TestingIdRoute: typeof TestingIdRoute
+  ThirdIndexRoute: typeof ThirdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/second': {
+      id: '/second'
+      path: '/second'
+      fullPath: '/second'
+      preLoaderRoute: typeof SecondRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -65,12 +102,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/third/': {
+      id: '/third/'
+      path: '/third'
+      fullPath: '/third/'
+      preLoaderRoute: typeof ThirdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/testing/$id': {
+      id: '/testing/$id'
+      path: '/testing/$id'
+      fullPath: '/testing/$id'
+      preLoaderRoute: typeof TestingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  SecondRoute: SecondRoute,
+  TestingIdRoute: TestingIdRoute,
+  ThirdIndexRoute: ThirdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

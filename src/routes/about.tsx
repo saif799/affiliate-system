@@ -1,10 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useLoaderData } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 
+const serverfn = createServerFn
 export const Route = createFileRoute('/about')({
   component: About,
+  loader: async () => {
+    return {
+      message: 'Hello from the loader!',
+    }
+  },
 })
 
 function About() {
+  
+
   return (
     <main className="page-wrap px-4 py-12">
       <section className="island-shell rounded-2xl p-6 sm:p-8">
