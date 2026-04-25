@@ -9,9 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MerchantRouteImport } from './routes/merchant'
+import { Route as AffiliateRouteImport } from './routes/affiliate'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MerchantWalletIndexRouteImport } from './routes/merchant/wallet/index'
+import { Route as MerchantSettingsIndexRouteImport } from './routes/merchant/settings/index'
+import { Route as MerchantProductsIndexRouteImport } from './routes/merchant/products/index'
+import { Route as MerchantOrdersIndexRouteImport } from './routes/merchant/orders/index'
+import { Route as MerchantDashboardIndexRouteImport } from './routes/merchant/dashboard/index'
+import { Route as MerchantAffiliatesIndexRouteImport } from './routes/merchant/affiliates/index'
+import { Route as AffiliateWalletIndexRouteImport } from './routes/affiliate/wallet/index'
+import { Route as AffiliateSettingsIndexRouteImport } from './routes/affiliate/settings/index'
+import { Route as AffiliateOrdersIndexRouteImport } from './routes/affiliate/orders/index'
+import { Route as AffiliateMarketplaceIndexRouteImport } from './routes/affiliate/marketplace/index'
+import { Route as AffiliateDashboardIndexRouteImport } from './routes/affiliate/dashboard/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardIntegrationIndexRouteImport } from './routes/_dashboard/integration/index'
 import { Route as DashboardDashboardIndexRouteImport } from './routes/_dashboard/dashboard/index'
@@ -20,6 +33,16 @@ import { Route as DashboardCampaignsIndexRouteImport } from './routes/_dashboard
 import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard/analytics/index'
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
 
+const MerchantRoute = MerchantRouteImport.update({
+  id: '/merchant',
+  path: '/merchant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AffiliateRoute = AffiliateRouteImport.update({
+  id: '/affiliate',
+  path: '/affiliate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -33,6 +56,62 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantWalletIndexRoute = MerchantWalletIndexRouteImport.update({
+  id: '/wallet/',
+  path: '/wallet/',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantSettingsIndexRoute = MerchantSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantProductsIndexRoute = MerchantProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantOrdersIndexRoute = MerchantOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantDashboardIndexRoute = MerchantDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantAffiliatesIndexRoute = MerchantAffiliatesIndexRouteImport.update({
+  id: '/affiliates/',
+  path: '/affiliates/',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const AffiliateWalletIndexRoute = AffiliateWalletIndexRouteImport.update({
+  id: '/wallet/',
+  path: '/wallet/',
+  getParentRoute: () => AffiliateRoute,
+} as any)
+const AffiliateSettingsIndexRoute = AffiliateSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AffiliateRoute,
+} as any)
+const AffiliateOrdersIndexRoute = AffiliateOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => AffiliateRoute,
+} as any)
+const AffiliateMarketplaceIndexRoute =
+  AffiliateMarketplaceIndexRouteImport.update({
+    id: '/marketplace/',
+    path: '/marketplace/',
+    getParentRoute: () => AffiliateRoute,
+  } as any)
+const AffiliateDashboardIndexRoute = AffiliateDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => AffiliateRoute,
 } as any)
 const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
   id: '/settings/',
@@ -76,6 +155,8 @@ const DashboardAffiliatesIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/affiliate': typeof AffiliateRouteWithChildren
+  '/merchant': typeof MerchantRouteWithChildren
   '/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/analytics/': typeof DashboardAnalyticsIndexRoute
   '/campaigns/': typeof DashboardCampaignsIndexRoute
@@ -83,10 +164,23 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardDashboardIndexRoute
   '/integration/': typeof DashboardIntegrationIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
+  '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
+  '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
+  '/affiliate/orders/': typeof AffiliateOrdersIndexRoute
+  '/affiliate/settings/': typeof AffiliateSettingsIndexRoute
+  '/affiliate/wallet/': typeof AffiliateWalletIndexRoute
+  '/merchant/affiliates/': typeof MerchantAffiliatesIndexRoute
+  '/merchant/dashboard/': typeof MerchantDashboardIndexRoute
+  '/merchant/orders/': typeof MerchantOrdersIndexRoute
+  '/merchant/products/': typeof MerchantProductsIndexRoute
+  '/merchant/settings/': typeof MerchantSettingsIndexRoute
+  '/merchant/wallet/': typeof MerchantWalletIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/affiliate': typeof AffiliateRouteWithChildren
+  '/merchant': typeof MerchantRouteWithChildren
   '/affiliates': typeof DashboardAffiliatesIndexRoute
   '/analytics': typeof DashboardAnalyticsIndexRoute
   '/campaigns': typeof DashboardCampaignsIndexRoute
@@ -94,12 +188,25 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardDashboardIndexRoute
   '/integration': typeof DashboardIntegrationIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
+  '/affiliate/dashboard': typeof AffiliateDashboardIndexRoute
+  '/affiliate/marketplace': typeof AffiliateMarketplaceIndexRoute
+  '/affiliate/orders': typeof AffiliateOrdersIndexRoute
+  '/affiliate/settings': typeof AffiliateSettingsIndexRoute
+  '/affiliate/wallet': typeof AffiliateWalletIndexRoute
+  '/merchant/affiliates': typeof MerchantAffiliatesIndexRoute
+  '/merchant/dashboard': typeof MerchantDashboardIndexRoute
+  '/merchant/orders': typeof MerchantOrdersIndexRoute
+  '/merchant/products': typeof MerchantProductsIndexRoute
+  '/merchant/settings': typeof MerchantSettingsIndexRoute
+  '/merchant/wallet': typeof MerchantWalletIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_dashboard': typeof DashboardRouteWithChildren
   '/about': typeof AboutRoute
+  '/affiliate': typeof AffiliateRouteWithChildren
+  '/merchant': typeof MerchantRouteWithChildren
   '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/_dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
   '/_dashboard/campaigns/': typeof DashboardCampaignsIndexRoute
@@ -107,12 +214,25 @@ export interface FileRoutesById {
   '/_dashboard/dashboard/': typeof DashboardDashboardIndexRoute
   '/_dashboard/integration/': typeof DashboardIntegrationIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
+  '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
+  '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
+  '/affiliate/orders/': typeof AffiliateOrdersIndexRoute
+  '/affiliate/settings/': typeof AffiliateSettingsIndexRoute
+  '/affiliate/wallet/': typeof AffiliateWalletIndexRoute
+  '/merchant/affiliates/': typeof MerchantAffiliatesIndexRoute
+  '/merchant/dashboard/': typeof MerchantDashboardIndexRoute
+  '/merchant/orders/': typeof MerchantOrdersIndexRoute
+  '/merchant/products/': typeof MerchantProductsIndexRoute
+  '/merchant/settings/': typeof MerchantSettingsIndexRoute
+  '/merchant/wallet/': typeof MerchantWalletIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
+    | '/affiliate'
+    | '/merchant'
     | '/affiliates/'
     | '/analytics/'
     | '/campaigns/'
@@ -120,10 +240,23 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/integration/'
     | '/settings/'
+    | '/affiliate/dashboard/'
+    | '/affiliate/marketplace/'
+    | '/affiliate/orders/'
+    | '/affiliate/settings/'
+    | '/affiliate/wallet/'
+    | '/merchant/affiliates/'
+    | '/merchant/dashboard/'
+    | '/merchant/orders/'
+    | '/merchant/products/'
+    | '/merchant/settings/'
+    | '/merchant/wallet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/affiliate'
+    | '/merchant'
     | '/affiliates'
     | '/analytics'
     | '/campaigns'
@@ -131,11 +264,24 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/integration'
     | '/settings'
+    | '/affiliate/dashboard'
+    | '/affiliate/marketplace'
+    | '/affiliate/orders'
+    | '/affiliate/settings'
+    | '/affiliate/wallet'
+    | '/merchant/affiliates'
+    | '/merchant/dashboard'
+    | '/merchant/orders'
+    | '/merchant/products'
+    | '/merchant/settings'
+    | '/merchant/wallet'
   id:
     | '__root__'
     | '/'
     | '/_dashboard'
     | '/about'
+    | '/affiliate'
+    | '/merchant'
     | '/_dashboard/affiliates/'
     | '/_dashboard/analytics/'
     | '/_dashboard/campaigns/'
@@ -143,16 +289,43 @@ export interface FileRouteTypes {
     | '/_dashboard/dashboard/'
     | '/_dashboard/integration/'
     | '/_dashboard/settings/'
+    | '/affiliate/dashboard/'
+    | '/affiliate/marketplace/'
+    | '/affiliate/orders/'
+    | '/affiliate/settings/'
+    | '/affiliate/wallet/'
+    | '/merchant/affiliates/'
+    | '/merchant/dashboard/'
+    | '/merchant/orders/'
+    | '/merchant/products/'
+    | '/merchant/settings/'
+    | '/merchant/wallet/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AffiliateRoute: typeof AffiliateRouteWithChildren
+  MerchantRoute: typeof MerchantRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/merchant': {
+      id: '/merchant'
+      path: '/merchant'
+      fullPath: '/merchant'
+      preLoaderRoute: typeof MerchantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/affiliate': {
+      id: '/affiliate'
+      path: '/affiliate'
+      fullPath: '/affiliate'
+      preLoaderRoute: typeof AffiliateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -173,6 +346,83 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/merchant/wallet/': {
+      id: '/merchant/wallet/'
+      path: '/wallet'
+      fullPath: '/merchant/wallet/'
+      preLoaderRoute: typeof MerchantWalletIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/settings/': {
+      id: '/merchant/settings/'
+      path: '/settings'
+      fullPath: '/merchant/settings/'
+      preLoaderRoute: typeof MerchantSettingsIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/products/': {
+      id: '/merchant/products/'
+      path: '/products'
+      fullPath: '/merchant/products/'
+      preLoaderRoute: typeof MerchantProductsIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/orders/': {
+      id: '/merchant/orders/'
+      path: '/orders'
+      fullPath: '/merchant/orders/'
+      preLoaderRoute: typeof MerchantOrdersIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/dashboard/': {
+      id: '/merchant/dashboard/'
+      path: '/dashboard'
+      fullPath: '/merchant/dashboard/'
+      preLoaderRoute: typeof MerchantDashboardIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/affiliates/': {
+      id: '/merchant/affiliates/'
+      path: '/affiliates'
+      fullPath: '/merchant/affiliates/'
+      preLoaderRoute: typeof MerchantAffiliatesIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/affiliate/wallet/': {
+      id: '/affiliate/wallet/'
+      path: '/wallet'
+      fullPath: '/affiliate/wallet/'
+      preLoaderRoute: typeof AffiliateWalletIndexRouteImport
+      parentRoute: typeof AffiliateRoute
+    }
+    '/affiliate/settings/': {
+      id: '/affiliate/settings/'
+      path: '/settings'
+      fullPath: '/affiliate/settings/'
+      preLoaderRoute: typeof AffiliateSettingsIndexRouteImport
+      parentRoute: typeof AffiliateRoute
+    }
+    '/affiliate/orders/': {
+      id: '/affiliate/orders/'
+      path: '/orders'
+      fullPath: '/affiliate/orders/'
+      preLoaderRoute: typeof AffiliateOrdersIndexRouteImport
+      parentRoute: typeof AffiliateRoute
+    }
+    '/affiliate/marketplace/': {
+      id: '/affiliate/marketplace/'
+      path: '/marketplace'
+      fullPath: '/affiliate/marketplace/'
+      preLoaderRoute: typeof AffiliateMarketplaceIndexRouteImport
+      parentRoute: typeof AffiliateRoute
+    }
+    '/affiliate/dashboard/': {
+      id: '/affiliate/dashboard/'
+      path: '/dashboard'
+      fullPath: '/affiliate/dashboard/'
+      preLoaderRoute: typeof AffiliateDashboardIndexRouteImport
+      parentRoute: typeof AffiliateRoute
     }
     '/_dashboard/settings/': {
       id: '/_dashboard/settings/'
@@ -250,10 +500,54 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
+interface AffiliateRouteChildren {
+  AffiliateDashboardIndexRoute: typeof AffiliateDashboardIndexRoute
+  AffiliateMarketplaceIndexRoute: typeof AffiliateMarketplaceIndexRoute
+  AffiliateOrdersIndexRoute: typeof AffiliateOrdersIndexRoute
+  AffiliateSettingsIndexRoute: typeof AffiliateSettingsIndexRoute
+  AffiliateWalletIndexRoute: typeof AffiliateWalletIndexRoute
+}
+
+const AffiliateRouteChildren: AffiliateRouteChildren = {
+  AffiliateDashboardIndexRoute: AffiliateDashboardIndexRoute,
+  AffiliateMarketplaceIndexRoute: AffiliateMarketplaceIndexRoute,
+  AffiliateOrdersIndexRoute: AffiliateOrdersIndexRoute,
+  AffiliateSettingsIndexRoute: AffiliateSettingsIndexRoute,
+  AffiliateWalletIndexRoute: AffiliateWalletIndexRoute,
+}
+
+const AffiliateRouteWithChildren = AffiliateRoute._addFileChildren(
+  AffiliateRouteChildren,
+)
+
+interface MerchantRouteChildren {
+  MerchantAffiliatesIndexRoute: typeof MerchantAffiliatesIndexRoute
+  MerchantDashboardIndexRoute: typeof MerchantDashboardIndexRoute
+  MerchantOrdersIndexRoute: typeof MerchantOrdersIndexRoute
+  MerchantProductsIndexRoute: typeof MerchantProductsIndexRoute
+  MerchantSettingsIndexRoute: typeof MerchantSettingsIndexRoute
+  MerchantWalletIndexRoute: typeof MerchantWalletIndexRoute
+}
+
+const MerchantRouteChildren: MerchantRouteChildren = {
+  MerchantAffiliatesIndexRoute: MerchantAffiliatesIndexRoute,
+  MerchantDashboardIndexRoute: MerchantDashboardIndexRoute,
+  MerchantOrdersIndexRoute: MerchantOrdersIndexRoute,
+  MerchantProductsIndexRoute: MerchantProductsIndexRoute,
+  MerchantSettingsIndexRoute: MerchantSettingsIndexRoute,
+  MerchantWalletIndexRoute: MerchantWalletIndexRoute,
+}
+
+const MerchantRouteWithChildren = MerchantRoute._addFileChildren(
+  MerchantRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
   AboutRoute: AboutRoute,
+  AffiliateRoute: AffiliateRouteWithChildren,
+  MerchantRoute: MerchantRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

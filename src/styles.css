@@ -1,1 +1,61 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/forms";
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  /* التنسيقات العامة للصفحة */
+  html, body {
+    font-family: var(--font-sans);
+    background-color: #faf7f0;
+    color: #22163d;
+  }
+
+  /* التنسيقات الهيكلية للمدخلات (أبعاد وحواف) */
+  select, input[type="text"], input[type="number"], input[type="email"], input[type="password"], textarea {
+    @apply appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition-all;
+  }
+  select:hover, input:hover, textarea:hover {
+    @apply border-gray-300;
+  }
+  select:focus, input:focus, textarea:focus {
+    @apply border-violet-500 ring-1 ring-violet-500;
+  }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* 👇 وضعنا الألوان هنا خارج الـ layer لفرض القوة المطلقة على كامل المشروع */
+input, select, textarea {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
+  font-weight: 400;
+}
+
+select {
+  background-position: left 0.75rem center !important; /* إجبار السهم للذهاب لليسار */
+  padding-left: 2.5rem !important;  /* ترك مساحة فارغة للسهم في اليسار */
+  padding-right: 1rem !important; /* مساحة طبيعية للنص في اليمين */
+}

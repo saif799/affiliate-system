@@ -29,7 +29,7 @@ const navItems = [
 
 function DashboardLayout() {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50" >
 
       {/* ─── Sidebar ─── */}
       <aside className="flex w-56 flex-col justify-between border-r border-gray-200 bg-white px-3 py-5">

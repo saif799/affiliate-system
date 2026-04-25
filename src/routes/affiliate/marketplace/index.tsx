@@ -1,0 +1,117 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { useState, useMemo } from 'react'
+import { getMarketplaceData } from './-server/marketplace.api'
+import { ProductCard } from './-components/ProductCard'
+import { QuickViewModal } from './-components/QuickViewModal'
+import { MarketplaceFiltersBar } from './-components/MarketplaceFiltersBar'
+import type { Product, MarketplaceFilters } from './marketplace.types'
+
+export const Route = createFileRoute('/affiliate/marketplace/')({
+  loader: () => getMarketplaceData(),
+  pendingComponent: () => (
+    <div className="flex h-64 items-center justify-center text-sm text-gray-400">
+      جاري التحميل...
+    </div>
+  ),
+  component: MarketplacePage,
+})
+
+function MarketplacePage() {
+  const data = Route.useLoaderData()
+
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [filters, setFilters] = useState<MarketplaceFilters>({
+    search: '',
+    category: 'الكل',
+    sortBy: 'commission',
+    hideHighRetour: false,
+  })
+
+  const filteredProducts = useMemo(() => {
+    let result = [...data.products]
+
+    if (filters.search) {
+      const q = filters.search.toLowerCase()
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.merchantName.toLowerCase().includes(q) ||
+          p.category.includes(q),
+      )
+    }
+
+    if (filters.category !== 'الكل') {
+      result = result.filter((p) => p.category === filters.category)
+    }
+
+    if (filters.hideHighRetour) {
+      result = result.filter((p) => p.retourRate <= 25)
+    }
+
+    result.sort((a, b) => {
+      switch (filters.sortBy) {
+        case 'commission':     return b.commission - a.commission
+        case 'deliveredRate':  return b.deliveredRate - a.deliveredRate
+        case 'totalSales':     return b.totalSales - a.totalSales
+        default:               return 0
+      }
+    })
+
+    return result
+  }, [data.products, filters])
+
+  return (
+    <div className="space-y-5 p-6" dir="rtl">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">سوق المنتجات</h1>
+          <p className="text-sm text-gray-500">اختر المنتج وولّد رابطك في ثوانٍ</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-center">
+            <p className="text-xs text-gray-400">متوسط العمولة</p>
+            <p className="text-sm font-bold text-gray-900">{data.stats.avgCommission.toLocaleString("ar-DZ")} د.ج</p>
+          </div>
+          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-center">
+            <p className="text-xs text-violet-400">أعلى عمولة</p>
+            <p className="text-sm font-bold text-violet-700">{data.stats.topCommission.toLocaleString("ar-DZ")} د.ج</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <MarketplaceFiltersBar
+        filters={filters}
+        onChange={setFilters}
+        totalShown={filteredProducts.length}
+        totalAll={data.products.length}
+      />
+
+      {/* Grid */}
+      {filteredProducts.length === 0 ? (
+        <div className="flex h-48 flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 text-gray-400">
+          <p className="text-2xl mb-2">🔍</p>
+          <p className="text-sm">لا توجد منتجات تطابق الفلتر</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-4">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onOpenModal={setSelectedProduct}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Modal */}
+      <QuickViewModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
+    </div>
+  )
+}
