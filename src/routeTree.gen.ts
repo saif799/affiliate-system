@@ -9,11 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
 import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as AffiliateRouteImport } from './routes/affiliate'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
+import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as MerchantWalletIndexRouteImport } from './routes/merchant/wallet/index'
 import { Route as MerchantSettingsIndexRouteImport } from './routes/merchant/settings/index'
 import { Route as MerchantProductsIndexRouteImport } from './routes/merchant/products/index'
@@ -32,7 +36,13 @@ import { Route as DashboardCommissionsIndexRouteImport } from './routes/_dashboa
 import { Route as DashboardCampaignsIndexRouteImport } from './routes/_dashboard/campaigns/index'
 import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard/analytics/index'
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const PendingApprovalRoute = PendingApprovalRouteImport.update({
+  id: '/pending-approval',
+  path: '/pending-approval',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MerchantRoute = MerchantRouteImport.update({
   id: '/merchant',
   path: '/merchant',
@@ -52,10 +62,24 @@ const DashboardRoute = DashboardRouteImport.update({
   id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
 } as any)
 const MerchantWalletIndexRoute = MerchantWalletIndexRouteImport.update({
   id: '/wallet/',
@@ -151,12 +175,21 @@ const DashboardAffiliatesIndexRoute =
     path: '/affiliates/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/affiliate': typeof AffiliateRouteWithChildren
   '/merchant': typeof MerchantRouteWithChildren
+  '/pending-approval': typeof PendingApprovalRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/analytics/': typeof DashboardAnalyticsIndexRoute
   '/campaigns/': typeof DashboardCampaignsIndexRoute
@@ -181,6 +214,10 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/affiliate': typeof AffiliateRouteWithChildren
   '/merchant': typeof MerchantRouteWithChildren
+  '/pending-approval': typeof PendingApprovalRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/affiliates': typeof DashboardAffiliatesIndexRoute
   '/analytics': typeof DashboardAnalyticsIndexRoute
   '/campaigns': typeof DashboardCampaignsIndexRoute
@@ -203,10 +240,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteWithChildren
   '/_dashboard': typeof DashboardRouteWithChildren
   '/about': typeof AboutRoute
   '/affiliate': typeof AffiliateRouteWithChildren
   '/merchant': typeof MerchantRouteWithChildren
+  '/pending-approval': typeof PendingApprovalRoute
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/register': typeof AuthRegisterRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/_dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
   '/_dashboard/campaigns/': typeof DashboardCampaignsIndexRoute
@@ -233,6 +275,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/affiliate'
     | '/merchant'
+    | '/pending-approval'
+    | '/login'
+    | '/register'
+    | '/api/auth/$'
     | '/affiliates/'
     | '/analytics/'
     | '/campaigns/'
@@ -257,6 +303,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/affiliate'
     | '/merchant'
+    | '/pending-approval'
+    | '/login'
+    | '/register'
+    | '/api/auth/$'
     | '/affiliates'
     | '/analytics'
     | '/campaigns'
@@ -278,10 +328,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_auth'
     | '/_dashboard'
     | '/about'
     | '/affiliate'
     | '/merchant'
+    | '/pending-approval'
+    | '/_auth/login'
+    | '/_auth/register'
+    | '/api/auth/$'
     | '/_dashboard/affiliates/'
     | '/_dashboard/analytics/'
     | '/_dashboard/campaigns/'
@@ -304,14 +359,24 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   AboutRoute: typeof AboutRoute
   AffiliateRoute: typeof AffiliateRouteWithChildren
   MerchantRoute: typeof MerchantRouteWithChildren
+  PendingApprovalRoute: typeof PendingApprovalRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pending-approval': {
+      id: '/pending-approval'
+      path: '/pending-approval'
+      fullPath: '/pending-approval'
+      preLoaderRoute: typeof PendingApprovalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/merchant': {
       id: '/merchant'
       path: '/merchant'
@@ -340,12 +405,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_auth/register': {
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/merchant/wallet/': {
       id: '/merchant/wallet/'
@@ -473,8 +559,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAffiliatesIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
   DashboardAffiliatesIndexRoute: typeof DashboardAffiliatesIndexRoute
@@ -544,10 +649,13 @@ const MerchantRouteWithChildren = MerchantRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   AboutRoute: AboutRoute,
   AffiliateRoute: AffiliateRouteWithChildren,
   MerchantRoute: MerchantRouteWithChildren,
+  PendingApprovalRoute: PendingApprovalRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

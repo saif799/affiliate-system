@@ -1,4 +1,5 @@
-import { createFileRoute, Outlet, Link } from '@tanstack/react-router'
+// src/routes/merchant.tsx
+import { createFileRoute, Outlet, Link, redirect } from '@tanstack/react-router'
 import {
   LayoutDashboard,
   Users,
@@ -13,35 +14,38 @@ import {
 } from 'lucide-react'
 
 export const Route = createFileRoute('/merchant')({
+  beforeLoad: ({ context }) => {
+    if (!context.session) throw redirect({ to: '/login' })
+    if (context.session.user.status !== 'active')
+      throw redirect({ to: '/pending-approval' })
+    if (context.session.user.role !== 'merchant')
+      throw redirect({ to: '/login' })
+  },
   component: MerchantLayout,
 })
 
 const navItems = [
-  { label: 'Dashboard',  to: '/merchant/dashboard',  icon: LayoutDashboard },
-  { label: 'Orders',     to: '/merchant/orders',     icon: ListOrdered },
-  { label: 'Products',   to: '/merchant/products',   icon: Package },
+  { label: 'Dashboard', to: '/merchant/dashboard', icon: LayoutDashboard },
+  { label: 'Orders', to: '/merchant/orders', icon: ListOrdered },
+  { label: 'Products', to: '/merchant/products', icon: Package },
   { label: 'Affiliates', to: '/merchant/affiliates', icon: Users },
-  { label: 'Wallet',     to: '/merchant/wallet',     icon: Wallet },
-  { label: 'Settings',   to: '/merchant/settings',   icon: Settings },
+  { label: 'Wallet', to: '/merchant/wallet', icon: Wallet },
+  { label: 'Settings', to: '/merchant/settings', icon: Settings },
 ]
 
 function MerchantLayout() {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50" >
-
-      {/* ─── Sidebar ─── */}
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       <aside className="flex w-56 flex-col justify-between border-r border-gray-200 bg-white px-3 py-5">
         <div>
-
-          {/* Logo */}
           <div className="mb-5 flex items-center gap-2.5 px-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
               <Store size={16} strokeWidth={2.5} />
             </div>
-            <span className="text-sm font-semibold text-gray-900">Merchant Portal</span>
+            <span className="text-sm font-semibold text-gray-900">
+              Merchant Portal
+            </span>
           </div>
-
-          {/* User Info */}
           <div className="mb-4 flex items-center gap-2.5 rounded-lg bg-gray-100 px-3 py-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-200 text-gray-500">
               <User size={14} />
@@ -51,8 +55,6 @@ function MerchantLayout() {
               <p className="text-xs text-gray-500">Merchant</p>
             </div>
           </div>
-
-          {/* Nav */}
           <nav className="flex flex-col gap-0.5">
             {navItems.map(({ label, to, icon: Icon }) => (
               <Link
@@ -70,11 +72,7 @@ function MerchantLayout() {
             ))}
           </nav>
         </div>
-
-        {/* ─── Bottom ─── */}
         <div className="flex flex-col gap-2">
-
-          {/* Wallet Status */}
           <div className="rounded-lg border border-gray-200 px-3 py-2.5 flex items-center gap-2.5">
             <CreditCard size={15} className="text-gray-400 shrink-0" />
             <div>
@@ -85,20 +83,15 @@ function MerchantLayout() {
               </p>
             </div>
           </div>
-
-          {/* Currency */}
           <button className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50">
             <span>🇩🇿 DZD</span>
             <ChevronDown size={13} className="text-gray-400" />
           </button>
         </div>
       </aside>
-
-      {/* ─── Main Content ─── */}
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
-
     </div>
   )
 }

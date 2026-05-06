@@ -1,3 +1,4 @@
+// src/routes/__root.tsx
 import {
   HeadContent,
   Scripts,
@@ -5,16 +6,24 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools }            from '@tanstack/react-devtools'
-import TanStackQueryDevtools          from '../integrations/tanstack-query/devtools'
-import appCss                         from '../styles.css?url'
-import type { QueryClient }            from '@tanstack/react-query'
+import TanStackQueryDevtools           from '../integrations/tanstack-query/devtools'
+import appCss                          from '../styles.css?url'
+import type { QueryClient }             from '@tanstack/react-query'
+import { getSession }                   from '../lib/session'
+import type { auth }                    from '../server/auth'
 
+// ── Router Context ─────────────────────────────────────────
+// typeof auth.$Infer.Session بدلاً من types يدوية
+// — Single Source of Truth: أي تغيير في better-auth ينعكس تلقائياً
 interface MyRouterContext {
   queryClient: QueryClient
+  session:     typeof auth.$Infer.Session | null
 }
 
+// ── Theme Script ───────────────────────────────────────────
 const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`
 
+// ── Root Route ─────────────────────────────────────────────
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
@@ -24,9 +33,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
+
+ 
+  beforeLoad: async () => {
+    const session = await getSession()
+    return { session }
+  },
+
   shellComponent: RootDocument,
 })
 
+// ── Shell ──────────────────────────────────────────────────
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -34,7 +51,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
+      <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
         {children}
         <TanStackDevtools
           config={{ position: 'bottom-right' }}

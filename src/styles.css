@@ -1,20 +1,13 @@
-@import 'tailwindcss';
-@plugin "@tailwindcss/forms";
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
 
-@theme {
-  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
-}
 
 @layer base {
-  /* التنسيقات العامة للصفحة */
   html, body {
     font-family: var(--font-sans);
     background-color: #faf7f0;
     color: #22163d;
   }
 
-  /* التنسيقات الهيكلية للمدخلات (أبعاد وحواف) */
   select, input[type="text"], input[type="number"], input[type="email"], input[type="password"], textarea {
     @apply appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition-all;
   }
@@ -41,21 +34,51 @@
   background: #d1d5db;
 }
 
-/* 👇 وضعنا الألوان هنا خارج الـ layer لفرض القوة المطلقة على كامل المشروع */
-input, select, textarea {
+/* inputs عادية (فاتحة) */
+input:not(.dark-input), select:not(.dark-input), textarea:not(.dark-input) {
   color: #111827 !important;
   -webkit-text-fill-color: #111827 !important;
   caret-color: #111827 !important;
 }
 
-input::placeholder, textarea::placeholder {
+input:not(.dark-input)::placeholder, textarea:not(.dark-input)::placeholder {
   color: #9ca3af !important;
   -webkit-text-fill-color: #9ca3af !important;
   font-weight: 400;
 }
 
-select {
-  background-position: left 0.75rem center !important; /* إجبار السهم للذهاب لليسار */
-  padding-left: 2.5rem !important;  /* ترك مساحة فارغة للسهم في اليسار */
-  padding-right: 1rem !important; /* مساحة طبيعية للنص في اليمين */
+/* inputs داكنة (صفحة التسجيل/الدخول) */
+input.dark-input {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #818cf8 !important;
 }
+
+input.dark-input::placeholder {
+  color: #4b5563 !important;
+  -webkit-text-fill-color: #4b5563 !important;
+}
+
+input.dark-input:-webkit-autofill,
+input.dark-input:-webkit-autofill:hover,
+input.dark-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1E2535 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+select {
+  background-position: left 0.75rem center !important;
+  padding-left: 2.5rem !important;
+  padding-right: 1rem !important;
+}
+
+
+
+@import 'tailwindcss';
+@plugin "@tailwindcss/forms";
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+}
+
