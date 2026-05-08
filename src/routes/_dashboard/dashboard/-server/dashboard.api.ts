@@ -18,8 +18,6 @@ import type {
   ActivityItem,
 } from '../-dashboard.types'
 
-// ── مساعد: نطاقات الشهر ──────────────────────────────────
-// FIX ③: thisStart كحد أعلى بدل lastEnd لضمان عدم فقدان أي بيانات
 function getMonthRanges() {
   const now       = new Date()
   const thisStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -33,9 +31,7 @@ function growthRate(current: number, previous: number): number {
   return Math.round(((current - previous) / previous) * 100)
 }
 
-// ════════════════════════════════════════════════════════════
-// ① البطاقات الـ 6
-// ════════════════════════════════════════════════════════════
+
 async function fetchCardsStats(): Promise<PlatformStats> {
   const { thisStart, nextStart, lastStart } = getMonthRanges()
 
@@ -88,9 +84,6 @@ async function fetchCardsStats(): Promise<PlatformStats> {
   }
 }
 
-// ════════════════════════════════════════════════════════════
-// ② المخططات الزمنية — مع السنة لتجنب التداخل بين السنوات
-// ════════════════════════════════════════════════════════════
 async function fetchRevenueChart(): Promise<MonthlyRevenue[]> {
   const yearStart = new Date(new Date().getFullYear(), 0, 1)
   const yearEnd   = new Date(new Date().getFullYear() + 1, 0, 1)
@@ -114,10 +107,6 @@ async function fetchRevenueChart(): Promise<MonthlyRevenue[]> {
   }))
 }
 
-// ════════════════════════════════════════════════════════════
-// ③ أفضل 5 مسوقين
-// FIX ①: استبدال alias o بـ ${orders.field} مباشرة
-// ════════════════════════════════════════════════════════════
 async function fetchTopAffiliates(): Promise<TopAffiliate[]> {
   const rows = await db
     .select({
@@ -144,9 +133,6 @@ async function fetchTopAffiliates(): Promise<TopAffiliate[]> {
   }))
 }
 
-// ════════════════════════════════════════════════════════════
-// ④ التوزيع الجغرافي
-// ════════════════════════════════════════════════════════════
 async function fetchWilayaStats(): Promise<WilayaStat[]> {
   const rows = await db
     .select({
@@ -167,12 +153,8 @@ async function fetchWilayaStats(): Promise<WilayaStat[]> {
   }))
 }
 
-// ════════════════════════════════════════════════════════════
-// ⑤ آخر النشاطات
-// FIX ②: الترتيب بـ createdAt.getTime() بدل نص عربي
-// ════════════════════════════════════════════════════════════
+
 async function fetchRecentActivity(): Promise<ActivityItem[]> {
-  // تشغيل الاستعلامين بالتوازي
   const [recentOrders, recentUsers] = await Promise.all([
     db
       .select({
@@ -210,7 +192,7 @@ async function fetchRecentActivity(): Promise<ActivityItem[]> {
       actor:     o.name,
       wilaya:    o.wilaya,
       amount:    Number(o.amount),
-      createdAt: o.createdAt,           // نحتفظ بـ Date للترتيب
+      createdAt: o.createdAt,           
       timestamp: formatTimeAgo(o.createdAt),
     })),
     ...recentUsers.map((u) => ({
@@ -218,15 +200,15 @@ async function fetchRecentActivity(): Promise<ActivityItem[]> {
       type:      (u.role === 'merchant' ? 'new_merchant' : 'new_affiliate') as ActivityItem['type'],
       actor:     u.name,
       wilaya:    u.wilaya ?? '—',
-      createdAt: u.createdAt,           // نحتفظ بـ Date للترتيب
+      createdAt: u.createdAt,           
       timestamp: formatTimeAgo(u.createdAt),
     })),
   ]
 
   return activities
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // ترتيب زمني حقيقي
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) 
     .slice(0, 10)
-    .map(({ createdAt: _, ...rest }) => rest) // نحذف createdAt من النتيجة النهائية
+    .map(({ createdAt: _, ...rest }) => rest) 
 }
 
 function formatTimeAgo(date: Date): string {
@@ -237,9 +219,6 @@ function formatTimeAgo(date: Date): string {
   return `منذ ${Math.floor(diff / 86400)} يوم`
 }
 
-// ════════════════════════════════════════════════════════════
-// الدالة الرئيسية
-// ════════════════════════════════════════════════════════════
 export const getDashboardData = createServerFn({ method: 'GET' }).handler(
   async (): Promise<DashboardData> => {
 
