@@ -1,54 +1,81 @@
-import type { Transaction } from '../commissions.types'
+// -components/TransactionHistory.tsx
 
-interface Props {
-  transactions: Transaction[]
+import type { TransactionRecord } from '../-commissions.types'
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('ar-DZ', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
 }
 
-export function TransactionHistory({ transactions }: Props) {
+export function TransactionHistory({ records }: { records: TransactionRecord[] }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h2 className="text-sm font-semibold text-gray-800">سجل المعاملات</h2>
-        <p className="text-xs text-gray-400">التحويلات المكتملة — أرشيف محاسبي</p>
+    <div className="bg-white border border-gray-200 rounded-xl p-5">
+      <div className="flex justify-between items-baseline mb-4">
+        <p className="text-sm font-medium text-gray-800">سجل المعاملات المكتملة</p>
+        <p className="text-xs text-gray-400">أرشيف محاسبي</p>
       </div>
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-gray-100 bg-gray-50 text-right">
-            <th className="px-4 py-3 text-xs font-medium text-gray-400">الرقم المرجعي</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-400">المستفيد</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-400">المبلغ</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-400">طريقة الدفع</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-400">تاريخ الدفع</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((t) => (
-            <tr key={t.id}
-              className="border-b border-gray-50 text-right last:border-0 hover:bg-gray-50 transition-colors">
-              <td className="px-4 py-3 font-mono text-xs text-indigo-600">{t.referenceNumber}</td>
-              <td className="px-4 py-3">
-                <div className="font-medium text-gray-800">{t.beneficiaryName}</div>
-                <div className="text-xs text-gray-400">
-                  {t.beneficiaryType === 'affiliate' ? 'مسوّق' : 'تاجر'} — {t.wilaya}
-                </div>
-              </td>
-              <td className="px-4 py-3 font-semibold text-green-600">
-                {t.amount.toLocaleString('fr-DZ')} DZD
-              </td>
-              <td className="px-4 py-3">
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  t.paymentMethod === 'baridimob'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-blue-100 text-blue-700'
-                }`}>
-                  {t.paymentMethod === 'baridimob' ? 'BaridiMob' : 'CCP'}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-xs text-gray-500">{t.paidAt}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      {records.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-10">لا توجد معاملات مكتملة بعد</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: '22%' }} />
+              <col style={{ width: '28%' }} />
+              <col style={{ width: '16%' }} />
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '21%' }} />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-gray-100">
+                {['الرقم المرجعي', 'المستفيد', 'المبلغ', 'الوسيلة', 'تاريخ الدفع'].map((h) => (
+                  <th
+                    key={h}
+                    className="text-right text-[11px] text-gray-400 font-medium pb-3 px-2"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {records.map((r) => (
+                <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-3.5 px-2">
+                    <span className="text-[11px] font-mono text-blue-600">{r.txnRef}</span>
+                  </td>
+                  <td className="py-3.5 px-2">
+                    <p className="font-medium text-gray-800 leading-tight">{r.recipientName}</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      {r.recipientWilaya ?? '—'} —{' '}
+                      {r.recipientRole === 'merchant' ? 'تاجر' : 'مسوّق'}
+                    </p>
+                  </td>
+                  <td className="py-3.5 px-2 font-medium text-green-600">
+                    {r.amount.toLocaleString('ar-DZ')} دج
+                  </td>
+                  <td className="py-3.5 px-2">
+                    <span
+                      className={`text-[11px] font-medium px-2 py-0.5 rounded-md border ${
+                        r.method === 'BaridiMob'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-blue-50 text-blue-700 border-blue-200'
+                      }`}
+                    >
+                      {r.method}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-2 text-xs text-gray-400">{formatDate(r.paidAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

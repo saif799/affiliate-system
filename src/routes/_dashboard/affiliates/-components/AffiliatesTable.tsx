@@ -1,4 +1,4 @@
-import type { Affiliate } from '../affiliates.types'
+import type { Affiliate } from '../-affiliates.types'
 
 interface Props {
   affiliates: Affiliate[]

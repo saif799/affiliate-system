@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_dashboard')({
 const navItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Affiliates', to: '/affiliates', icon: Users },
-  { label: 'Campaigns', to: '/campaigns', icon: Megaphone },
+  { label: 'Products', to: '/products', icon: Megaphone },
   { label: 'Commissions', to: '/commissions', icon: DollarSign },
   { label: 'Analytics', to: '/analytics', icon: BarChart2 },
   { label: 'Integration Hub', to: '/integration', icon: Code2 },

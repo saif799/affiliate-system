@@ -1,72 +1,86 @@
-// ─── Enums ────────────────────────────────────────────
+// ============================================================
+// COMMISSIONS PAGE — TYPES
+// ============================================================
 
-export type PayoutStatus =
-  | 'pending'    // طلب جديد لم يُعالج
-  | 'verifying'  // تم رفع الوصل — بانتظار تأكيد الاستلام
-  | 'paid'       // مكتمل
-  | 'rejected'   // مرفوض
-
-export type PaymentMethod = 'baridimob' | 'ccp'
-
-export type BeneficiaryType = 'affiliate' | 'merchant'
-
-// ─── KPI Cards ────────────────────────────────────────
-
-export interface CommissionMetric {
-  value:  number  // DZD أو عدد
-  change: number  // نسبة مئوية مقارنة بالشهر الماضي
+// ---------- KPI Cards (القسم 1) ----------
+export type CommissionStats = {
+  totalPlatformEarnings: number      // إجمالي أرباح المنصة منذ الانطلاق
+  currentMonthEarnings: number       // أرباح هذا الشهر
+  previousMonthEarnings: number      // أرباح الشهر الماضي (لحساب % التغيير)
+  merchantsPendingBalance: number    // مستحقات التجار المعلقة
+  affiliatesPendingBalance: number   // مستحقات المسوّقين المعلقة
 }
 
-export interface CommissionStats {
-  pendingPayouts:    CommissionMetric  // إجمالي الرصيد المعلق (DZD)
-  totalPaid:         CommissionMetric  // إجمالي المدفوع منذ الإطلاق (DZD)
-  platformRevenue:   CommissionMetric  // صافي ربح المنصة (DZD)
-  pendingRequests:   CommissionMetric  // عدد الطلبات بانتظار المراجعة
+// ---------- Payment Breakdown (القسم 2) ----------
+export type PaymentBreakdown = {
+  totalPaid: number         // إجمالي ما تم دفعه (التجار + المسوّقون)
+  totalPending: number      // إجمالي المعلق
+  merchantPaid: number
+  merchantPending: number
+  affiliatePaid: number
+  affiliatePending: number
+  pendingByCCP: number          // المعلق عبر CCP
+  pendingByBaridiMob: number    // المعلق عبر BaridiMob
+  pendingCCPCount: number       // عدد طلبات CCP المعلقة
+  pendingBaridiMobCount: number // عدد طلبات BaridiMob المعلقة
 }
 
-// ─── Payout Request ───────────────────────────────────
-
-export interface PayoutRequest {
-  id:               string
-  beneficiaryName:  string
-  beneficiaryType:  BeneficiaryType
-  amount:           number          // DZD
-  paymentMethod:    PaymentMethod
-  accountNumber:    string          // رقم RIP (20 رقم) أو CCP (10 أرقام)
-  status:           PayoutStatus
-  requestedAt:      string          // تاريخ الطلب
-  processedAt?:     string          // تاريخ المعالجة (paid أو rejected)
-  receiptUrl?:      string          // رابط صورة وصل التحويل
-  rejectionReason?: string          // سبب الرفض — إلزامي عند الرفض
-  wilaya:           string
+// ---------- Monthly Chart (القسم 3) ----------
+export type MonthlyPayoutPoint = {
+  month: string          // e.g. "يناير"
+  merchantAmount: number
+  affiliateAmount: number
 }
 
-// ─── Transaction (History) ────────────────────────────
+// ---------- Withdrawal Requests (القسم 4) ----------
+export type WithdrawalStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'paid'
 
-export interface Transaction {
-  id:              string
-  referenceNumber: string           // رقم مرجعي للأرشيف المحاسبي
-  beneficiaryName: string
-  beneficiaryType: BeneficiaryType
-  amount:          number           // DZD
-  paymentMethod:   PaymentMethod
-  paidAt:          string
-  wilaya:          string
+export type PayoutMethod = 'CCP' | 'BaridiMob'
+
+export type WithdrawalRequest = {
+  id: string
+  userId: string
+  userName: string
+  userWilaya: string | null
+  userRole: 'merchant' | 'affiliate'
+  amount: number
+  method: PayoutMethod
+  accountNumber: string
+  status: WithdrawalStatus
+  requestedAt: string
+  processedAt: string | null
+  // بيانات إضافية للمسوّقين فقط
+  fraudFlag: boolean
+  refusalRate: number | null   // null إذا كان تاجراً
 }
 
-// ─── Monthly Payouts Chart ────────────────────────────
-
-export interface MonthlyPayout {
-  month:           string           // "Jan" | "Feb" ...
-  affiliatePayout: number           // DZD مدفوع للمسوقين
-  merchantPayout:  number           // DZD مدفوع للتجار
+// ---------- Confirm Modal ----------
+export type ConfirmPaymentPayload = {
+  withdrawalId: string
+  transactionRef: string   // رقم الإثبات الذي يدخله المدير
 }
 
-// ─── Root ─────────────────────────────────────────────
+// ---------- Transaction History (القسم 5) ----------
+export type TransactionRecord = {
+  id: string
+  txnRef: string           // TXN-2025-0116-001
+  recipientName: string
+  recipientRole: 'merchant' | 'affiliate'
+  recipientWilaya: string | null
+  amount: number
+  method: PayoutMethod
+  paidAt: string
+}
 
-export interface CommissionsData {
-  stats:           CommissionStats
-  payoutRequests:  PayoutRequest[]
-  transactions:    Transaction[]
-  monthlyPayouts:  MonthlyPayout[]
+// ---------- Full page data ----------
+export type CommissionsPageData = {
+  stats: CommissionStats
+  breakdown: PaymentBreakdown
+  monthlyPayouts: MonthlyPayoutPoint[]
+  withdrawalRequests: WithdrawalRequest[]
+  transactionHistory: TransactionRecord[]
 }

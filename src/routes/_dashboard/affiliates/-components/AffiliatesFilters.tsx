@@ -1,4 +1,4 @@
-import type { AffiliateStatus } from '../affiliates.types'
+import type { AffiliateStatus } from '../-affiliates.types'
 
 interface Props {
   search: string

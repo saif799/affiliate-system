@@ -30,10 +30,10 @@ import { Route as AffiliateOrdersIndexRouteImport } from './routes/affiliate/ord
 import { Route as AffiliateMarketplaceIndexRouteImport } from './routes/affiliate/marketplace/index'
 import { Route as AffiliateDashboardIndexRouteImport } from './routes/affiliate/dashboard/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
+import { Route as DashboardProductsIndexRouteImport } from './routes/_dashboard/products/index'
 import { Route as DashboardIntegrationIndexRouteImport } from './routes/_dashboard/integration/index'
 import { Route as DashboardDashboardIndexRouteImport } from './routes/_dashboard/dashboard/index'
 import { Route as DashboardCommissionsIndexRouteImport } from './routes/_dashboard/commissions/index'
-import { Route as DashboardCampaignsIndexRouteImport } from './routes/_dashboard/campaigns/index'
 import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard/analytics/index'
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -142,6 +142,11 @@ const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
   path: '/settings/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardProductsIndexRoute = DashboardProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardIntegrationIndexRoute =
   DashboardIntegrationIndexRouteImport.update({
     id: '/integration/',
@@ -159,11 +164,6 @@ const DashboardCommissionsIndexRoute =
     path: '/commissions/',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardCampaignsIndexRoute = DashboardCampaignsIndexRouteImport.update({
-  id: '/campaigns/',
-  path: '/campaigns/',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardAnalyticsIndexRoute = DashboardAnalyticsIndexRouteImport.update({
   id: '/analytics/',
   path: '/analytics/',
@@ -192,10 +192,10 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/analytics/': typeof DashboardAnalyticsIndexRoute
-  '/campaigns/': typeof DashboardCampaignsIndexRoute
   '/commissions/': typeof DashboardCommissionsIndexRoute
   '/dashboard/': typeof DashboardDashboardIndexRoute
   '/integration/': typeof DashboardIntegrationIndexRoute
+  '/products/': typeof DashboardProductsIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
@@ -220,10 +220,10 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/affiliates': typeof DashboardAffiliatesIndexRoute
   '/analytics': typeof DashboardAnalyticsIndexRoute
-  '/campaigns': typeof DashboardCampaignsIndexRoute
   '/commissions': typeof DashboardCommissionsIndexRoute
   '/dashboard': typeof DashboardDashboardIndexRoute
   '/integration': typeof DashboardIntegrationIndexRoute
+  '/products': typeof DashboardProductsIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace': typeof AffiliateMarketplaceIndexRoute
@@ -251,10 +251,10 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/_dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
-  '/_dashboard/campaigns/': typeof DashboardCampaignsIndexRoute
   '/_dashboard/commissions/': typeof DashboardCommissionsIndexRoute
   '/_dashboard/dashboard/': typeof DashboardDashboardIndexRoute
   '/_dashboard/integration/': typeof DashboardIntegrationIndexRoute
+  '/_dashboard/products/': typeof DashboardProductsIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
@@ -281,10 +281,10 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/affiliates/'
     | '/analytics/'
-    | '/campaigns/'
     | '/commissions/'
     | '/dashboard/'
     | '/integration/'
+    | '/products/'
     | '/settings/'
     | '/affiliate/dashboard/'
     | '/affiliate/marketplace/'
@@ -309,10 +309,10 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/affiliates'
     | '/analytics'
-    | '/campaigns'
     | '/commissions'
     | '/dashboard'
     | '/integration'
+    | '/products'
     | '/settings'
     | '/affiliate/dashboard'
     | '/affiliate/marketplace'
@@ -339,10 +339,10 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/_dashboard/affiliates/'
     | '/_dashboard/analytics/'
-    | '/_dashboard/campaigns/'
     | '/_dashboard/commissions/'
     | '/_dashboard/dashboard/'
     | '/_dashboard/integration/'
+    | '/_dashboard/products/'
     | '/_dashboard/settings/'
     | '/affiliate/dashboard/'
     | '/affiliate/marketplace/'
@@ -517,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/products/': {
+      id: '/_dashboard/products/'
+      path: '/products'
+      fullPath: '/products/'
+      preLoaderRoute: typeof DashboardProductsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/integration/': {
       id: '/_dashboard/integration/'
       path: '/integration'
@@ -536,13 +543,6 @@ declare module '@tanstack/react-router' {
       path: '/commissions'
       fullPath: '/commissions/'
       preLoaderRoute: typeof DashboardCommissionsIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/campaigns/': {
-      id: '/_dashboard/campaigns/'
-      path: '/campaigns'
-      fullPath: '/campaigns/'
-      preLoaderRoute: typeof DashboardCampaignsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/analytics/': {
@@ -584,20 +584,20 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 interface DashboardRouteChildren {
   DashboardAffiliatesIndexRoute: typeof DashboardAffiliatesIndexRoute
   DashboardAnalyticsIndexRoute: typeof DashboardAnalyticsIndexRoute
-  DashboardCampaignsIndexRoute: typeof DashboardCampaignsIndexRoute
   DashboardCommissionsIndexRoute: typeof DashboardCommissionsIndexRoute
   DashboardDashboardIndexRoute: typeof DashboardDashboardIndexRoute
   DashboardIntegrationIndexRoute: typeof DashboardIntegrationIndexRoute
+  DashboardProductsIndexRoute: typeof DashboardProductsIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAffiliatesIndexRoute: DashboardAffiliatesIndexRoute,
   DashboardAnalyticsIndexRoute: DashboardAnalyticsIndexRoute,
-  DashboardCampaignsIndexRoute: DashboardCampaignsIndexRoute,
   DashboardCommissionsIndexRoute: DashboardCommissionsIndexRoute,
   DashboardDashboardIndexRoute: DashboardDashboardIndexRoute,
   DashboardIntegrationIndexRoute: DashboardIntegrationIndexRoute,
+  DashboardProductsIndexRoute: DashboardProductsIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
 }
 

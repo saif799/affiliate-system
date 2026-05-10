@@ -1,81 +1,109 @@
-import { createFileRoute, useLoaderData } from '@tanstack/react-router'
-import { getCommissionsData }    from './-server/commissions.api'
-import { CommissionStatsCard }   from './-components/CommissionStatsCard'
-import { MonthlyPayoutsChart }   from './-components/MonthlyPayoutsChart'
-import { PayoutTable }           from './-components/PayoutTable'
-import { TransactionHistory }    from './-components/TransactionHistory'
-import type { CommissionMetric } from './commissions.types'
+// commissions/index.tsx
+
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { getCommissionsPageData } from './-server/commissions.api'
+import { CommissionStatsCard } from './-components/CommissionStatsCard'
+import { MonthlyPayoutsChart } from './-components/MonthlyPayoutsChart'
+import { PayoutTable } from './-components/PayoutTable'
+import { TransactionHistory } from './-components/TransactionHistory'
 
 export const Route = createFileRoute('/_dashboard/commissions/')({
-  loader: () => getCommissionsData(),
+  beforeLoad: ({ context }) => {
+    const role = context.session?.user?.role
+    if (!role) throw redirect({ to: '/login' })
+    if (role !== 'super_admin') throw redirect({ to: '/dashboard' })
+  },
 
-  pendingComponent: () => (
-    <div className="flex h-64 items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-indigo-600" />
-    </div>
-  ),
+  loader: () => getCommissionsPageData(),
+
+  pendingComponent: CommissionsPending,
+
   component: CommissionsPage,
 })
 
-// ─── stat cards config ────────────────────────────────
-
-const statCards: {
-  key:    keyof ReturnType<typeof buildStats>
-  label:  string
-  icon:   string
-  format: 'dzd' | 'number'
-}[] = [
-  { key: 'pendingPayouts',  label: 'الرصيد المعلق',         icon: '⏳', format: 'dzd'    },
-  { key: 'totalPaid',       label: 'إجمالي المدفوع',        icon: '💸', format: 'dzd'    },
-  { key: 'platformRevenue', label: 'أرباح المنصة',          icon: '💰', format: 'dzd'    },
-  { key: 'pendingRequests', label: 'طلبات بانتظار المراجعة', icon: '📋', format: 'number' },
-]
-
-function buildStats() {
-  const { stats } = useLoaderData({ from: '/_dashboard/commissions/' })
-  return stats
-}
-
-// ─── page ─────────────────────────────────────────────
-
-function CommissionsPage() {
-  const { stats, payoutRequests, transactions, monthlyPayouts } =
-    useLoaderData({ from: '/_dashboard/commissions/' })
-
+function CommissionsPending() {
   return (
-    <div className="flex flex-col gap-4 p-5" dir="rtl">
-
-      {/* Header */}
-      <div>
-        <h1 className="text-lg font-bold text-gray-900">العمولات</h1>
-        <p className="text-xs text-gray-400">غرفة العمليات المالية — معالجة طلبات السحب</p>
-      </div>
-
-      {/* KPI Cards — 4 أعمدة */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {statCards.map((card) => (
-          <CommissionStatsCard
-            key={card.key}
-            label={card.label}
-            icon={card.icon}
-            metric={stats[card.key] as CommissionMetric}
-            format={card.format}
-          />
+    <div className="p-6 space-y-5" dir="rtl">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-lg h-20 animate-pulse" />
         ))}
       </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="bg-gray-100 rounded-xl h-44 animate-pulse" />
+        <div className="bg-gray-100 rounded-xl h-44 animate-pulse" />
+      </div>
+      <div className="bg-gray-100 rounded-xl h-60 animate-pulse" />
+      <div className="bg-gray-100 rounded-xl h-72 animate-pulse" />
+    </div>
+  )
+}
 
-      {/* Monthly Payouts Chart */}
-      <MonthlyPayoutsChart data={monthlyPayouts} />
+function CommissionsPage() {
+  const { stats, breakdown, monthlyPayouts, withdrawalRequests, transactionHistory } =
+    Route.useLoaderData()
 
-      {/* Payout Requests Table */}
-      <div>
-        <h2 className="mb-3 text-sm font-semibold text-gray-800">طلبات السحب</h2>
-        <PayoutTable requests={payoutRequests} />
+  return (
+    <div className="p-6 space-y-6 max-w-7xl mx-auto" dir="rtl">
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-xl font-medium text-gray-900">العمولات</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            غرفة العمليات المالية — معالجة طلبات السحب
+          </p>
+        </div>
+        <a
+          href="/api/commissions/export-csv"
+          download
+          className="flex items-center gap-2 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          تصدير CSV
+        </a>
       </div>
 
-      {/* Transaction History */}
-      <TransactionHistory transactions={transactions} />
+      {/* القسم 1 + 2 */}
+      <CommissionStatsCard stats={stats} breakdown={breakdown} />
 
+      {/* القسم 3 */}
+      <div>
+        <p className="text-[11px] font-medium text-gray-400 tracking-widest mb-3">
+          المدفوعات الشهرية
+        </p>
+        <MonthlyPayoutsChart data={monthlyPayouts} />
+      </div>
+
+      {/* القسم 4 */}
+      <div>
+        <p className="text-[11px] font-medium text-gray-400 tracking-widest mb-3">
+          طلبات السحب
+        </p>
+        <PayoutTable requests={withdrawalRequests} />
+      </div>
+
+      {/* القسم 5 */}
+      <div>
+        <p className="text-[11px] font-medium text-gray-400 tracking-widest mb-3">
+          سجل المعاملات المكتملة
+        </p>
+        <TransactionHistory records={transactionHistory} />
+      </div>
     </div>
   )
 }
