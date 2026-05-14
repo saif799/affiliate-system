@@ -4,7 +4,7 @@ import { AffiliateStatsBar } from './-components/AffiliateStatsBar'
 import { AffiliatesFilters } from './-components/AffiliatesFilters'
 import { AffiliatesTable } from './-components/AffiliatesTable'
 import { useState } from 'react'
-import type { AffiliateStatus } from './affiliates.types'
+import type { AffiliateStatus } from './-affiliates.types'
 
 export const Route = createFileRoute('/_dashboard/affiliates/')({
   loader: () => getAffiliatesData(),

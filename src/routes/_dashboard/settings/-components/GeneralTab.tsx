@@ -1,4 +1,4 @@
-import type { GeneralSettings } from '../settings.types'
+import type { GeneralSettings } from '../-settings.types'
 
 interface Props {
   data: GeneralSettings
@@ -12,10 +12,10 @@ export function GeneralTab({ data }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {[
-            { label: 'اسم المنصة', value: data.platformName },
-            { label: 'البريد الإلكتروني للدعم', value: data.supportEmail },
-            { label: 'رابط شروط الاستخدام', value: data.termsUrl },
-            { label: 'رابط سياسة الخصوصية', value: data.privacyUrl },
+            { label: 'اسم المنصة',                value: data.platform_name  },
+            { label: 'البريد الإلكتروني للدعم',   value: data.support_email  },
+            { label: 'رابط شروط الاستخدام',       value: data.terms_url      },
+            { label: 'رابط سياسة الخصوصية',       value: data.privacy_url    },
           ].map((field) => (
             <div key={field.label} className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">{field.label}</label>
@@ -37,17 +37,17 @@ export function GeneralTab({ data }: Props) {
           </div>
           <div
             className={`relative w-12 h-6 rounded-full transition-colors ${
-              data.maintenanceMode ? 'bg-red-500' : 'bg-gray-200'
+              data.maintenance_mode ? 'bg-red-500' : 'bg-gray-200'
             }`}
           >
             <div
               className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                data.maintenanceMode ? 'translate-x-7' : 'translate-x-1'
+                data.maintenance_mode ? 'translate-x-7' : 'translate-x-1'
               }`}
             />
           </div>
         </div>
-        {data.maintenanceMode && (
+        {data.maintenance_mode && (
           <div className="mt-3 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
             ⚠️ المنصة في وضع الصيانة حالياً — المستخدمون لا يستطيعون الوصول
           </div>

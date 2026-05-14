@@ -30,7 +30,7 @@ function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('financial')
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6" dir='rtl'>
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">الإعدادات</h1>
         <p className="text-sm text-gray-500 mt-1">إدارة إعدادات المنصة</p>

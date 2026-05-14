@@ -1,27 +1,21 @@
 export type PayoutSchedule = 'weekly' | 'biweekly' | 'monthly'
-
-export type TeamRole = 'admin' | 'finance' | 'support'
-
-export type TeamMemberStatus = 'active' | 'invited' | 'suspended'
-
-export interface CategoryCommission {
-  category: string
-  rate: number
-}
+export type PayoutMethod = 'CCP' | 'BaridiMob'
+export type TeamRole = 'super_admin' | 'merchant' | 'affiliate' | 'system'
+export type TeamMemberStatus = 'active' | 'pending' | 'suspended'
 
 export interface FinancialSettings {
-  defaultTakeRate: number
-  minimumPayout: number
-  payoutSchedule: PayoutSchedule
-  categoryCommissions: CategoryCommission[]
+  platform_fee_per_order: number
+  minimum_payout: number
+  payout_schedule: PayoutSchedule
+  payout_methods: PayoutMethod[]
 }
 
 export interface GeneralSettings {
-  platformName: string
-  supportEmail: string
-  termsUrl: string
-  privacyUrl: string
-  maintenanceMode: boolean
+  platform_name: string
+  support_email: string
+  terms_url: string
+  privacy_url: string
+  maintenance_mode: boolean
 }
 
 export interface TeamMember {
@@ -30,12 +24,13 @@ export interface TeamMember {
   email: string
   role: TeamRole
   status: TeamMemberStatus
-  joinedAt: string
+  joined_at: string   // ISO string
+  wilaya: string | null
 }
 
 export interface SecuritySettings {
-  twoFactorEnabled: boolean
-  activeSessions: number
+  two_factor_enabled: boolean   // placeholder — needs 2FA lib
+  active_sessions_count: number
 }
 
 export interface SettingsData {
@@ -43,4 +38,21 @@ export interface SettingsData {
   general: GeneralSettings
   team: TeamMember[]
   security: SecuritySettings
+}
+
+// ── Mutation inputs ───────────────────────────────────────────
+
+export interface UpdateFinancialInput {
+  platform_fee_per_order: number
+  minimum_payout: number
+  payout_schedule: PayoutSchedule
+  payout_methods: PayoutMethod[]
+}
+
+export interface UpdateGeneralInput {
+  platform_name: string
+  support_email: string
+  terms_url: string
+  privacy_url: string
+  maintenance_mode: boolean
 }

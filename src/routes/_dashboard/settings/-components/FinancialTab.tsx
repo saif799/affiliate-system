@@ -1,69 +1,175 @@
-import type { FinancialSettings } from '../settings.types'
+'use client'
+
+import { useState } from 'react'
+import type { FinancialSettings } from '../-settings.types'
+import { updateFinancialSettings } from '../-server/settings.api'
 
 interface Props {
   data: FinancialSettings
 }
 
-const scheduleLabels = {
-  weekly: 'أسبوعي',
+const scheduleLabels: Record<string, string> = {
+  weekly:   'أسبوعي',
   biweekly: 'كل أسبوعين',
-  monthly: 'شهري',
+  monthly:  'شهري',
 }
 
 export function FinancialTab({ data }: Props) {
+  const [fee, setFee]             = useState(String(data.platform_fee_per_order))
+  const [minPayout, setMinPayout] = useState(String(data.minimum_payout))
+  const [saving, setSaving]       = useState(false)
+  const [saved, setSaved]         = useState(false)
+  const [error, setError]         = useState<string | null>(null)
+
+  const isDirty =
+    Number(fee) !== data.platform_fee_per_order ||
+    Number(minPayout) !== data.minimum_payout
+
+  async function handleSave() {
+    const feeNum = Number(fee)
+    const minNum = Number(minPayout)
+
+    if (isNaN(feeNum) || feeNum < 0) {
+      setError('رسوم المنصة يجب أن تكون رقماً موجباً')
+      return
+    }
+    if (isNaN(minNum) || minNum < 0) {
+      setError('الحد الأدنى للصرف يجب أن يكون رقماً موجباً')
+      return
+    }
+
+    setSaving(true)
+    setError(null)
+
+    try {
+      await updateFinancialSettings({
+        data: {
+          platform_fee_per_order: feeNum,
+          minimum_payout:         minNum,
+          payout_schedule:        data.payout_schedule,
+          payout_methods:         data.payout_methods,
+        },
+      })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch {
+      setError('حدث خطأ أثناء الحفظ، حاول مجدداً')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
-        <h2 className="text-base font-semibold text-gray-900">الإعدادات الأساسية</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {/* Platform Fee */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">رسوم المنصة</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            تُخصم تلقائياً من كل طلبية عند تأكيد التوصيل
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700">نسبة العمولة الافتراضية</label>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 bg-gray-50">
-              <span className="text-gray-900 font-semibold">{data.defaultTakeRate}%</span>
+            <label className="text-sm font-medium text-gray-700">
+              رسوم المنصة لكل طلبية موصّلة
+            </label>
+            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition">
+              <input
+                type="number"
+                min={0}
+                value={fee}
+                onChange={(e) => { setFee(e.target.value); setSaved(false) }}
+                className="flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
+              />
+              <span className="px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
+                DZD
+              </span>
             </div>
+            <p className="text-xs text-gray-400">
+              تُحسب فقط على الطلبيات بحالة "موصّلة" — لا تُطبّق على المرتجعات أو الملغاة
+            </p>
           </div>
+
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">الحد الأدنى للصرف</label>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 bg-gray-50">
-              <span className="text-gray-900 font-semibold">
-                {new Intl.NumberFormat('fr-DZ').format(data.minimumPayout)} DZD
+            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition">
+              <input
+                type="number"
+                min={0}
+                value={minPayout}
+                onChange={(e) => { setMinPayout(e.target.value); setSaved(false) }}
+                className="flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
+              />
+              <span className="px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
+                DZD
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Save row */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+          <div>
+            {error  && <p className="text-xs text-red-600">{error}</p>}
+            {saved  && <p className="text-xs text-emerald-600">✓ تم الحفظ بنجاح</p>}
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={!isDirty || saving}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isDirty && !saving
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+          </button>
+        </div>
+      </div>
+
+      {/* Payout Settings — read only */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <h2 className="text-base font-semibold text-gray-900">إعدادات الصرف</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">جدول الصرف</label>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 bg-gray-50">
+            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50">
               <span className="text-gray-900 font-semibold">
-                {scheduleLabels[data.payoutSchedule]}
+                {scheduleLabels[data.payout_schedule] ?? data.payout_schedule}
               </span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">طرق الصرف المتاحة</label>
+            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 flex-wrap">
+              {data.payout_methods.map((method) => (
+                <span
+                  key={method}
+                  className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full"
+                >
+                  {method}
+                </span>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">العمولة حسب الفئة</h2>
-        <div className="space-y-3">
-          {data.categoryCommissions.map((item) => (
-            <div
-              key={item.category}
-              className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0"
-            >
-              <span className="text-sm text-gray-700 font-medium">{item.category}</span>
-              <div className="flex items-center gap-3">
-                <div className="w-32 bg-gray-100 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full"
-                    style={{ width: `${(item.rate / 15) * 100}%` }}
-                  />
-                </div>
-                <span className="text-sm font-semibold text-blue-600 w-10 text-right">
-                  {item.rate}%
-                </span>
-              </div>
-            </div>
-          ))}
+      {/* Info */}
+      <div className="rounded-xl border border-blue-100 bg-blue-50 px-5 py-4 flex gap-3 items-start">
+        <span className="text-blue-500 text-lg mt-0.5">ℹ️</span>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p className="font-semibold">كيف تعمل الرسوم؟</p>
+          <ul className="list-disc list-inside space-y-0.5 text-blue-700">
+            <li>عند تسجيل طلبية بحالة <strong>موصّلة</strong>، تُخصم رسوم المنصة تلقائياً.</li>
+            <li>الفرق بين سعر المسوّق وسعر التاجر يبقى ربح المسوّق كاملاً.</li>
+            <li>الطلبيات المرتجعة أو الملغاة لا تخضع لأي رسوم.</li>
+          </ul>
         </div>
       </div>
     </div>

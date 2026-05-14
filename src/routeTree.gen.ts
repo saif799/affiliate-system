@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
 import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as AffiliateRouteImport } from './routes/affiliate'
@@ -38,6 +39,11 @@ import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const SetPasswordRoute = SetPasswordRouteImport.update({
+  id: '/set-password',
+  path: '/set-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PendingApprovalRoute = PendingApprovalRouteImport.update({
   id: '/pending-approval',
   path: '/pending-approval',
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/affiliate': typeof AffiliateRouteWithChildren
   '/merchant': typeof MerchantRouteWithChildren
   '/pending-approval': typeof PendingApprovalRoute
+  '/set-password': typeof SetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/affiliate': typeof AffiliateRouteWithChildren
   '/merchant': typeof MerchantRouteWithChildren
   '/pending-approval': typeof PendingApprovalRoute
+  '/set-password': typeof SetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/affiliate': typeof AffiliateRouteWithChildren
   '/merchant': typeof MerchantRouteWithChildren
   '/pending-approval': typeof PendingApprovalRoute
+  '/set-password': typeof SetPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -276,6 +285,7 @@ export interface FileRouteTypes {
     | '/affiliate'
     | '/merchant'
     | '/pending-approval'
+    | '/set-password'
     | '/login'
     | '/register'
     | '/api/auth/$'
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
     | '/affiliate'
     | '/merchant'
     | '/pending-approval'
+    | '/set-password'
     | '/login'
     | '/register'
     | '/api/auth/$'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/affiliate'
     | '/merchant'
     | '/pending-approval'
+    | '/set-password'
     | '/_auth/login'
     | '/_auth/register'
     | '/api/auth/$'
@@ -365,11 +377,19 @@ export interface RootRouteChildren {
   AffiliateRoute: typeof AffiliateRouteWithChildren
   MerchantRoute: typeof MerchantRouteWithChildren
   PendingApprovalRoute: typeof PendingApprovalRoute
+  SetPasswordRoute: typeof SetPasswordRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/set-password': {
+      id: '/set-password'
+      path: '/set-password'
+      fullPath: '/set-password'
+      preLoaderRoute: typeof SetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pending-approval': {
       id: '/pending-approval'
       path: '/pending-approval'
@@ -655,6 +675,7 @@ const rootRouteChildren: RootRouteChildren = {
   AffiliateRoute: AffiliateRouteWithChildren,
   MerchantRoute: MerchantRouteWithChildren,
   PendingApprovalRoute: PendingApprovalRoute,
+  SetPasswordRoute: SetPasswordRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

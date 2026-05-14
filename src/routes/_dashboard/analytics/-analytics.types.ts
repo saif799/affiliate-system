@@ -1,96 +1,91 @@
-// ─── KPI ─────────────────────────────────────────────
+// ── Date range ────────────────────────────────────────────────
 
-export interface AnalyticMetric {
-  value:  number
-  change: number  // نسبة مئوية مقارنة بالشهر الماضي
+export type DateRange = 'this_week' | 'this_month' | 'this_year'
+
+// ── Platform KPIs ─────────────────────────────────────────────
+
+export interface PlatformKpis {
+  gmv_dzd:                  number
+  gmv_change_pct:           number | null
+
+  take_rate_pct:            number
+  take_rate_change_pct:     number | null
+
+  delivery_rate_pct:        number
+  delivery_rate_change_pct: number | null
+
+  orders_total:             number
+  orders_change_pct:        number | null
+  orders_delivered:         number
+  orders_returned:          number
+
+  pending_withdrawals_dzd:  number
 }
 
-export interface AnalyticsKPIs {
-  totalGMV:          AnalyticMetric  // DZD
-  platformRevenue:   AnalyticMetric  // DZD
-  takeRate:          AnalyticMetric  // نسبة مئوية
-  affiliateRetention: AnalyticMetric // نسبة مئوية
+// ── GMV series ────────────────────────────────────────────────
+
+export interface GmvPoint {
+  date:    string
+  gmv_dzd: number
 }
 
-// ─── GMV vs Revenue ───────────────────────────────────
+// ── Top affiliates ────────────────────────────────────────────
 
-export interface MonthlyProfitability {
-  month:           string
-  gmv:             number  // DZD
-  platformRevenue: number  // DZD
-  affiliatePayout: number  // DZD — ما دفعناه للمسوقين
-}
-
-// ─── Risk List ────────────────────────────────────────
-
-export type RiskLevel = 'high' | 'medium' | 'low'
-
-export interface AffiliateRisk {
-  id:               string
+export interface TopAffiliate {
+  affiliate_id:     string
   name:             string
   wilaya:           string
-  totalOrders:      number
-  cancelledOrders:  number
-  cancellationRate: number  // نسبة مئوية
-  riskLevel:        RiskLevel
+  revenue_dzd:      number
+  orders_delivered: number
+  orders_total:     number
+  refusal_rate_pct: number
 }
 
-export interface MerchantRisk {
-  id:             string
-  name:           string
-  wilaya:         string
-  receivedOrders: number
-  rejectedOrders: number
-  rejectionRate:  number  // نسبة مئوية
-  riskLevel:      RiskLevel
+// ── Top merchants ─────────────────────────────────────────────
+
+export interface TopMerchant {
+  merchant_id:     string
+  business_name:   string
+  // إجمالي مبيعات التاجر على delivered — رسوم المنصة غير مخصومة
+  revenue_dzd:     number
+  orders_total:    number
+  return_rate_pct: number
 }
 
-// ─── Concentration Risk ───────────────────────────────
+// ── Wilaya stats ──────────────────────────────────────────────
 
-export interface ConcentrationItem {
-  name:       string  // اسم المسوق أو التاجر
-  revenue:    number  // DZD
-  percentage: number  // نسبة من إجمالي المنصة
-  cumulative: number  // تراكمي — لرسم Pareto
+export interface WilayaStat {
+  wilaya:          string
+  orders_count:    number
+  return_rate_pct: number
 }
 
-// ─── Conversion Funnel ────────────────────────────────
+// ── Delivery timing ───────────────────────────────────────────
 
-export interface FunnelStep {
-  label: string
-  count: number
-  rate:  number  // نسبة التحويل من الخطوة السابقة
+export interface DeliveryTiming {
+  avg_confirm_hours:  number
+  avg_ship_hours:     number
+  avg_wilaya_hours:   number
+  avg_deliver_hours:  number
+  avg_total_days:     number
+  // عدد الطلبات الكلي المُحسَّب عليها (كلها delivered بحكم WHERE)
+  sample_size:        number
+  // عدد الصفوف الفعلية لكل مرحلة — قد يقل عن sample_size إن كانت timestamps ناقصة
+  // مفيد في الواجهة لإظهار تحذير بجانب المتوسط عند بيانات غير مكتملة
+  sample_confirm:     number
+  sample_ship:        number
+  sample_wilaya:      number
+  sample_deliver:     number
 }
 
-// ─── Geographic Return Rate ───────────────────────────
-
-export interface WilayaReturnRate {
-  wilaya:     string
-  orders:     number
-  returns:    number
-  returnRate: number  // نسبة مئوية
-  riskLevel:  RiskLevel
-}
-
-// ─── Affiliate Retention ─────────────────────────────
-
-export interface MonthlyRetention {
-  month:          string
-  activeAffiliates: number
-  retained:       number  // كانوا نشطين الشهر السابق ولا يزالون
-  retentionRate:  number  // نسبة مئوية
-}
-
-// ─── Root ─────────────────────────────────────────────
+// ── Full analytics response ───────────────────────────────────
 
 export interface AnalyticsData {
-  kpis:              AnalyticsKPIs
-  monthlyProfitability: MonthlyProfitability[]
-  affiliateRisks:    AffiliateRisk[]
-  merchantRisks:     MerchantRisk[]
-  affiliateConcentration: ConcentrationItem[]
-  merchantConcentration:  ConcentrationItem[]
-  conversionFunnel:  FunnelStep[]
-  wilayaReturnRates: WilayaReturnRate[]
-  monthlyRetention:  MonthlyRetention[]
+  range:           DateRange
+  kpis:            PlatformKpis
+  gmv_series:      GmvPoint[]
+  top_affiliates:  TopAffiliate[]
+  top_merchants:   TopMerchant[]
+  wilaya_stats:    WilayaStat[]
+  delivery_timing: DeliveryTiming
 }
