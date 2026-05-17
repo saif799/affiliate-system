@@ -12,6 +12,7 @@ import {
   CreditCard,
   User,
   ChevronDown,
+  Store
 } from 'lucide-react'
 
 export const Route = createFileRoute('/_dashboard')({
@@ -28,6 +29,7 @@ export const Route = createFileRoute('/_dashboard')({
 const navItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Affiliates', to: '/affiliates', icon: Users },
+  { label: 'Merchants', to: '/merchants', icon:Store  },
   { label: 'Products', to: '/products', icon: Megaphone },
   { label: 'Commissions', to: '/commissions', icon: DollarSign },
   { label: 'Analytics', to: '/analytics', icon: BarChart2 },
@@ -74,24 +76,7 @@ function DashboardLayout() {
             ))}
           </nav>
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="rounded-lg border border-gray-200 px-3 py-2.5 flex items-center gap-2.5">
-            <CreditCard size={15} className="text-gray-400 shrink-0" />
-            <div>
-              <p className="text-xs font-medium text-gray-700">
-                Stripe Payouts
-              </p>
-              <p className="mt-0.5 flex items-center gap-1 text-xs text-red-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                Setup required
-              </p>
-            </div>
-          </div>
-          <button className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50">
-            <span>🇺🇸 USD</span>
-            <ChevronDown size={13} className="text-gray-400" />
-          </button>
-        </div>
+
       </aside>
       <main className="flex-1 overflow-y-auto">
         <Outlet />

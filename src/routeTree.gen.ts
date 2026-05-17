@@ -32,6 +32,7 @@ import { Route as AffiliateMarketplaceIndexRouteImport } from './routes/affiliat
 import { Route as AffiliateDashboardIndexRouteImport } from './routes/affiliate/dashboard/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardProductsIndexRouteImport } from './routes/_dashboard/products/index'
+import { Route as DashboardMerchantsIndexRouteImport } from './routes/_dashboard/merchants/index'
 import { Route as DashboardIntegrationIndexRouteImport } from './routes/_dashboard/integration/index'
 import { Route as DashboardDashboardIndexRouteImport } from './routes/_dashboard/dashboard/index'
 import { Route as DashboardCommissionsIndexRouteImport } from './routes/_dashboard/commissions/index'
@@ -153,6 +154,11 @@ const DashboardProductsIndexRoute = DashboardProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardMerchantsIndexRoute = DashboardMerchantsIndexRouteImport.update({
+  id: '/merchants/',
+  path: '/merchants/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardIntegrationIndexRoute =
   DashboardIntegrationIndexRouteImport.update({
     id: '/integration/',
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/commissions/': typeof DashboardCommissionsIndexRoute
   '/dashboard/': typeof DashboardDashboardIndexRoute
   '/integration/': typeof DashboardIntegrationIndexRoute
+  '/merchants/': typeof DashboardMerchantsIndexRoute
   '/products/': typeof DashboardProductsIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
@@ -231,6 +238,7 @@ export interface FileRoutesByTo {
   '/commissions': typeof DashboardCommissionsIndexRoute
   '/dashboard': typeof DashboardDashboardIndexRoute
   '/integration': typeof DashboardIntegrationIndexRoute
+  '/merchants': typeof DashboardMerchantsIndexRoute
   '/products': typeof DashboardProductsIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard': typeof AffiliateDashboardIndexRoute
@@ -263,6 +271,7 @@ export interface FileRoutesById {
   '/_dashboard/commissions/': typeof DashboardCommissionsIndexRoute
   '/_dashboard/dashboard/': typeof DashboardDashboardIndexRoute
   '/_dashboard/integration/': typeof DashboardIntegrationIndexRoute
+  '/_dashboard/merchants/': typeof DashboardMerchantsIndexRoute
   '/_dashboard/products/': typeof DashboardProductsIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
@@ -294,6 +303,7 @@ export interface FileRouteTypes {
     | '/commissions/'
     | '/dashboard/'
     | '/integration/'
+    | '/merchants/'
     | '/products/'
     | '/settings/'
     | '/affiliate/dashboard/'
@@ -323,6 +333,7 @@ export interface FileRouteTypes {
     | '/commissions'
     | '/dashboard'
     | '/integration'
+    | '/merchants'
     | '/products'
     | '/settings'
     | '/affiliate/dashboard'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/_dashboard/commissions/'
     | '/_dashboard/dashboard/'
     | '/_dashboard/integration/'
+    | '/_dashboard/merchants/'
     | '/_dashboard/products/'
     | '/_dashboard/settings/'
     | '/affiliate/dashboard/'
@@ -544,6 +556,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProductsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/merchants/': {
+      id: '/_dashboard/merchants/'
+      path: '/merchants'
+      fullPath: '/merchants/'
+      preLoaderRoute: typeof DashboardMerchantsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/integration/': {
       id: '/_dashboard/integration/'
       path: '/integration'
@@ -607,6 +626,7 @@ interface DashboardRouteChildren {
   DashboardCommissionsIndexRoute: typeof DashboardCommissionsIndexRoute
   DashboardDashboardIndexRoute: typeof DashboardDashboardIndexRoute
   DashboardIntegrationIndexRoute: typeof DashboardIntegrationIndexRoute
+  DashboardMerchantsIndexRoute: typeof DashboardMerchantsIndexRoute
   DashboardProductsIndexRoute: typeof DashboardProductsIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
 }
@@ -617,6 +637,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCommissionsIndexRoute: DashboardCommissionsIndexRoute,
   DashboardDashboardIndexRoute: DashboardDashboardIndexRoute,
   DashboardIntegrationIndexRoute: DashboardIntegrationIndexRoute,
+  DashboardMerchantsIndexRoute: DashboardMerchantsIndexRoute,
   DashboardProductsIndexRoute: DashboardProductsIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
 }

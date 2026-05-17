@@ -1,20 +1,24 @@
+// src/routes/_dashboard/affiliates/-affiliates.types.ts
+
 export type AffiliateStatus = 'active' | 'suspended' | 'pending'
+
+export interface AffiliateWarning {
+  id: string
+  message: string
+  sentAt: string
+}
 
 export interface Affiliate {
   id: string
   name: string
   email: string
+  phone: string
   wilaya: string
   status: AffiliateStatus
-  conversions: number
-  totalSales: number
-  commissionRate: number
   joinedAt: string
-}
-
-export interface AffiliatesData {
-  affiliates: Affiliate[]
-  totalAffiliates: number
-  activeAffiliates: number
-  totalCommissionsPaid: number
+  totalCampaigns: number
+  totalOrders: number
+  totalCommissions: number
+  pendingCommissions: number
+  warnings: AffiliateWarning[]
 }
