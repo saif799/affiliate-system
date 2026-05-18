@@ -119,11 +119,10 @@ export const sessions = pgTable('sessions', {
 // ACCOUNTS (better-auth)
 // ============================================================
 
+// schema.ts
 export const accounts = pgTable('accounts', {
   id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
   accessToken: text('access_token'),
@@ -134,12 +133,10 @@ export const accounts = pgTable('accounts', {
   idToken: text('id_token'),
   password: text('password'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at')
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-})
-
+  updatedAt: timestamp('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+}, (table) => [
+  uniqueIndex('idx_accounts_user_provider').on(table.userId, table.providerId),
+])
 // ============================================================
 // VERIFICATIONS (better-auth)
 // ============================================================

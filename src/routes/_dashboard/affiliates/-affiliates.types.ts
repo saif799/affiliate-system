@@ -9,11 +9,15 @@ export interface AffiliateWarning {
 }
 
 export interface Affiliate {
-  id: string
+  id: string           // affiliateProfiles.id (uuid)
+  userId: string       // users.id
   name: string
   email: string
   phone: string
   wilaya: string
+  referralCode: string
+  refusalRate: number
+  fraudFlag: boolean
   status: AffiliateStatus
   joinedAt: string
   totalCampaigns: number
@@ -21,4 +25,37 @@ export interface Affiliate {
   totalCommissions: number
   pendingCommissions: number
   warnings: AffiliateWarning[]
+}
+
+// ── إحصائية واحدة ─────────────────────────────────────────────
+export interface StatValue {
+  value: number
+  newThisMonth: number
+  changeVsPrev: number | null
+}
+
+export interface AffiliateStats {
+  total:     StatValue
+  active:    StatValue
+  suspended: StatValue
+  pending:   StatValue
+}
+
+// ── طلبات الانضمام ────────────────────────────────────────────
+export interface JoinRequest {
+  id: string           // users.id مباشرةً (لأنه pending وقد لا يملك profile بعد)
+  name: string
+  email: string
+  phone: string
+  wilaya: string
+  businessName: string
+  category: string
+  requestedAt: string
+  status: 'pending'
+}
+
+export interface AffiliatesData {
+  stats: AffiliateStats
+  affiliates: Affiliate[]
+  joinRequests: JoinRequest[]
 }

@@ -19,14 +19,17 @@ function statusColor(s: AffiliateStatus) {
 }
 
 interface Props {
-  affiliate: Affiliate
-  onClose: () => void
+  affiliate:      Affiliate
+  loading:        boolean
+  onClose:        () => void
   onStatusChange: (id: string, status: AffiliateStatus) => void
-  onWarn: (a: Affiliate) => void
+  onWarn:         (a: Affiliate) => void
+  onDelete:       (id: string) => void
 }
 
-export function AffiliateDrawer({ affiliate, onClose, onStatusChange, onWarn }: Props) {
-  const [tab, setTab] = useState<'overview' | 'warnings'>('overview')
+export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, onWarn, onDelete }: Props) {
+  const [tab,        setTab]        = useState<'overview' | 'warnings'>('overview')
+  const [confirmDel, setConfirmDel] = useState(false)
 
   return (
     <div className="fixed inset-0 z-40 flex" dir="rtl">
@@ -60,7 +63,8 @@ export function AffiliateDrawer({ affiliate, onClose, onStatusChange, onWarn }: 
           <div className="flex gap-2">
             <button
               onClick={() => onWarn(affiliate)}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"
+              disabled={loading}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -71,7 +75,8 @@ export function AffiliateDrawer({ affiliate, onClose, onStatusChange, onWarn }: 
             {affiliate.status !== 'suspended' ? (
               <button
                 onClick={() => onStatusChange(affiliate.id, 'suspended')}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
+                disabled={loading}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
@@ -81,7 +86,8 @@ export function AffiliateDrawer({ affiliate, onClose, onStatusChange, onWarn }: 
             ) : (
               <button
                 onClick={() => onStatusChange(affiliate.id, 'active')}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                disabled={loading}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="20 6 9 17 4 12"/>
@@ -120,8 +126,10 @@ export function AffiliateDrawer({ affiliate, onClose, onStatusChange, onWarn }: 
                   { label: 'رقم الهاتف',        value: affiliate.phone },
                   { label: 'الولاية',            value: affiliate.wilaya },
                   { label: 'تاريخ الانضمام',    value: affiliate.joinedAt },
-                  { label: 'إجمالي الحملات',    value: affiliate.totalCampaigns },
-                  { label: 'إجمالي الطلبات',    value: affiliate.totalOrders },
+                  { label: 'كود الإحالة',        value: affiliate.referralCode },
+                  { label: 'نسبة الرفض',         value: `${affiliate.refusalRate}%` },
+                  { label: 'إجمالي الحملات',    value: String(affiliate.totalCampaigns) },
+                  { label: 'إجمالي الطلبات',    value: String(affiliate.totalOrders) },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-slate-50 rounded-xl p-3">
                     <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">{label}</p>
@@ -129,6 +137,17 @@ export function AffiliateDrawer({ affiliate, onClose, onStatusChange, onWarn }: 
                   </div>
                 ))}
               </div>
+
+              {/* fraud flag badge */}
+              {affiliate.fraudFlag && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <p className="text-xs text-red-700 font-semibold">هذا المسوق مشار إليه بعلامة احتيال</p>
+                </div>
+              )}
 
               <div className="bg-violet-50 rounded-2xl p-4 border border-violet-100">
                 <p className="text-xs text-violet-500 font-semibold mb-3">إحصائيات العمولات</p>
@@ -144,6 +163,44 @@ export function AffiliateDrawer({ affiliate, onClose, onStatusChange, onWarn }: 
                     <p className="text-xs text-slate-400">DZD</p>
                   </div>
                 </div>
+              </div>
+
+              {/* delete */}
+              <div className="pt-2 border-t border-slate-100">
+                {!confirmDel ? (
+                  <button
+                    onClick={() => setConfirmDel(true)}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 py-2.5 rounded-xl transition-colors disabled:opacity-40"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14H6L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4h6v2"/>
+                    </svg>
+                    حذف المسوق
+                  </button>
+                ) : (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs text-red-700 font-semibold text-center">هل أنت متأكد من حذف هذا المسوق؟</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { onDelete(affiliate.id); setConfirmDel(false) }}
+                        disabled={loading}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {loading ? 'جاري الحذف...' : 'نعم، احذف'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDel(false)}
+                        className="flex-1 bg-white border border-slate-200 text-slate-600 text-xs font-semibold py-2 rounded-lg hover:bg-slate-50 transition-colors"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

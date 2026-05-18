@@ -12,11 +12,12 @@ import { eq } from 'drizzle-orm'
 // ── email clients ─────────────────────────────────────────────
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const pendingInviteTypes = new Map<string, 'admin' | 'merchant'>()
+const pendingInviteTypes = new Map<string, 'admin' | 'merchant' | 'affiliate'>()
 
-export function setInviteType(email: string, type: 'admin' | 'merchant') {
+export function setInviteType(email: string, type: 'admin' | 'merchant' | 'affiliate') {
   pendingInviteTypes.set(email.toLowerCase().trim(), type)
 }
+
 const gmailTransporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -68,20 +69,49 @@ function merchantInviteHtml(url: string): string {
   `
 }
 
+function affiliateInviteHtml(url: string): string {
+  return `
+    <div dir="rtl" style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
+      <h2 style="color:#7c3aed">مرحباً بك في DzDrop 🎉</h2>
+      <p style="color:#374151;line-height:1.7">
+        تمت دعوتك للانضمام كمسوق على منصة <strong>DzDrop</strong>.<br/>
+        انقر على الزر أدناه لقبول الدعوة وتعيين كلمة المرور الخاصة بك والبدء في رحلتك التسويقية.
+      </p>
+      <a href="${url}"
+         style="display:inline-block;margin-top:20px;padding:12px 28px;
+                background:#7c3aed;color:#fff;border-radius:8px;
+                text-decoration:none;font-weight:bold;font-size:15px">
+        قبول الدعوة وتعيين كلمة المرور
+      </a>
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
+      <p style="color:#6b7280;font-size:12px;line-height:1.6">
+        الرابط صالح لمدة 24 ساعة فقط.<br/>
+        إذا لم تطلب هذه الدعوة يمكنك تجاهل هذا البريد بأمان.
+      </p>
+    </div>
+  `
+}
+
 // ── send helper ───────────────────────────────────────────────
 
 async function sendInviteEmail(
   to: string,
   url: string,
-  type: 'admin' | 'merchant' = 'admin',
+  type: 'admin' | 'merchant' | 'affiliate' = 'admin',
 ): Promise<void> {
   const subject =
     type === 'merchant'
       ? 'دعوتك للانضمام كتاجر في DzDrop'
+      : type === 'affiliate'
+      ? 'دعوتك للانضمام كمسوق في DzDrop'
       : 'دعوتك للانضمام إلى DzDrop'
 
   const html =
-    type === 'merchant' ? merchantInviteHtml(url) : adminInviteHtml(url)
+    type === 'merchant'
+      ? merchantInviteHtml(url)
+      : type === 'affiliate'
+      ? affiliateInviteHtml(url)
+      : adminInviteHtml(url)
 
   if (process.env.NODE_ENV === 'development') {
     await gmailTransporter.sendMail({
@@ -123,10 +153,8 @@ export const auth = betterAuth({
     tanstackStartCookies(),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        // ✅ نقرأ نوع الدعوة من الـ callbackURL المخزّن في الـ url نفسه
-        const type =pendingInviteTypes.get(email.toLowerCase().trim()) ?? 'admin'
-        pendingInviteTypes.delete(email.toLowerCase().trim()) // نظّف بعد الاستخدام
-
+        const type = pendingInviteTypes.get(email.toLowerCase().trim()) ?? 'admin'
+        pendingInviteTypes.delete(email.toLowerCase().trim())
         await sendInviteEmail(email, url, type)
       },
     }),
@@ -158,11 +186,20 @@ export const auth = betterAuth({
           const role = (user as any).role ?? 'affiliate'
 
           if (role === 'affiliate') {
-            const referralCode = `AFF-${user.id.slice(0, 8).toUpperCase()}`
-            await db.insert(affiliateProfiles).values({
-              user_id: user.id,
-              referral_code: referralCode,
-            })
+            // ✅ نتحقق أولاً — inviteAffiliate ينشئ الـ profile قبل الـ hook
+            const existing = await db
+              .select({ id: affiliateProfiles.id })
+              .from(affiliateProfiles)
+              .where(eq(affiliateProfiles.user_id, user.id))
+              .limit(1)
+
+            if (existing.length === 0) {
+              const referralCode = `AFF-${user.id.slice(0, 8).toUpperCase()}`
+              await db.insert(affiliateProfiles).values({
+                user_id:       user.id,
+                referral_code: referralCode,
+              })
+            }
           }
 
           if (role === 'merchant') {
@@ -175,7 +212,7 @@ export const auth = betterAuth({
 
             if (existing.length === 0) {
               await db.insert(merchantProfiles).values({
-                user_id: user.id,
+                user_id:       user.id,
                 business_name: user.name,
               })
             }

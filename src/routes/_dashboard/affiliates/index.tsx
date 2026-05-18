@@ -2,140 +2,58 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 
-import { MOCK_AFFILIATES, MOCK_AFFILIATE_JOIN_REQUESTS } from './-server/affiliates.mock'
-import type { Affiliate, AffiliateStatus } from './-affiliates.types'
+import {
+  getAffiliatesData,
+  acceptAffiliateRequest,
+  rejectAffiliateRequest,
+  updateAffiliateStatus,
+  sendAffiliateWarning,
+  deleteAffiliate,
+  inviteAffiliate,
+} from './-server/affiliates.api'
+import type { InviteAffiliateInput } from './-server/affiliates.api'
+import type { Affiliate, AffiliateStatus, JoinRequest } from './-affiliates.types'
 
 import { UserStatCard }        from '../-shared/-components/UserStatCard'
 import { UserFilters }         from '../-shared/-components/UserFilters'
 import { UserTable }           from '../-shared/-components/UserTable'
-import type { ColumnDef }      from '../-shared/-components/UserTable'
 import { JoinRequestsSection } from '../-shared/-components/JoinRequestsSection'
-import type { JoinRequest }    from '../-shared/-shared.types'
 import { AffiliateDrawer }     from './-components/AffiliateDrawer'
 import { AffiliateWarnModal }  from './-components/AffiliateWarnModal'
+import { affiliateColumns } from './-components/affiliateColumns'
+import { InviteAffiliateModal } from './-components/InviteAffiliatesModal'
+
+// ملاحظة: أنشئ InviteAffiliateModal مشابهة لـ InviteMerchantModal
+// import { InviteAffiliateModal } from './-components/InviteAffiliateModal'
 
 export const Route = createFileRoute('/_dashboard/affiliates/')({
+  loader: () => getAffiliatesData(),
   component: AffiliatesPage,
 })
 
-function fmt(n: number) {
-  return new Intl.NumberFormat('ar-DZ').format(n)
-}
-
-function statusLabel(s: AffiliateStatus) {
-  return s === 'active' ? 'نشط' : s === 'suspended' ? 'موقوف' : 'قيد الانتظار'
-}
-
-function statusColor(s: AffiliateStatus) {
-  return s === 'active'
-    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
-    : s === 'suspended'
-    ? 'bg-red-50 text-red-700 ring-1 ring-red-200'
-    : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
-}
-
-// ── تعريف الأعمدة ──────────────────────────────────────────────
-const affiliateColumns: ColumnDef<Affiliate>[] = [
-  {
-    key: 'affiliate',
-    header: 'المسوق',
-    render: (a) => (
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600 text-sm shrink-0">
-          {a.name[0]}
-        </div>
-        <div>
-          <p className="font-semibold text-slate-800 leading-tight">{a.name}</p>
-          <p className="text-xs text-slate-400">{a.email}</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: 'wilaya',
-    header: 'الولاية',
-    render: (a) => (
-      <span className="text-slate-500 text-xs whitespace-nowrap">{a.wilaya}</span>
-    ),
-  },
-  {
-    key: 'status',
-    header: 'الحالة',
-    render: (a) => (
-      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${statusColor(a.status)}`}>
-        {statusLabel(a.status)}
-      </span>
-    ),
-  },
-  {
-    key: 'campaigns',
-    header: 'الحملات',
-    render: (a) => <span className="text-slate-600 font-medium">{a.totalCampaigns}</span>,
-  },
-  {
-    key: 'orders',
-    header: 'الطلبات',
-    render: (a) => <span className="text-slate-600 font-medium">{fmt(a.totalOrders)}</span>,
-  },
-  {
-    key: 'commissions',
-    header: 'العمولات',
-    render: (a) => (
-      <span className="whitespace-nowrap">
-        <span className="font-semibold text-slate-700">{fmt(a.totalCommissions)}</span>
-        <span className="text-xs text-slate-400 font-normal mr-1">DZD</span>
-      </span>
-    ),
-  },
-  {
-    key: 'pending',
-    header: 'معلقة',
-    render: (a) =>
-      a.pendingCommissions > 0 ? (
-        <span className="font-semibold text-violet-600 text-xs whitespace-nowrap">
-          {fmt(a.pendingCommissions)} DZD
-        </span>
-      ) : (
-        <span className="text-slate-300 text-xs">—</span>
-      ),
-  },
-  {
-    key: 'warnings',
-    header: 'الإنذارات',
-    render: (a) =>
-      a.warnings.length > 0 ? (
-        <span className="flex items-center gap-1 text-amber-600 text-xs font-semibold">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-          {a.warnings.length}
-        </span>
-      ) : (
-        <span className="text-slate-300 text-xs">—</span>
-      ),
-  },
-]
-
-// ── الصفحة ─────────────────────────────────────────────────────
 function AffiliatesPage() {
-  const [affiliates,    setAffiliates]    = useState<Affiliate[]>(MOCK_AFFILIATES)
-  const [joinRequests,  setJoinRequests]  = useState<JoinRequest[]>(MOCK_AFFILIATE_JOIN_REQUESTS)
+  const loaderData = Route.useLoaderData()
+
+  const [affiliates,    setAffiliates]    = useState<Affiliate[]>(loaderData.affiliates)
+  const [joinRequests,  setJoinRequests]  = useState<JoinRequest[]>(loaderData.joinRequests)
   const [search,        setSearch]        = useState('')
   const [filter,        setFilter]        = useState<AffiliateStatus | 'all'>('all')
   const [selected,      setSelected]      = useState<Affiliate | null>(null)
   const [warnFor,       setWarnFor]       = useState<Affiliate | null>(null)
+  const [showInvite,    setShowInvite]    = useState(false)
   const [toast,         setToast]         = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  const [loading,       setLoading]       = useState<string | null>(null)
+  const [inviteLoading, setInviteLoading] = useState(false)
 
+  const stats = loaderData.stats
+
+  // ── toast ──────────────────────────────────────────────────
   function showToast(msg: string, type: 'success' | 'error' = 'success') {
     setToast({ msg, type })
     setTimeout(() => setToast(null), 3000)
   }
 
-  const stats = useMemo(() => ({
-    total:     affiliates.length,
-    active:    affiliates.filter((a) => a.status === 'active').length,
-    suspended: affiliates.filter((a) => a.status === 'suspended').length,
-    pending:   affiliates.filter((a) => a.status === 'pending').length,
-  }), [affiliates])
-
+  // ── فلترة ──────────────────────────────────────────────────
   const filtered = useMemo(() =>
     affiliates.filter((a) => {
       const matchSearch =
@@ -146,87 +64,154 @@ function AffiliatesPage() {
     }),
   [affiliates, search, filter])
 
-  function handleStatusChange(id: string, status: AffiliateStatus) {
-    setAffiliates((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)))
-    setSelected((prev) => (prev?.id === id ? { ...prev, status } : prev))
-  }
-
-  function handleWarnSend(affiliate: Affiliate, message: string) {
-    const warning = {
-      id: crypto.randomUUID(),
-      message,
-      sentAt: new Date().toISOString().split('T')[0],
+  // ── تغيير حالة المسوق ──────────────────────────────────────
+  async function handleStatusChange(id: string, status: AffiliateStatus) {
+    if (loading) return
+    setLoading(id)
+    try {
+      await updateAffiliateStatus({ data: { affiliateId: id, status } })
+      setAffiliates((prev) => prev.map((a) => a.id === id ? { ...a, status } : a))
+      setSelected((prev) => prev?.id === id ? { ...prev, status } : prev)
+      showToast(status === 'active' ? 'تم تفعيل المسوق' : 'تم تعليق المسوق')
+    } catch {
+      showToast('حدث خطأ أثناء تغيير الحالة', 'error')
+    } finally {
+      setLoading(null)
     }
-    setAffiliates((prev) =>
-      prev.map((a) => a.id === affiliate.id ? { ...a, warnings: [...a.warnings, warning] } : a)
-    )
-    setSelected((prev) =>
-      prev?.id === affiliate.id ? { ...prev, warnings: [...prev.warnings, warning] } : prev
-    )
   }
 
-  function handleAcceptRequest(id: string) {
+  // ── إرسال إنذار ────────────────────────────────────────────
+  async function handleWarnSend(affiliate: Affiliate, message: string) {
+    if (loading) return
+    setLoading(affiliate.id)
+    try {
+      const result = await sendAffiliateWarning({
+        data: { affiliateId: affiliate.id, message },
+      })
+      const warning = {
+        id:     result.warning.id,
+        message,
+        sentAt: result.warning.sentAt,
+      }
+      setAffiliates((prev) =>
+        prev.map((a) =>
+          a.id === affiliate.id ? { ...a, warnings: [...a.warnings, warning] } : a
+        )
+      )
+      setSelected((prev) =>
+        prev?.id === affiliate.id
+          ? { ...prev, warnings: [...prev.warnings, warning] }
+          : prev
+      )
+      showToast('تم إرسال الإنذار بنجاح')
+    } catch {
+      showToast('حدث خطأ أثناء إرسال الإنذار', 'error')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  // ── حذف مسوق ───────────────────────────────────────────────
+  async function handleDelete(id: string) {
+    if (loading) return
+    setLoading(id)
+    try {
+      await deleteAffiliate({ data: { affiliateId: id } })
+      setAffiliates((prev) => prev.filter((a) => a.id !== id))
+      if (selected?.id === id) setSelected(null)
+      showToast('تم حذف المسوق بنجاح')
+    } catch {
+      showToast('حدث خطأ أثناء حذف المسوق', 'error')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  // ── دعوة مسوق جديد ─────────────────────────────────────────
+  async function handleInvite(data: InviteAffiliateInput) {
+    setInviteLoading(true)
+    try {
+      const result = await inviteAffiliate({ data })
+      const newAffiliate: Affiliate = {
+        id:                 result.userId,
+        userId:             result.userId,
+        name:               data.name,
+        email:              data.email,
+        phone:              data.phone,
+        wilaya:             '—',
+        referralCode:       result.referralCode,
+        refusalRate:        0,
+        fraudFlag:          false,
+        status:             'pending',
+        joinedAt:           new Date().toISOString().split('T')[0],
+        totalCampaigns:     0,
+        totalOrders:        0,
+        totalCommissions:   0,
+        pendingCommissions: 0,
+        warnings:           [],
+      }
+      setAffiliates((prev) => [newAffiliate, ...prev])
+      setShowInvite(false)
+      showToast(`تم إرسال دعوة إلى ${data.email} بنجاح`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'حدث خطأ أثناء إرسال الدعوة'
+      showToast(msg, 'error')
+    } finally {
+      setInviteLoading(false)
+    }
+  }
+
+  // ── قبول طلب انضمام ────────────────────────────────────────
+  async function handleAcceptRequest(id: string) {
     const req = joinRequests.find((r) => r.id === id)
     if (!req) return
-    const newAffiliate: Affiliate = {
-      id:                 `af${Date.now()}`,
-      name:               req.name,
-      email:              req.email,
-      phone:              req.phone,
-      wilaya:             req.wilaya,
-      status:             'active',
-      joinedAt:           new Date().toISOString().split('T')[0],
-      totalCampaigns:     0,
-      totalOrders:        0,
-      totalCommissions:   0,
-      pendingCommissions: 0,
-      warnings:           [],
+    setLoading(id)
+    try {
+      await acceptAffiliateRequest({ data: { userId: id } })
+      const newAffiliate: Affiliate = {
+        id:                 id,   // سيتحدث عند إعادة التحميل؛ مؤقتاً نستخدم userId
+        userId:             id,
+        name:               req.name,
+        email:              req.email,
+        phone:              req.phone,
+        wilaya:             req.wilaya,
+        referralCode:       '—',
+        refusalRate:        0,
+        fraudFlag:          false,
+        status:             'active',
+        joinedAt:           new Date().toISOString().split('T')[0],
+        totalCampaigns:     0,
+        totalOrders:        0,
+        totalCommissions:   0,
+        pendingCommissions: 0,
+        warnings:           [],
+      }
+      setAffiliates((prev) => [newAffiliate, ...prev])
+      setJoinRequests((prev) => prev.filter((r) => r.id !== id))
+      showToast(`تم قبول طلب ${req.name} وإضافته كمسوق نشط`)
+    } catch {
+      showToast('حدث خطأ أثناء قبول الطلب', 'error')
+    } finally {
+      setLoading(null)
     }
-    setAffiliates((prev) => [...prev, newAffiliate])
-    setJoinRequests((prev) => prev.filter((r) => r.id !== id))
-    showToast(`تم قبول طلب ${req.name} وإضافته كمسوق نشط`, 'success')
   }
 
-  function handleRejectRequest(id: string, _note: string) {
+  // ── رفض طلب انضمام ─────────────────────────────────────────
+  async function handleRejectRequest(id: string, _note: string) {
     const req = joinRequests.find((r) => r.id === id)
-    setJoinRequests((prev) => prev.filter((r) => r.id !== id))
-    showToast(`تم رفض طلب ${req?.name}`, 'error')
+    setLoading(id)
+    try {
+      await rejectAffiliateRequest({ data: { userId: id } })
+      setJoinRequests((prev) => prev.filter((r) => r.id !== id))
+      showToast(`تم رفض طلب ${req?.name}`, 'error')
+    } catch {
+      showToast('حدث خطأ أثناء رفض الطلب', 'error')
+    } finally {
+      setLoading(null)
+    }
   }
 
-  function renderAffiliateActions(a: Affiliate) {
-    return (
-      <>
-        <button
-          onClick={() => setSelected(a)}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition-colors"
-        >
-          عرض
-        </button>
-        <button
-          onClick={() => setWarnFor(a)}
-          className="text-xs font-semibold text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition-colors"
-        >
-          إنذار
-        </button>
-        {a.status !== 'suspended' ? (
-          <button
-            onClick={() => handleStatusChange(a.id, 'suspended')}
-            className="text-xs font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors"
-          >
-            تعليق
-          </button>
-        ) : (
-          <button
-            onClick={() => handleStatusChange(a.id, 'active')}
-            className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition-colors"
-          >
-            تفعيل
-          </button>
-        )}
-      </>
-    )
-  }
-
+  // ── JSX ────────────────────────────────────────────────────
   return (
     <div dir="rtl" className="min-h-screen bg-slate-50 p-6 space-y-4">
 
@@ -254,7 +239,10 @@ function AffiliatesPage() {
           <h1 className="text-2xl font-bold text-slate-800">المسوقون</h1>
           <p className="text-sm text-slate-400 mt-0.5">إدارة ومتابعة جميع المسوقين</p>
         </div>
-        <button className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl px-4 py-2.5 text-sm transition-colors shadow-sm shadow-violet-200">
+        <button
+          onClick={() => setShowInvite(true)}
+          className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl px-4 py-2.5 text-sm transition-colors shadow-sm shadow-violet-200"
+        >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
           </svg>
@@ -266,7 +254,7 @@ function AffiliatesPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <UserStatCard
           label="إجمالي المسوقين"
-          value={stats.total}
+          value={stats.total.value}
           accent="bg-violet-50"
           icon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.8">
@@ -279,8 +267,8 @@ function AffiliatesPage() {
         />
         <UserStatCard
           label="المسوقون النشطون"
-          value={stats.active}
-          sub={`${stats.suspended} موقوف`}
+          value={stats.active.value}
+          sub={`${stats.suspended.value} موقوف`}
           accent="bg-emerald-50"
           icon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.8">
@@ -291,7 +279,7 @@ function AffiliatesPage() {
         />
         <UserStatCard
           label="قيد الانتظار"
-          value={stats.pending}
+          value={stats.pending.value}
           accent="bg-amber-50"
           icon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.8">
@@ -327,7 +315,7 @@ function AffiliatesPage() {
         </div>
       </div>
 
-      {/* join requests */}
+      {/* join requests section */}
       {joinRequests.length > 0 && (
         <div id="requests-section">
           <JoinRequestsSection
@@ -352,7 +340,39 @@ function AffiliatesPage() {
         data={filtered}
         total={affiliates.length}
         columns={affiliateColumns}
-        renderActions={renderAffiliateActions}
+        renderActions={(a) => (
+          <>
+            <button
+              onClick={() => setSelected(a)}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition-colors"
+            >
+              عرض
+            </button>
+            <button
+              onClick={() => setWarnFor(a)}
+              className="text-xs font-semibold text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition-colors"
+            >
+              إنذار
+            </button>
+            {a.status !== 'suspended' ? (
+              <button
+                onClick={() => handleStatusChange(a.id, 'suspended')}
+                disabled={loading === a.id}
+                className="text-xs font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              >
+                تعليق
+              </button>
+            ) : (
+              <button
+                onClick={() => handleStatusChange(a.id, 'active')}
+                disabled={loading === a.id}
+                className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              >
+                تفعيل
+              </button>
+            )}
+          </>
+        )}
         totalLabel="مسوق"
       />
 
@@ -360,9 +380,11 @@ function AffiliatesPage() {
       {selected && (
         <AffiliateDrawer
           affiliate={selected}
+          loading={loading === selected.id}
           onClose={() => setSelected(null)}
           onStatusChange={handleStatusChange}
           onWarn={(a) => setWarnFor(a)}
+          onDelete={handleDelete}
         />
       )}
 
@@ -370,10 +392,21 @@ function AffiliatesPage() {
       {warnFor && (
         <AffiliateWarnModal
           affiliate={warnFor}
+          loading={loading === warnFor.id}
           onClose={() => setWarnFor(null)}
           onSend={(msg) => handleWarnSend(warnFor, msg)}
         />
       )}
+
+      {/* invite modal — أنشئها مشابهة لـ InviteMerchantModal */}
+      {showInvite && (
+        <InviteAffiliateModal
+          loading={inviteLoading}
+          onClose={() => !inviteLoading && setShowInvite(false)}
+          onSubmit={handleInvite}
+        />
+      )}
+
     </div>
   )
 }

@@ -1,10 +1,11 @@
 // src/routes/super-admin/settings/-server/settings.api.ts
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
+
 import { z } from 'zod'
 import { db } from '#/server/db'
 import { auth } from '#/server/auth'
 import { settings, users, sessions } from '#/server/db/schema'
+import { getSession }     from '#/lib/session'
 import { eq, inArray, sql } from 'drizzle-orm'
 import type {
   SettingsData,
@@ -19,22 +20,10 @@ import type {
 // ═══════════════════════════════════════════════════════════════
 
 async function requireSuperAdmin() {
-  const request = getRequest()
-  const session = await auth.api.getSession({ headers: request.headers })
-
-  if (!session?.user?.id) {
-    throw new Error('Unauthorized')
-  }
-
-  // role is stored as an additional field on the user object
-  const role = (session.user as any).role as string | undefined
-  if (role !== 'super_admin') {
-    throw new Error('Forbidden')
-  }
-
-  return session.user
+  const session = await getSession()
+  if (!session || session.user.role !== 'super_admin') throw new Error('Unauthorized')
+  return session
 }
-
 // ═══════════════════════════════════════════════════════════════
 //  Defaults
 // ═══════════════════════════════════════════════════════════════
@@ -200,7 +189,7 @@ export const getSettingsData = createServerFn({ method: 'GET' }).handler(
       fetchFinancial(),
       fetchGeneral(),
       fetchTeam(),
-      fetchSecurity(user.id), // ← always a real, verified userId
+      fetchSecurity(user.user.id), // ← always a real, verified userId
     ])
 
     return { financial, general, team, security }

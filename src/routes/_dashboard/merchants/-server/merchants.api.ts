@@ -424,7 +424,7 @@ export const inviteMerchant = createServerFn({ method: 'POST' })
       phone:         data.phone,
       emailVerified: true,
       role:          'merchant',
-      status:        'pending',
+      status:        'active',
     })
 
     // ── 3. إنشاء merchant_profile ─────────────────────────────
