@@ -1,7 +1,7 @@
 // merchant/dashboard/-components/LowStockAlerts.tsx
 
 import { AlertTriangle } from 'lucide-react'
-import type { LowStockProduct } from '../dashboard.types'
+import type { LowStockProduct } from '../-dashboard.types'
 
 interface LowStockAlertsProps {
   products: LowStockProduct[]

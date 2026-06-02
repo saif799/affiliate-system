@@ -1,4 +1,4 @@
-import type { SettingsTab } from '../settings.types'
+import type { SettingsTab } from '../-settings.types'
 
 interface Props {
   activeTab: SettingsTab

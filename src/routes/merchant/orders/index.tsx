@@ -1,13 +1,23 @@
 // merchant/orders/index.tsx
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
-import { getMerchantOrders } from './-server/orders.api'
+import { getMerchantOrders, updateOrderStatus } from './-server/orders.api'
 import { OrdersTabs }       from './-components/OrdersTabs'
 import { OrdersTable }      from './-components/OrdersTable'
 import { BulkActionBar }    from './-components/BulkActionBar'
 import { OrdersPagination } from './-components/OrdersPagination'
-import type { TabFilter, DateFilter } from './orders.types'
+import type { TabFilter, DateFilter, DbOrderStatus } from './-orders.types'
+
+// next valid merchant-initiated status for a given DB status
+function nextStatus(
+  db: DbOrderStatus,
+): 'confirmed' | 'shipped' | 'returned' | null {
+  if (db === 'pending') return 'confirmed'
+  if (db === 'confirmed') return 'shipped'
+  if (db === 'shipped' || db === 'at_wilaya') return 'returned'
+  return null
+}
 
 export const Route = createFileRoute('/merchant/orders/')({
   loader: () => getMerchantOrders(),
@@ -25,8 +35,10 @@ const dateFilterOptions: { label: string; value: DateFilter }[] = [
 
 function MerchantOrdersPage() {
   const { orders, tabCounts } = Route.useLoaderData()
+  const router = useRouter()
 
   const [activeTab,    setActiveTab]    = useState<TabFilter>('all')
+  const [isUpdating,   setIsUpdating]   = useState(false)
   const [search,       setSearch]       = useState('')
   const [wilayaFilter, setWilayaFilter] = useState('all')
   const [dateFilter,   setDateFilter]   = useState<DateFilter>('all')
@@ -91,6 +103,53 @@ function MerchantOrdersPage() {
     setSelectedIds(new Set(ids))
   }
 
+  // تغيير حالة طلبية واحدة
+  const handleUpdateStatus = async (
+    orderId: string,
+    newStatus: 'confirmed' | 'shipped' | 'returned',
+  ) => {
+    if (isUpdating) return
+    setIsUpdating(true)
+    try {
+      await updateOrderStatus({ data: { orderId, newStatus } })
+      await router.invalidate()
+    } catch (err) {
+      console.error(err)
+      alert(err instanceof Error ? err.message : 'فشل تغيير الحالة')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  // تغيير حالة مجموعة طلبيات (تقدّم كل طلبية خطوة صالحة واحدة)
+  const handleBulkChangeStatus = async () => {
+    if (isUpdating) return
+    const targets = orders
+      .filter((o) => selectedIds.has(o.id))
+      .map((o) => ({ id: o.id, next: nextStatus(o.dbStatus) }))
+      .filter((t): t is { id: string; next: 'confirmed' | 'shipped' | 'returned' } =>
+        t.next !== null && t.next !== 'returned',
+      )
+    if (targets.length === 0) {
+      alert('لا توجد طلبيات قابلة للتقدّم ضمن المحدد')
+      return
+    }
+    setIsUpdating(true)
+    try {
+      await Promise.all(
+        targets.map((t) =>
+          updateOrderStatus({ data: { orderId: t.id, newStatus: t.next } })
+        )
+      )
+      setSelectedIds(new Set())
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل تغيير الحالة')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   return (
     <div className="p-6 space-y-4" dir="rtl">
 
@@ -100,9 +159,6 @@ function MerchantOrdersPage() {
           <h1 className="text-xl font-bold text-gray-900">إدارة الطلبيات</h1>
           <p className="text-sm text-gray-500">متابعة دورة حياة طلبياتك كاملةً</p>
         </div>
-        <button className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:bg-gray-700 transition-colors">
-          + طلبية يدوية
-        </button>
       </div>
 
       {/* ─── Tabs ─── */}
@@ -115,8 +171,8 @@ function MerchantOrdersPage() {
       {/* ─── Bulk Action Bar (يظهر فقط عند التحديد) ─── */}
       <BulkActionBar
         count={selectedIds.size}
-        onPrint={() => console.log('طباعة:', [...selectedIds])}
-        onChangeStatus={() => console.log('تغيير حالة:', [...selectedIds])}
+        onPrint={() => window.print()}
+        onChangeStatus={handleBulkChangeStatus}
         onClear={() => setSelectedIds(new Set())}
       />
 
@@ -162,6 +218,8 @@ function MerchantOrdersPage() {
         selectedIds={selectedIds}
         onToggle={handleToggle}
         onToggleAll={handleToggleAll}
+        onUpdateStatus={handleUpdateStatus}
+        isUpdating={isUpdating}
       />
 
       {/* ─── Pagination ─── */}

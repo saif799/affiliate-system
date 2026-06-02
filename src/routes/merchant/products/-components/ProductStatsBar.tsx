@@ -1,6 +1,6 @@
 // merchant/products/-components/ProductStatsBar.tsx
 
-import type { ProductsStats } from '../products.types'
+import type { ProductsStats } from '../-products.types'
 
 interface ProductStatsBarProps {
   stats: ProductsStats

@@ -1,81 +1,317 @@
+// merchant/settings/-server/settings.api.ts
+
 import { createServerFn } from '@tanstack/react-start'
-import { mockSettingsData } from './settings.mock'
+import { getRequest } from '@tanstack/react-start/server'
+import { db } from '#/server/db'
+import { auth } from '#/server/auth'
+import { getSession } from '#/lib/session'
+import {
+  merchantProfiles,
+  users,
+  sessions,
+  settings,
+  withdrawalRequests,
+} from '#/server/db/schema'
+import { and, eq, ne, desc } from 'drizzle-orm'
+import { z } from 'zod'
 import type {
   SettingsData,
-  ProfileData,
-  PayoutData,
-  NotificationsData,
-} from '../settings.types'
+  PayoutAccount,
+  ActiveSession,
+  SessionDevice,
+} from '../-settings.types'
 
-export const getSettingsData = createServerFn({
-  method: 'GET',
-}).handler(async (): Promise<SettingsData> => {
-  // TODO: replace with Drizzle ORM query
-  // const merchant = await db.query.merchants.findFirst({ where: eq(merchants.id, ctx.merchantId) })
-  return mockSettingsData
+// ============================================================
+// HELPERS
+// ============================================================
+
+async function requireMerchant() {
+  const session = await getSession()
+  if (!session || session.user.role !== 'merchant') throw new Error('Unauthorized')
+
+  const [profile] = await db
+    .select({ id: merchantProfiles.id })
+    .from(merchantProfiles)
+    .where(eq(merchantProfiles.user_id, session.user.id))
+    .limit(1)
+
+  if (!profile) throw new Error('Merchant profile not found')
+  return { session, profileId: profile.id }
+}
+
+const PAYOUT_METHOD_LABEL: Record<string, string> = {
+  CCP: 'CCP / بريد الجزائر',
+  BaridiMob: 'BaridiMob',
+}
+
+function parseUserAgent(ua: string | null): { browser: string; device: SessionDevice } {
+  const agent = ua ?? ''
+  const device: SessionDevice = /Mobile/i.test(agent)
+    ? 'mobile'
+    : /Tablet|iPad/i.test(agent)
+      ? 'tablet'
+      : 'desktop'
+  const browser = /Firefox/i.test(agent)
+    ? 'Firefox'
+    : /Edg/i.test(agent)
+      ? 'Edge'
+      : /Chrome/i.test(agent)
+        ? 'Chrome'
+        : /Safari/i.test(agent)
+          ? 'Safari'
+          : 'متصفح'
+  return { browser, device }
+}
+
+function formatLastActive(d: Date): string {
+  return d.toLocaleDateString('ar-DZ', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+// ============================================================
+// GET SETTINGS DATA
+// ============================================================
+
+export const getSettingsData = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<SettingsData> => {
+    const { session } = await requireMerchant()
+    const userId = session.user.id
+    const currentToken = session.session.token
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
+    const [mp] = await db
+      .select()
+      .from(merchantProfiles)
+      .where(eq(merchantProfiles.user_id, userId))
+      .limit(1)
+
+    // payout accounts derived from past withdrawal requests
+    const pastWithdrawals = await db
+      .select({
+        method: withdrawalRequests.method,
+        accountNumber: withdrawalRequests.account_number,
+        requestedAt: withdrawalRequests.requested_at,
+      })
+      .from(withdrawalRequests)
+      .where(eq(withdrawalRequests.user_id, userId))
+      .orderBy(desc(withdrawalRequests.requested_at))
+
+    const seen = new Set<string>()
+    const accounts: PayoutAccount[] = []
+    for (const w of pastWithdrawals) {
+      const key = `${w.method}:${w.accountNumber}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      accounts.push({
+        id: key,
+        type: w.method,
+        label: PAYOUT_METHOD_LABEL[w.method] ?? w.method,
+        detail: w.accountNumber,
+        isDefault: accounts.length === 0,
+      })
+    }
+
+    const [minPayout] = await db
+      .select({ value: settings.value })
+      .from(settings)
+      .where(eq(settings.key, 'minimum_payout'))
+      .limit(1)
+
+    // active sessions
+    const userSessions = await db
+      .select({
+        id: sessions.id,
+        token: sessions.token,
+        userAgent: sessions.userAgent,
+        ipAddress: sessions.ipAddress,
+        createdAt: sessions.createdAt,
+        updatedAt: sessions.updatedAt,
+      })
+      .from(sessions)
+      .where(eq(sessions.userId, userId))
+      .orderBy(desc(sessions.createdAt))
+
+    const sessionList: ActiveSession[] = userSessions.map((s) => {
+      const { browser, device } = parseUserAgent(s.userAgent)
+      return {
+        id: s.id,
+        browser,
+        location: s.ipAddress ?? '—',
+        device,
+        lastActive: formatLastActive(s.updatedAt ?? s.createdAt),
+        ip: s.ipAddress ?? '—',
+        isCurrent: s.token === currentToken,
+      }
+    })
+
+    return {
+      profile: {
+        profile: {
+          fullName: user?.name ?? '',
+          email: user?.email ?? '',
+          phone: user?.phone ?? '',
+          storeName: mp?.business_name ?? '',
+        },
+        pickup: {
+          wilaya: user?.wilaya ?? '',
+          commune: '',
+          address: mp?.address ?? '',
+        },
+      },
+      payout: {
+        accounts,
+        minimumPayout: minPayout ? Number(minPayout.value) : 5000,
+      },
+      notifications: {
+        toggles: {
+          newOrders: true,
+          paymentConfirmation: true,
+          weeklyReport: false,
+          returnRateAlert: true,
+          affiliateActivity: false,
+        },
+        channels: {
+          email: user?.email ?? '',
+          whatsapp: user?.phone ?? '',
+        },
+      },
+      security: {
+        sessions: sessionList,
+      },
+    }
+  },
+)
+
+// ============================================================
+// UPDATE PROFILE
+// ============================================================
+
+const ProfileSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().optional(),
+  wilaya: z.string().optional(),
+  storeName: z.string().min(1),
+  address: z.string().optional(),
 })
 
-export const updateProfile = createServerFn({
-  method: 'POST',
-}).inputValidator((data: ProfileData) => data)
+export const updateProfile = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) => ProfileSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    // TODO: await db.update(merchants).set({ ...data }).where(eq(merchants.id, ctx.merchantId))
-    console.log('Updating profile:', data)
+    const { session } = await requireMerchant()
+    const userId = session.user.id
+
+    await db
+      .update(users)
+      .set({
+        name: data.name,
+        phone: data.phone ?? null,
+        wilaya: data.wilaya ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+
+    await db
+      .update(merchantProfiles)
+      .set({ business_name: data.storeName, address: data.address ?? null })
+      .where(eq(merchantProfiles.user_id, userId))
+
     return { success: true }
   })
 
-export const updatePayout = createServerFn({
-  method: 'POST',
-}).inputValidator((data: PayoutData) => data)
-  .handler(async ({ data }): Promise<{ success: boolean }> => {
-    // TODO: await db.update(payoutSettings).set({ ...data }).where(...)
-    console.log('Updating payout:', data)
+// ============================================================
+// UPDATE NOTIFICATIONS (no DB table — accepted but not persisted)
+// ============================================================
+
+export const updateNotifications = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => data)
+  .handler(async (): Promise<{ success: boolean }> => {
+    await requireMerchant()
     return { success: true }
   })
 
-export const updateNotifications = createServerFn({
-  method: 'POST',
-}).inputValidator((data: NotificationsData) => data)
+// ============================================================
+// UPDATE PASSWORD
+// ============================================================
+
+export const updatePassword = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) =>
+    z
+      .object({ currentPassword: z.string(), newPassword: z.string().min(8) })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
+    await requireMerchant()
+    try {
+      await auth.api.changePassword({
+        body: {
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        },
+        headers: getRequest().headers,
+      })
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'فشل تحديث كلمة المرور',
+      }
+    }
+  })
+
+// ============================================================
+// TERMINATE SESSION
+// ============================================================
+
+export const terminateSession = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) => z.object({ sessionId: z.string() }).parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    // TODO: await db.update(notificationSettings).set({ ...data }).where(...)
-    console.log('Updating notifications:', data)
+    const { session } = await requireMerchant()
+    await db
+      .delete(sessions)
+      .where(and(eq(sessions.id, data.sessionId), eq(sessions.userId, session.user.id)))
     return { success: true }
   })
 
-export const updatePassword = createServerFn({
-  method: 'POST',
-}).inputValidator(
-  (data: { currentPassword: string; newPassword: string }) => data,
-).handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
-  // TODO: verify currentPassword hash, then update
-  if (!data.newPassword || data.newPassword.length < 8) {
-    return { success: false, error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }
-  }
-  console.log('Updating password')
-  return { success: true }
-})
+// ============================================================
+// TERMINATE ALL OTHER SESSIONS
+// ============================================================
 
-export const terminateSession = createServerFn({
-  method: 'POST',
-}).inputValidator((data: { sessionId: string }) => data)
-  .handler(async ({ data }): Promise<{ success: boolean }> => {
-    // TODO: await db.delete(sessions).where(eq(sessions.id, data.sessionId))
-    console.log('Terminating session:', data.sessionId)
+export const terminateAllSessions = createServerFn({ method: 'POST' }).handler(
+  async (): Promise<{ success: boolean }> => {
+    const { session } = await requireMerchant()
+    const current = await auth.api.getSession({ headers: getRequest().headers })
+    const currentId = current?.session.id
+
+    await db
+      .delete(sessions)
+      .where(
+        currentId
+          ? and(eq(sessions.userId, session.user.id), ne(sessions.id, currentId))
+          : eq(sessions.userId, session.user.id),
+      )
     return { success: true }
-  })
+  },
+)
 
-export const terminateAllSessions = createServerFn({
-  method: 'POST',
-}).handler(async (): Promise<{ success: boolean }> => {
-  // TODO: await db.delete(sessions).where(and(eq(sessions.merchantId, ctx.merchantId), ne(sessions.id, ctx.currentSessionId)))
-  console.log('Terminating all other sessions')
-  return { success: true }
-})
+// ============================================================
+// REQUEST ACCOUNT DELETION (soft delete)
+// ============================================================
 
-export const requestAccountDeletion = createServerFn({
-  method: 'POST',
-}).handler(async (): Promise<{ success: boolean }> => {
-  // TODO: send deletion request email + flag account
-  console.log('Account deletion requested')
-  return { success: true }
-})
+export const requestAccountDeletion = createServerFn({ method: 'POST' }).handler(
+  async (): Promise<{ success: boolean }> => {
+    const { session } = await requireMerchant()
+    const now = new Date()
+    await Promise.all([
+      db.update(users).set({ deleted_at: now }).where(eq(users.id, session.user.id)),
+      db
+        .update(merchantProfiles)
+        .set({ deleted_at: now })
+        .where(eq(merchantProfiles.user_id, session.user.id)),
+    ])
+    return { success: true }
+  },
+)

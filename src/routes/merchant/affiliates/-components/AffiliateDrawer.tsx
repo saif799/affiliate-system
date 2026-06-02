@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import type { Affiliate } from '../affiliates.types'
+import type { Affiliate } from '../-affiliates.types'
 
 const TIER_LABELS = { gold: 'ذهبي', silver: 'فضي', bronze: 'برونزي' }
 const TIER_THRESHOLDS = { gold: 100, silver: 50, bronze: 0 }

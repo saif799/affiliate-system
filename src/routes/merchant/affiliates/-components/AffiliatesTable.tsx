@@ -1,6 +1,6 @@
 // src/routes/merchant/affiliates/-components/AffiliatesTable.tsx
 
-import type { Affiliate } from '../affiliates.types'
+import type { Affiliate } from '../-affiliates.types'
 
 const TIER_LABELS = { gold: 'ذهبي', silver: 'فضي', bronze: 'برونزي' }
 const TIER_CLASSES = {

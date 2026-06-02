@@ -7,17 +7,13 @@ export type ProductCategory = 'أحذية' | 'ملابس' | 'حقائب' | 'إل
 export interface Product {
   id: string
   name: string
-  sku: string
   category: ProductCategory
-  thumbnail: string           // emoji مؤقتاً، لاحقاً URL صورة حقيقية
+  images: string[] // روابط الصور (أقصى 5) — الأولى هي الصورة المعروضة
   stockQuantity: number
-  lowStockThreshold: number   // عتبة التحذير البرتقالي
-  basePrice: number           // سعر الجملة — ما يقبضه التاجر
-  msrpPrice: number           // سعر البيع المقترح للمسوق
-  minSellingPrice: number     // الحد الأدنى لحماية من حرق الأسعار
+  lowStockThreshold: number // عتبة التحذير البرتقالي
+  basePrice: number // سعر الجملة — ما يقبضه التاجر (merchant_price_dzd)
   status: ProductStatus
   isActive: boolean
-  mediaFolderUrl?: string     // رابط Google Drive للفيديوهات
   description?: string
   createdAt: string
 }
@@ -26,7 +22,7 @@ export interface ProductsStats {
   total: number
   active: number
   outOfStock: number
-  inventoryValue: number      // إجمالي قيمة المخزون
+  inventoryValue: number // إجمالي قيمة المخزون
 }
 
 export interface MerchantProductsData {
@@ -36,20 +32,13 @@ export interface MerchantProductsData {
 
 // نموذج إضافة/تعديل منتج
 export interface ProductFormData {
-  // الخطوة 1
   name: string
   description: string
   category: ProductCategory
-  sku: string
-  // الخطوة 2
   stockQuantity: number
   lowStockThreshold: number
   basePrice: number
-  msrpPrice: number
-  minSellingPrice: number
-  // الخطوة 3
-  thumbnail: string
-  mediaFolderUrl: string
+  images: string[] // روابط الصور بعد الرفع
 }
 
 export type ProductStatusFilter = 'all' | ProductStatus

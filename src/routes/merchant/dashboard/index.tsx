@@ -1,17 +1,26 @@
 // merchant/dashboard/index.tsx
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
 import { getMerchantDashboard } from './-server/dashboard.api'
 import { StatsCard } from './-components/StatsCard'
 import { OverviewChart } from './-components/OverviewChart'
 import { RecentOrders } from './-components/RecentOrders'
 import { LowStockAlerts } from './-components/LowStockAlerts'
 import { TopProducts } from './-components/TopProducts'
-import type { DateRange } from './dashboard.types'
+import type { DateRange } from './-dashboard.types'
 
 export const Route = createFileRoute('/merchant/dashboard/')({
-  loader: () => getMerchantDashboard(),
+  validateSearch: (search: Record<string, unknown>): { range: DateRange } => {
+    const range = search.range
+    return {
+      range:
+        range === 'today' || range === '7days' || range === '30days'
+          ? range
+          : '7days',
+    }
+  },
+  loaderDeps: ({ search }) => ({ range: search.range }),
+  loader: ({ deps }) => getMerchantDashboard({ data: { range: deps.range } }),
   component: MerchantDashboardPage,
 })
 
@@ -26,7 +35,7 @@ function MerchantDashboardPage() {
     Route.useLoaderData()
 
   const navigate = useNavigate()
-  const [dateRange, setDateRange] = useState<DateRange>('7days')
+  const { range: dateRange } = Route.useSearch()
 
   return (
     <div className="p-6 space-y-6">
@@ -42,7 +51,9 @@ function MerchantDashboardPage() {
           {dateRangeOptions.map((option) => (
             <button
               key={option.value}
-              onClick={() => setDateRange(option.value)}
+              onClick={() =>
+                navigate({ to: '/merchant/dashboard', search: { range: option.value } })
+              }
               className={`rounded-md px-3 py-1.5 text-xs transition-colors ${
                 dateRange === option.value
                   ? 'bg-gray-900 text-white'
@@ -94,7 +105,7 @@ function MerchantDashboardPage() {
       </div>
 
       {/* ─── Chart ─── */}
-      <OverviewChart data={chartData} />
+      <OverviewChart data={chartData} range={dateRange} />
 
       {/* ─── Bottom Row ─── */}
       <div className="grid grid-cols-3 gap-4">

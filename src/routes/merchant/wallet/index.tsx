@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Wallet, ArrowDownToLine, Clock } from 'lucide-react'
 import { getWalletData } from './-server/wallet.api'
 import { WalletKPIs } from './-components/WalletKPIs'
@@ -21,6 +21,7 @@ type Tab = 'transactions' | 'payouts'
 
 function WalletPage() {
   const data = Route.useLoaderData()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('transactions')
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false)
 
@@ -29,7 +30,7 @@ function WalletPage() {
 
   return (
     // 👇 هنا تم إضافة الهوامش p-6 و md:p-8 لترك مسافة تنفس للصفحة
-    <div className="p-2 space-y-2 md:p-2" dir="rtl">
+    <div className="p-6 space-y-6" dir="rtl">
       
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -117,6 +118,7 @@ function WalletPage() {
         availableBalance={data.stats.availableBalance}
         minimumPayout={data.stats.minimumPayout}
         payoutMethods={data.payoutMethods}
+        onSuccess={() => router.invalidate()}
       />
     </div>
   )

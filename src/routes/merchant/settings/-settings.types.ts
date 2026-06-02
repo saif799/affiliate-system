@@ -10,11 +10,7 @@ export type WilayaType =
   | 'بلعباس'
   | 'تلمسان'
 
-export type VerificationStatus = 'verified' | 'pending' | 'unverified'
-
-export type PayoutMethod = 'ccp' | 'cib' | 'paysera'
-
-export type WithdrawalFrequency = 'manual' | 'weekly' | 'monthly'
+export type PayoutMethod = 'CCP' | 'BaridiMob'
 
 export type SessionDevice = 'desktop' | 'mobile' | 'tablet'
 
@@ -33,17 +29,9 @@ export interface PickupDetails {
   address: string
 }
 
-export interface LegalInfo {
-  rc: string
-  rcStatus: VerificationStatus
-  nif: string
-  nifStatus: VerificationStatus
-}
-
 export interface ProfileData {
   profile: MerchantProfile
   pickup: PickupDetails
-  legal: LegalInfo
 }
 
 // ─── Payout ─────────────────────────────────────────────────────────────────
@@ -56,20 +44,14 @@ export interface PayoutAccount {
   isDefault: boolean
 }
 
-export interface WithdrawalSettings {
-  threshold: number
-  frequency: WithdrawalFrequency
-}
-
 export interface PayoutData {
   accounts: PayoutAccount[]
-  withdrawalSettings: WithdrawalSettings
+  minimumPayout: number
 }
 
 // ─── Notifications ───────────────────────────────────────────────────────────
 
 export interface NotificationToggles {
-  lowStock: boolean
   newOrders: boolean
   paymentConfirmation: boolean
   weeklyReport: boolean

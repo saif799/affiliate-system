@@ -1,7 +1,7 @@
 // merchant/products/-components/ProductsTable.tsx
 
-import { AlertTriangle } from 'lucide-react'
-import type { Product, ProductStatus } from '../products.types'
+import { AlertTriangle, ImageIcon } from 'lucide-react'
+import type { Product, ProductStatus } from '../-products.types'
 
 const statusConfig: Record<ProductStatus, { label: string; className: string }> = {
   active:       { label: 'نشط',         className: 'bg-green-100 text-green-800' },
@@ -65,7 +65,6 @@ export function ProductsTable({
             <th className="px-4 py-3 text-xs font-medium text-gray-500">المنتج</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">المخزون</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">سعر الجملة</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500">سعر البيع المقترح</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">الحالة</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">تفعيل</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">الإجراءات</th>
@@ -83,15 +82,22 @@ export function ProductsTable({
               >
                 {/* Thumbnail */}
                 <td className="px-4 py-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-lg">
-                    {product.thumbnail}
+                  <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-gray-100 bg-gray-50 text-gray-300">
+                    {product.images[0] ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <ImageIcon size={16} />
+                    )}
                   </div>
                 </td>
 
                 {/* المنتج */}
                 <td className="px-4 py-3">
                   <p className="text-xs font-medium text-gray-800">{product.name}</p>
-                  <p className="font-mono text-xs text-gray-400">{product.sku}</p>
                   <p className="text-xs text-gray-400">{product.category}</p>
                 </td>
 
@@ -103,16 +109,6 @@ export function ProductsTable({
                   <span className="text-xs font-semibold text-gray-800">
                     {product.basePrice.toLocaleString('ar-DZ')} DZD
                   </span>
-                </td>
-
-                {/* سعر البيع المقترح */}
-                <td className="px-4 py-3">
-                  <span className="text-xs text-gray-600">
-                    {product.msrpPrice.toLocaleString('ar-DZ')} DZD
-                  </span>
-                  <p className="text-xs text-gray-400">
-                    حد أدنى: {product.minSellingPrice.toLocaleString('ar-DZ')}
-                  </p>
                 </td>
 
                 {/* الحالة */}

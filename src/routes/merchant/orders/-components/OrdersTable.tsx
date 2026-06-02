@@ -1,6 +1,16 @@
 // merchant/orders/-components/OrdersTable.tsx
 
-import type { Order, OrderStatus } from '../orders.types'
+import type { Order, OrderStatus, DbOrderStatus } from '../-orders.types'
+
+// next merchant-initiated status + button label for a given DB status
+function statusAction(
+  db: DbOrderStatus,
+): { next: 'confirmed' | 'shipped' | 'returned'; label: string } | null {
+  if (db === 'pending') return { next: 'confirmed', label: 'تأكيد' }
+  if (db === 'confirmed') return { next: 'shipped', label: 'شحن' }
+  if (db === 'shipped' || db === 'at_wilaya') return { next: 'returned', label: 'إرجاع' }
+  return null
+}
 
 const statusConfig: Record<OrderStatus, { label: string; className: string; dot: string }> = {
   pending:   { label: 'للتغليف',  className: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500'  },
@@ -10,19 +20,16 @@ const statusConfig: Record<OrderStatus, { label: string; className: string; dot:
   cancelled: { label: 'ملغاة',    className: 'bg-gray-100  text-gray-600',  dot: 'bg-gray-400'   },
 }
 
-const actionByStatus: Record<OrderStatus, string> = {
-  pending:   'تغليف',
-  shipped:   'تتبع',
-  delivered: 'فاتورة',
-  returned:  'سبب',
-  cancelled: 'تفاصيل',
-}
-
 interface OrdersTableProps {
   orders: Order[]
   selectedIds: Set<string>
   onToggle: (id: string) => void
   onToggleAll: (ids: string[]) => void
+  onUpdateStatus: (
+    orderId: string,
+    newStatus: 'confirmed' | 'shipped' | 'returned',
+  ) => void
+  isUpdating: boolean
 }
 
 export function OrdersTable({
@@ -30,6 +37,8 @@ export function OrdersTable({
   selectedIds,
   onToggle,
   onToggleAll,
+  onUpdateStatus,
+  isUpdating,
 }: OrdersTableProps) {
   const allSelected =
     orders.length > 0 && orders.every((o) => selectedIds.has(o.id))
@@ -75,7 +84,7 @@ export function OrdersTable({
         <tbody>
           {orders.map((order, index) => {
             const status   = statusConfig[order.status]
-            const action   = actionByStatus[order.status]
+            const action   = statusAction(order.dbStatus)
             const checked  = selectedIds.has(order.id)
 
             return (
@@ -146,9 +155,15 @@ export function OrdersTable({
                 {/* الإجراءات */}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
-                    <button className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100">
-                      {action}
-                    </button>
+                    {action && (
+                      <button
+                        onClick={() => onUpdateStatus(order.id, action.next)}
+                        disabled={isUpdating}
+                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        {action.label}
+                      </button>
+                    )}
                     <button className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100">
                       تفاصيل
                     </button>

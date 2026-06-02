@@ -1,7 +1,7 @@
 export type TransactionType = 'order_earning' | 'payout_deduction' | 'platform_fee' | 'refund_deduction'
 export type TransactionStatus = 'completed' | 'pending' | 'failed'
-export type PayoutStatus = 'completed' | 'pending' | 'processing' | 'rejected'
-export type PayoutMethod = 'bank_transfer' | 'ccp' | 'baridimob' | 'cash'
+export type PayoutStatus = 'completed' | 'pending' | 'rejected'
+export type PayoutMethod = 'CCP' | 'BaridiMob'
 
 export interface Transaction {
   id: string
@@ -39,8 +39,6 @@ export interface WalletStats {
 export interface PayoutMethodOption {
   id: PayoutMethod
   label: string
-  fee: number
-  feeType: 'fixed' | 'percentage'
   accountInfo: string
 }
 

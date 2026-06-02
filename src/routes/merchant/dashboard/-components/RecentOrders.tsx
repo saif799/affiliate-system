@@ -1,6 +1,6 @@
 // merchant/dashboard/-components/RecentOrders.tsx
 
-import type { RecentOrder } from '../dashboard.types'
+import type { RecentOrder } from '../-dashboard.types'
 
 const statusConfig = {
   pending:   { label: 'انتظار التغليف', color: 'bg-orange-100 text-orange-700' },

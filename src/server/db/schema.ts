@@ -230,6 +230,8 @@ export const products = pgTable(
     merchant_price_dzd: integer('merchant_price_dzd').notNull(),
     wholesale_price_dzd: integer('wholesale_price_dzd'),
     stock_qty: integer('stock_qty').notNull().default(0),
+    low_stock_threshold: integer('low_stock_threshold').notNull().default(10),
+    sku: text('sku'),
     is_active: boolean('is_active').notNull().default(true),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at')

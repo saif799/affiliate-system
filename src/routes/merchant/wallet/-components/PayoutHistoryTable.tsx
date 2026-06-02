@@ -1,4 +1,4 @@
-import type { PayoutRequest } from '../wallet.types'
+import type { PayoutRequest } from '../-wallet.types'
 
 const statusConfig: Record<
   PayoutRequest['status'],
@@ -6,7 +6,6 @@ const statusConfig: Record<
 > = {
   completed: { label: 'مكتمل', dot: 'bg-green-500', text: 'text-green-800 bg-green-100' },
   pending: { label: 'معلق', dot: 'bg-amber-500', text: 'text-amber-800 bg-amber-100' },
-  processing: { label: 'قيد المعالجة', dot: 'bg-blue-500', text: 'text-blue-800 bg-blue-100' },
   rejected: { label: 'مرفوض', dot: 'bg-red-500', text: 'text-red-800 bg-red-100' },
 }
 

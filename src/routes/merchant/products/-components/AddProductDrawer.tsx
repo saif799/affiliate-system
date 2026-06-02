@@ -1,8 +1,9 @@
 // merchant/products/-components/AddProductDrawer.tsx
 
 import { useState, useEffect } from 'react'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { Product, ProductFormData, ProductCategory } from '../products.types'
+import { X, ChevronLeft, ChevronRight, Upload, Trash2 } from 'lucide-react'
+import { uploadProductImages } from '../-server/products.api'
+import type { Product, ProductFormData, ProductCategory } from '../-products.types'
 
 const CATEGORIES: ProductCategory[] = ['أحذية', 'ملابس', 'حقائب', 'إلكترونيات', 'أخرى']
 
@@ -10,22 +11,19 @@ const EMPTY_FORM: ProductFormData = {
   name: '',
   description: '',
   category: 'أحذية',
-  sku: '',
   stockQuantity: 0,
   lowStockThreshold: 10,
   basePrice: 0,
-  msrpPrice: 0,
-  minSellingPrice: 0,
-  thumbnail: '📦',
-  mediaFolderUrl: '',
+  images: [],
 }
 
-const steps = ['المعلومات الأساسية', 'التسعير والمخزون', 'الميديا والتسويق']
+const steps = ['المعلومات الأساسية', 'التسعير والمخزون', 'الصور']
+const MAX_IMAGES = 5
 
 interface AddProductDrawerProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: ProductFormData) => void
+  onSubmit: (data: ProductFormData) => void | Promise<void>
   editData?: Product | null
 }
 
@@ -37,41 +35,89 @@ export function AddProductDrawer({
 }: AddProductDrawerProps) {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM)
+  const [existingImages, setExistingImages] = useState<string[]>([])
+  const [files, setFiles] = useState<File[]>([])
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   // تحديث الـ form عند فتح التعديل
   useEffect(() => {
     if (editData) {
       setForm({
-        name:              editData.name,
-        description:       editData.description ?? '',
-        category:          editData.category,
-        sku:               editData.sku,
-        stockQuantity:     editData.stockQuantity,
+        name: editData.name,
+        description: editData.description ?? '',
+        category: editData.category,
+        stockQuantity: editData.stockQuantity,
         lowStockThreshold: editData.lowStockThreshold,
-        basePrice:         editData.basePrice,
-        msrpPrice:         editData.msrpPrice,
-        minSellingPrice:   editData.minSellingPrice,
-        thumbnail:         editData.thumbnail,
-        mediaFolderUrl:    editData.mediaFolderUrl ?? '',
+        basePrice: editData.basePrice,
+        images: editData.images,
       })
+      setExistingImages(editData.images)
     } else {
       setForm(EMPTY_FORM)
+      setExistingImages([])
     }
+    setFiles([])
+    setError('')
     setStep(0)
-  }, [editData])
+  }, [editData, isOpen])
 
   const set = (field: keyof ProductFormData, value: string | number) =>
     setForm((prev) => ({ ...prev, [field]: value }))
 
+  const totalImages = existingImages.length + files.length
+
+  const handleSelectFiles = (selected: FileList | null) => {
+    if (!selected) return
+    const picked = Array.from(selected)
+    if (existingImages.length + files.length + picked.length > MAX_IMAGES) {
+      setError(`الحد الأقصى ${MAX_IMAGES} صور`)
+      return
+    }
+    const invalid = picked.find((f) => !f.type.startsWith('image/'))
+    if (invalid) {
+      setError('الملف يجب أن يكون صورة')
+      return
+    }
+    setError('')
+    setFiles((prev) => [...prev, ...picked])
+  }
+
+  const removeExisting = (url: string) =>
+    setExistingImages((prev) => prev.filter((u) => u !== url))
+
+  const removeFile = (idx: number) =>
+    setFiles((prev) => prev.filter((_, i) => i !== idx))
+
   const handleClose = () => {
     setStep(0)
     setForm(EMPTY_FORM)
+    setExistingImages([])
+    setFiles([])
+    setError('')
     onClose()
   }
 
-  const handleSubmit = () => {
-    onSubmit(form)
-    handleClose()
+  const handleSubmit = async () => {
+    if (submitting) return
+    setSubmitting(true)
+    setError('')
+    try {
+      let uploadedUrls: string[] = []
+      if (files.length > 0) {
+        const fd = new FormData()
+        files.forEach((f) => fd.append('images', f))
+        const res = await uploadProductImages({ data: fd })
+        uploadedUrls = res.urls
+      }
+      const images = [...existingImages, ...uploadedUrls].slice(0, MAX_IMAGES)
+      await onSubmit({ ...form, images })
+      handleClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل حفظ المنتج')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (!isOpen) return null
@@ -81,10 +127,7 @@ export function AddProductDrawer({
   return (
     <>
       {/* Overlay */}
-      <div
-        className="fixed inset-0 z-40 bg-black/30"
-        onClick={handleClose}
-      />
+      <div className="fixed inset-0 z-40 bg-black/30" onClick={handleClose} />
 
       {/* Drawer */}
       <div className="fixed inset-y-0 right-0 z-50 flex w-105 flex-col border-l border-gray-200 bg-white">
@@ -113,9 +156,7 @@ export function AddProductDrawer({
             <div key={i} className="flex items-center">
               <div className="flex items-center gap-2">
                 <div className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium transition-colors ${
-                  i < step   ? 'bg-gray-900 text-white' :
-                  i === step ? 'bg-gray-900 text-white' :
-                               'bg-gray-100 text-gray-400'
+                  i <= step ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-400'
                 }`}>
                   {i < step ? '✓' : i + 1}
                 </div>
@@ -126,9 +167,7 @@ export function AddProductDrawer({
                 </span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`mx-3 h-px w-8 ${
-                  i < step ? 'bg-gray-900' : 'bg-gray-200'
-                }`} />
+                <div className={`mx-3 h-px w-8 ${i < step ? 'bg-gray-900' : 'bg-gray-200'}`} />
               )}
             </div>
           ))}
@@ -163,32 +202,19 @@ export function AddProductDrawer({
                   className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 outline-none focus:border-gray-400"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-600">
-                    الفئة *
-                  </label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => set('category', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 outline-none"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-600">
-                    رمز SKU *
-                  </label>
-                  <input
-                    value={form.sku}
-                    onChange={(e) => set('sku', e.target.value)}
-                    placeholder="SKU-001-WHT"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-xs text-gray-800 outline-none focus:border-gray-400"
-                  />
-                </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-600">
+                  الفئة *
+                </label>
+                <select
+                  value={form.category}
+                  onChange={(e) => set('category', e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 outline-none"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
             </>
           )}
@@ -232,79 +258,59 @@ export function AddProductDrawer({
                   className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
                 />
               </div>
-
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-600">
-                  سعر البيع المقترح للمسوق — DZD *
-                </label>
-                <input
-                  type="number"
-                  value={form.msrpPrice}
-                  onChange={(e) => set('msrpPrice', Number(e.target.value))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-600">
-                  الحد الأدنى للبيع (حماية من حرق الأسعار) — DZD *
-                </label>
-                <input
-                  type="number"
-                  value={form.minSellingPrice}
-                  onChange={(e) => set('minSellingPrice', Number(e.target.value))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
-                />
-              </div>
-
-              {/* معاينة سريعة للأرباح */}
-              {form.basePrice > 0 && form.msrpPrice > 0 && (
-                <div className="rounded-lg border border-green-100 bg-green-50 px-3 py-2.5">
-                  <p className="text-xs text-green-700">
-                    💰 عمولة المسوق:{' '}
-                    <span className="font-bold">
-                      {(form.msrpPrice - form.basePrice).toLocaleString('ar-DZ')} DZD
-                    </span>
-                    {' '}({Math.round(((form.msrpPrice - form.basePrice) / form.msrpPrice) * 100)}%)
-                  </p>
-                </div>
-              )}
             </>
           )}
 
-          {/* ─── الخطوة 3: الميديا والتسويق ─── */}
+          {/* ─── الخطوة 3: الصور ─── */}
           {step === 2 && (
             <>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-600">
-                  أيقونة المنتج (emoji مؤقتاً)
+                  صور المنتج (أقصى {MAX_IMAGES} صور — الأولى هي الصورة الرئيسية)
                 </label>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-2xl">
-                    {form.thumbnail}
-                  </div>
-                  <input
-                    value={form.thumbnail}
-                    onChange={(e) => set('thumbnail', e.target.value)}
-                    placeholder="👟"
-                    className="w-24 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
-                  />
-                  <span className="text-xs text-gray-400">لاحقاً: رفع صورة حقيقية</span>
-                </div>
-              </div>
 
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-600">
-                  رابط مجلد Google Drive (فيديوهات إعلانية)
-                </label>
-                <input
-                  value={form.mediaFolderUrl}
-                  onChange={(e) => set('mediaFolderUrl', e.target.value)}
-                  placeholder="https://drive.google.com/drive/folders/..."
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-xs text-gray-800 outline-none focus:border-gray-400"
-                />
-                <p className="mt-1 text-xs text-gray-400">
-                  سيظهر هذا الرابط للمسوقين ليتمكنوا من تحميل مواد التسويق
+                <div className="grid grid-cols-3 gap-2">
+                  {existingImages.map((url) => (
+                    <div key={url} className="relative aspect-square overflow-hidden rounded-lg border border-gray-200">
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      <button
+                        onClick={() => removeExisting(url)}
+                        className="absolute top-1 left-1 rounded-md bg-black/50 p-1 text-white hover:bg-black/70"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  ))}
+                  {files.map((file, idx) => (
+                    <div key={idx} className="relative aspect-square overflow-hidden rounded-lg border border-gray-200">
+                      <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+                      <button
+                        onClick={() => removeFile(idx)}
+                        className="absolute top-1 left-1 rounded-md bg-black/50 p-1 text-white hover:bg-black/70"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  ))}
+                  {totalImages < MAX_IMAGES && (
+                    <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 text-gray-400 hover:border-gray-400 hover:bg-gray-50">
+                      <Upload size={16} />
+                      <span className="text-xs">رفع</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          handleSelectFiles(e.target.files)
+                          e.target.value = ''
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  {totalImages}/{MAX_IMAGES} صور • أقل من 5MB لكل صورة
                 </p>
               </div>
 
@@ -316,8 +322,8 @@ export function AddProductDrawer({
                   <span className="font-medium text-gray-800">{form.name || '—'}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">SKU</span>
-                  <span className="font-mono text-gray-800">{form.sku || '—'}</span>
+                  <span className="text-gray-400">الفئة</span>
+                  <span className="text-gray-800">{form.category}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">الكمية</span>
@@ -331,6 +337,10 @@ export function AddProductDrawer({
                 </div>
               </div>
             </>
+          )}
+
+          {error && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>
           )}
         </div>
 
@@ -348,7 +358,7 @@ export function AddProductDrawer({
           {step < steps.length - 1 ? (
             <button
               onClick={() => setStep((s) => s + 1)}
-              disabled={step === 0 && (!form.name || !form.sku)}
+              disabled={step === 0 && !form.name}
               className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-xs text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
               التالي
@@ -357,9 +367,14 @@ export function AddProductDrawer({
           ) : (
             <button
               onClick={handleSubmit}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+              disabled={submitting}
+              className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
             >
-              {isEditing ? 'حفظ التعديلات ✓' : 'حفظ المنتج ✓'}
+              {submitting
+                ? 'جارٍ الحفظ...'
+                : isEditing
+                  ? 'حفظ التعديلات ✓'
+                  : 'حفظ المنتج ✓'}
             </button>
           )}
         </div>

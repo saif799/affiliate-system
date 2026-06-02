@@ -1,6 +1,6 @@
 // merchant/orders/-components/OrdersTabs.tsx
 
-import type { TabFilter, OrdersTabCount } from '../orders.types'
+import type { TabFilter, OrdersTabCount } from '../-orders.types'
 
 const tabs: { label: string; value: TabFilter; urgent?: boolean }[] = [
   { label: 'الكل',       value: 'all'       },

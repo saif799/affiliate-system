@@ -414,7 +414,6 @@ export const inviteMerchant = createServerFn({ method: 'POST' })
 
     if (existing) throw new Error('هذا البريد الإلكتروني مستخدم مسبقاً')
 
-    // ── 2. إنشاء المستخدم ────────────────────────────────────
     const userId = crypto.randomUUID()
 
     await db.insert(users).values({

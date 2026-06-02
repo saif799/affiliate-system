@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getSettingsData } from './-server/settings.api'
-import type { SettingsTab } from './settings.types'
+import type { SettingsTab } from './-settings.types'
 
 import SettingsSidebar from './-components/SettingsSidebar'
 import ProfileTab from './-components/ProfileTab'

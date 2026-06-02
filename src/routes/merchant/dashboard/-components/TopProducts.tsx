@@ -1,7 +1,7 @@
 // merchant/dashboard/-components/TopProducts.tsx
 
 import { Trophy } from 'lucide-react'
-import type { TopProduct } from '../dashboard.types'
+import type { TopProduct } from '../-dashboard.types'
 
 interface TopProductsProps {
   products: TopProduct[]

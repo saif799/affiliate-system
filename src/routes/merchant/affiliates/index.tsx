@@ -1,13 +1,13 @@
 // src/routes/merchant/affiliates/index.tsx
 
 import { useState, useMemo } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { getAffiliatesData } from './-server/affiliates.api'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { getAffiliatesData, blockAffiliate, unblockAffiliate } from './-server/affiliates.api'
 import { AffiliateKPIs } from './-components/AffiliateKPIs'
 import { AffiliatesFilters } from './-components/AffiliatesFilters'
 import { AffiliatesTable } from './-components/AffiliatesTable'
 import { AffiliateDrawer } from './-components/AffiliateDrawer'
-import type { Affiliate, FilterStatus, SortKey } from './affiliates.types'
+import type { Affiliate, FilterStatus, SortKey } from './-affiliates.types'
 
 export const Route = createFileRoute('/merchant/affiliates/')({
   loader: () => getAffiliatesData(),
@@ -21,6 +21,7 @@ export const Route = createFileRoute('/merchant/affiliates/')({
 
 function AffiliatesPage() {
   const data = Route.useLoaderData()
+  const router = useRouter()
 
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
@@ -53,22 +54,34 @@ function AffiliatesPage() {
     return list
   }, [affiliates, search, filterStatus, sortKey])
 
-  function handleBlock(id: string) {
-    setAffiliates((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: 'blocked' as const } : a))
-    )
-    setSelectedAffiliate((prev) =>
-      prev?.id === id ? { ...prev, status: 'blocked' as const } : prev
-    )
+  async function handleBlock(id: string) {
+    try {
+      await blockAffiliate({ data: { affiliateProfileId: id } })
+      setAffiliates((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, status: 'blocked' as const } : a))
+      )
+      setSelectedAffiliate((prev) =>
+        prev?.id === id ? { ...prev, status: 'blocked' as const } : prev
+      )
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل حظر المسوق')
+    }
   }
 
-  function handleUnblock(id: string) {
-    setAffiliates((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: 'active' as const } : a))
-    )
-    setSelectedAffiliate((prev) =>
-      prev?.id === id ? { ...prev, status: 'active' as const } : prev
-    )
+  async function handleUnblock(id: string) {
+    try {
+      await unblockAffiliate({ data: { affiliateProfileId: id } })
+      setAffiliates((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, status: 'active' as const } : a))
+      )
+      setSelectedAffiliate((prev) =>
+        prev?.id === id ? { ...prev, status: 'active' as const } : prev
+      )
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل رفع الحظر')
+    }
   }
 
   return (
@@ -79,9 +92,6 @@ function AffiliatesPage() {
           <h1 className="text-xl font-bold text-gray-900">شبكة المسوقين</h1>
           <p className="text-sm text-gray-500">تابع أداء المسوقين المرتبطين بمنتجاتك</p>
         </div>
-        <button className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:bg-gray-700">
-          + دعوة مسوق
-        </button>
       </div>
 
       {/* KPIs */}

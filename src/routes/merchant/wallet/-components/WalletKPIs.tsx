@@ -1,4 +1,4 @@
-import type { WalletStats } from '../wallet.types'
+import type { WalletStats } from '../-wallet.types'
 
 interface WalletKPIsProps {
   stats: WalletStats

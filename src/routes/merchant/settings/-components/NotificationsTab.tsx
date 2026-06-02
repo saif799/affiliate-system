@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type {
   NotificationsData,
   NotificationToggles,
-} from '../settings.types'
+} from '../-settings.types'
 import { updateNotifications } from '../-server/settings.api'
 
 interface Props {
@@ -17,11 +17,6 @@ interface ToggleItem {
 }
 
 const TOGGLES: ToggleItem[] = [
-  {
-    key: 'lowStock',
-    label: 'تنبيهات المخزون المنخفض',
-    description: 'إشعار عند وصول منتج إلى 5 قطع أو أقل',
-  },
   {
     key: 'newOrders',
     label: 'طلبيات جديدة للتغليف',

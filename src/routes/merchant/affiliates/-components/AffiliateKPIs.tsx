@@ -1,6 +1,6 @@
 // src/routes/merchant/affiliates/-components/AffiliateKPIs.tsx
 
-import type { AffiliateStats } from '../affiliates.types'
+import type { AffiliateStats } from '../-affiliates.types'
 
 function formatDZD(amount: number): string {
   return `${amount.toLocaleString('en-US')} DZD`

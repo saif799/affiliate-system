@@ -1,8 +1,14 @@
 // merchant/products/index.tsx
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
-import { getMerchantProducts }      from './-server/products.api'
+import {
+  getMerchantProducts,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  toggleProductActive,
+} from './-server/products.api'
 import { ProductStatsBar }          from './-components/ProductStatsBar'
 import { ProductsTable }            from './-components/ProductsTable'
 import { AddProductDrawer }         from './-components/AddProductDrawer'
@@ -11,7 +17,7 @@ import type {
   Product,
   ProductStatusFilter,
   ProductFormData,
-} from './products.types'
+} from './-products.types'
 
 export const Route = createFileRoute('/merchant/products/')({
   loader: () => getMerchantProducts(),
@@ -19,9 +25,9 @@ export const Route = createFileRoute('/merchant/products/')({
 })
 
 function MerchantProductsPage() {
-  const { products: initialProducts, stats } = Route.useLoaderData()
+  const { products, stats } = Route.useLoaderData()
+  const router = useRouter()
 
-  const [products,       setProducts]       = useState<Product[]>(initialProducts)
   const [search,         setSearch]         = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [statusFilter,   setStatusFilter]   = useState<ProductStatusFilter>('all')
@@ -38,9 +44,7 @@ function MerchantProductsPage() {
   // فلترة مجمّعة
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const matchSearch   = search === '' ||
-        p.name.includes(search) ||
-        p.sku.toLowerCase().includes(search.toLowerCase())
+      const matchSearch   = search === '' || p.name.includes(search)
       const matchCategory = categoryFilter === 'all' || p.category === categoryFilter
       const matchStatus   = statusFilter   === 'all' || p.status   === statusFilter
       return matchSearch && matchCategory && matchStatus
@@ -49,18 +53,13 @@ function MerchantProductsPage() {
 
   // ─── Handlers ───
 
-  const handleToggleActive = (id: string) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              isActive: !p.isActive,
-              status: !p.isActive ? 'active' : 'paused',
-            }
-          : p,
-      ),
-    )
+  const handleToggleActive = async (id: string) => {
+    try {
+      await toggleProductActive({ data: { productId: id } })
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل تغيير حالة التفعيل')
+    }
   }
 
   const handleEdit = (product: Product) => {
@@ -68,9 +67,13 @@ function MerchantProductsPage() {
     setDrawerOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-      setProducts((prev) => prev.filter((p) => p.id !== id))
+  const handleDelete = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return
+    try {
+      await deleteProduct({ data: { productId: id } })
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل حذف المنتج')
     }
   }
 
@@ -79,45 +82,23 @@ function MerchantProductsPage() {
     setEditProduct(null)
   }
 
-  const handleSubmit = (data: ProductFormData) => {
-    if (editProduct) {
-      // تعديل منتج موجود
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editProduct.id
-            ? {
-                ...p,
-                ...data,
-                status: data.stockQuantity > 0
-                  ? (p.isActive ? 'active' : 'paused')
-                  : 'out_of_stock',
-                isActive: data.stockQuantity > 0 ? p.isActive : false,
-              }
-            : p,
-        ),
-      )
-      setEditProduct(null)
-    } else {
-      // إضافة منتج جديد
-      const newProduct: Product = {
-        id:        `PRD-${Date.now()}`,
-        name:               data.name,
-        sku:                data.sku,
-        category:           data.category,
-        thumbnail:          data.thumbnail,
-        stockQuantity:      data.stockQuantity,
-        lowStockThreshold:  data.lowStockThreshold,
-        basePrice:          data.basePrice,
-        msrpPrice:          data.msrpPrice,
-        minSellingPrice:    data.minSellingPrice,
-        status:             data.stockQuantity > 0 ? 'active' : 'out_of_stock',
-        isActive:           data.stockQuantity > 0,
-        mediaFolderUrl:     data.mediaFolderUrl,
-        description:        data.description,
-        createdAt:          new Date().toISOString().slice(0, 10),
-      }
-      setProducts((prev) => [newProduct, ...prev])
+  const handleSubmit = async (data: ProductFormData) => {
+    const payload = {
+      name: data.name,
+      description: data.description,
+      category: data.category,
+      stockQuantity: data.stockQuantity,
+      lowStockThreshold: data.lowStockThreshold,
+      basePrice: data.basePrice,
+      images: data.images,
     }
+    if (editProduct) {
+      await updateProduct({ data: { ...payload, productId: editProduct.id } })
+    } else {
+      await addProduct({ data: payload })
+    }
+    setEditProduct(null)
+    await router.invalidate()
   }
 
   return (
@@ -149,7 +130,7 @@ function MerchantProductsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="بحث بالاسم أو SKU..."
+          placeholder="بحث بالاسم..."
           className="w-64 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 placeholder:text-gray-400 outline-none focus:border-gray-400"
         />
         <select

@@ -1,0 +1,1102 @@
+{
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\Footer.tsx": {
+    "mtime": 1775688112.5249214,
+    "ast_hash": "e171c526d437dfed9d32cbf3282bb0f3",
+    "semantic_hash": "e171c526d437dfed9d32cbf3282bb0f3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\Header.tsx": {
+    "mtime": 1775688112.5249214,
+    "ast_hash": "cf6cd7681a507aaad2bfbd6435b1045c",
+    "semantic_hash": "cf6cd7681a507aaad2bfbd6435b1045c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ThemeToggle.tsx": {
+    "mtime": 1775688112.525922,
+    "ast_hash": "b810d43eaba3d4f4b73a67b44a946a95",
+    "semantic_hash": "b810d43eaba3d4f4b73a67b44a946a95"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\demo.FormComponents.tsx": {
+    "mtime": 1775688112.525922,
+    "ast_hash": "d21b35860bdf84790699d72b3c8c1d3a",
+    "semantic_hash": "d21b35860bdf84790699d72b3c8c1d3a"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ui\\button.tsx": {
+    "mtime": 1775688112.526922,
+    "ast_hash": "9bcedc47a68dc3a259af81659e7e8928",
+    "semantic_hash": "9bcedc47a68dc3a259af81659e7e8928"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ui\\input.tsx": {
+    "mtime": 1775688112.526922,
+    "ast_hash": "4e68d16e1ade442570eda76c888c545f",
+    "semantic_hash": "4e68d16e1ade442570eda76c888c545f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ui\\label.tsx": {
+    "mtime": 1775688112.526922,
+    "ast_hash": "aedcc17d1345d117f891166eaff02593",
+    "semantic_hash": "aedcc17d1345d117f891166eaff02593"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ui\\select.tsx": {
+    "mtime": 1775688112.5279214,
+    "ast_hash": "067d66d23ce10f2bae5f27e5024a8990",
+    "semantic_hash": "067d66d23ce10f2bae5f27e5024a8990"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ui\\slider.tsx": {
+    "mtime": 1775688112.5279214,
+    "ast_hash": "69e99118bfb17527db87d30405b77e66",
+    "semantic_hash": "69e99118bfb17527db87d30405b77e66"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ui\\switch.tsx": {
+    "mtime": 1775688112.5279214,
+    "ast_hash": "168af742a82a0aeb986caee033d2c4a3",
+    "semantic_hash": "168af742a82a0aeb986caee033d2c4a3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\components\\ui\\textarea.tsx": {
+    "mtime": 1775688112.5289211,
+    "ast_hash": "61ead9144ead9589a5db94473af7b433",
+    "semantic_hash": "61ead9144ead9589a5db94473af7b433"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\data\\demo-table-data.ts": {
+    "mtime": 1775688112.5294259,
+    "ast_hash": "4a5e6de20ab076f5c2afe8c188f45846",
+    "semantic_hash": "4a5e6de20ab076f5c2afe8c188f45846"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\hooks\\demo.form-context.ts": {
+    "mtime": 1775688112.5294259,
+    "ast_hash": "3b04094353b381ba19234ffa1f881a6b",
+    "semantic_hash": "3b04094353b381ba19234ffa1f881a6b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\hooks\\demo.form.ts": {
+    "mtime": 1775688112.5294259,
+    "ast_hash": "808bdd4f2f53fe5a71f3776162b6ded2",
+    "semantic_hash": "808bdd4f2f53fe5a71f3776162b6ded2"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\integrations\\tanstack-query\\devtools.tsx": {
+    "mtime": 1775688112.5309324,
+    "ast_hash": "47835c825b71f03416c5881848e3cc5a",
+    "semantic_hash": "47835c825b71f03416c5881848e3cc5a"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\integrations\\tanstack-query\\root-provider.tsx": {
+    "mtime": 1775688112.5309324,
+    "ast_hash": "252291b3da28103fed4869d6a44897ba",
+    "semantic_hash": "252291b3da28103fed4869d6a44897ba"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\lib\\auth-client.ts": {
+    "mtime": 1778055441.0140405,
+    "ast_hash": "28eece624639e75ecc15d8001489c604",
+    "semantic_hash": "28eece624639e75ecc15d8001489c604"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\lib\\session.ts": {
+    "mtime": 1777455901.5873597,
+    "ast_hash": "8b0acc62b0768ffe9f7f2314524a2a0d",
+    "semantic_hash": "8b0acc62b0768ffe9f7f2314524a2a0d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\lib\\utils.ts": {
+    "mtime": 1775688112.531942,
+    "ast_hash": "a7faed57a50e54d37403533f5b3a4f0c",
+    "semantic_hash": "a7faed57a50e54d37403533f5b3a4f0c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routeTree.gen.ts": {
+    "mtime": 1778929029.3974223,
+    "ast_hash": "63fc95970d0d21898c71b9c500b1e03b",
+    "semantic_hash": "63fc95970d0d21898c71b9c500b1e03b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\router.tsx": {
+    "mtime": 1775688112.531942,
+    "ast_hash": "2995a7c53ea8768c22b88f087dff777a",
+    "semantic_hash": "2995a7c53ea8768c22b88f087dff777a"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\CommissionsSection.tsx": {
+    "mtime": 1776760509.998065,
+    "ast_hash": "c10d4e9d45abe998098d77721a8b6b94",
+    "semantic_hash": "c10d4e9d45abe998098d77721a8b6b94"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\CtaSection.tsx": {
+    "mtime": 1776757496.7753196,
+    "ast_hash": "b7910275e0be94db5da826eb5138cc76",
+    "semantic_hash": "b7910275e0be94db5da826eb5138cc76"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\DualValueSection.tsx": {
+    "mtime": 1776760557.5733256,
+    "ast_hash": "1ca51fb9e095ae96d8a238fca777e02d",
+    "semantic_hash": "1ca51fb9e095ae96d8a238fca777e02d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\HeroSection.tsx": {
+    "mtime": 1776760614.4946198,
+    "ast_hash": "9c549117985b24d9d311e3c5d3562332",
+    "semantic_hash": "9c549117985b24d9d311e3c5d3562332"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\LandingFooter.tsx": {
+    "mtime": 1776757496.9092796,
+    "ast_hash": "200c1bff5534c4987aea002089f5caf2",
+    "semantic_hash": "200c1bff5534c4987aea002089f5caf2"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\LandingNav.tsx": {
+    "mtime": 1776760622.3346972,
+    "ast_hash": "68c44c42cc4f2a5ed211eba95fcb53a9",
+    "semantic_hash": "68c44c42cc4f2a5ed211eba95fcb53a9"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\StatsSection.tsx": {
+    "mtime": 1776760631.6596043,
+    "ast_hash": "f8652f138cfc073630206f85ea2fd54d",
+    "semantic_hash": "f8652f138cfc073630206f85ea2fd54d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\StepsSection.tsx": {
+    "mtime": 1776760662.1268396,
+    "ast_hash": "3eaf20471f0ca02804e682749ce60aba",
+    "semantic_hash": "3eaf20471f0ca02804e682749ce60aba"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\TestimonialsSection.tsx": {
+    "mtime": 1776760698.1661487,
+    "ast_hash": "732fb46027a7e0fd1ab509618b97d16c",
+    "semantic_hash": "732fb46027a7e0fd1ab509618b97d16c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\TickerBanner.tsx": {
+    "mtime": 1776757497.0464537,
+    "ast_hash": "864b7204cb35004e04843deb2b21f987",
+    "semantic_hash": "864b7204cb35004e04843deb2b21f987"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\landing\\WilayasSection.tsx": {
+    "mtime": 1776757497.0774028,
+    "ast_hash": "4eb7346392660809457add763fa8dc9a",
+    "semantic_hash": "4eb7346392660809457add763fa8dc9a"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\login\\components\\BrandLogo.tsx": {
+    "mtime": 1777453202.3287303,
+    "ast_hash": "39fb7ae0e31808b0f72b00df297f049d",
+    "semantic_hash": "39fb7ae0e31808b0f72b00df297f049d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\login\\components\\LoginCard.tsx": {
+    "mtime": 1777453472.782071,
+    "ast_hash": "439ed841c981385914d2cf162ab6bdc5",
+    "semantic_hash": "439ed841c981385914d2cf162ab6bdc5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\login\\components\\LoginForm.tsx": {
+    "mtime": 1777453290.8595133,
+    "ast_hash": "913422bca39c64b6dde743b0f85dc669",
+    "semantic_hash": "913422bca39c64b6dde743b0f85dc669"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\login\\components\\PasswordField.tsx": {
+    "mtime": 1777453496.0162568,
+    "ast_hash": "eb0eb08d698ce141f14c164f422d04f4",
+    "semantic_hash": "eb0eb08d698ce141f14c164f422d04f4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\register\\components\\ProgressBar.tsx": {
+    "mtime": 1777452174.3231885,
+    "ast_hash": "cb18d37f11908fe0dd711dd49f8d4ea0",
+    "semantic_hash": "cb18d37f11908fe0dd711dd49f8d4ea0"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\register\\components\\Step1RoleSelect.tsx": {
+    "mtime": 1777452254.0878086,
+    "ast_hash": "e931b15d23b38ad0e1e6058159399f0f",
+    "semantic_hash": "e931b15d23b38ad0e1e6058159399f0f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\register\\components\\Step2UserInfo.tsx": {
+    "mtime": 1777453522.815907,
+    "ast_hash": "7665f0db169f19cb9386407a45b6750f",
+    "semantic_hash": "7665f0db169f19cb9386407a45b6750f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\register\\components\\Step3Password.tsx": {
+    "mtime": 1777453571.5939732,
+    "ast_hash": "d3d8db05bdc224a7cf201e35dd0bf890",
+    "semantic_hash": "d3d8db05bdc224a7cf201e35dd0bf890"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\register\\components\\StepIndicator.tsx": {
+    "mtime": 1777452358.321535,
+    "ast_hash": "445aaac0e53b0bffdd9000dc9db7aad8",
+    "semantic_hash": "445aaac0e53b0bffdd9000dc9db7aad8"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\register\\components\\SuccessScreen.tsx": {
+    "mtime": 1777452075.308781,
+    "ast_hash": "25445443f837a71da95dc1ddd00293ad",
+    "semantic_hash": "25445443f837a71da95dc1ddd00293ad"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\register\\types\\-register.types.ts": {
+    "mtime": 1777452027.091636,
+    "ast_hash": "4692204db7fd8ba11e3ed016a38891a8",
+    "semantic_hash": "4692204db7fd8ba11e3ed016a38891a8"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\shared\\ErrorBox.tsx": {
+    "mtime": 1777453078.8120847,
+    "ast_hash": "65f8b43bb98dbf0c4d06b107ce4a38d7",
+    "semantic_hash": "65f8b43bb98dbf0c4d06b107ce4a38d7"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\shared\\EyeIcon.tsx": {
+    "mtime": 1777453085.8292336,
+    "ast_hash": "b8436c82854e4afc8bbf58cb346d54e3",
+    "semantic_hash": "b8436c82854e4afc8bbf58cb346d54e3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\shared\\Field.tsx": {
+    "mtime": 1777453320.5348287,
+    "ast_hash": "e5b2901df5255cb6c3c4d521d86383b4",
+    "semantic_hash": "e5b2901df5255cb6c3c4d521d86383b4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-components\\shared\\Spinner.tsx": {
+    "mtime": 1777453092.50644,
+    "ast_hash": "1506e55b7b40ce788e025c5324c90a1b",
+    "semantic_hash": "1506e55b7b40ce788e025c5324c90a1b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\-data\\landing.data.ts": {
+    "mtime": 1776759247.6068542,
+    "ast_hash": "2a97fba6f29152f43cc523c4b55189bf",
+    "semantic_hash": "2a97fba6f29152f43cc523c4b55189bf"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\__root.tsx": {
+    "mtime": 1778057254.3524094,
+    "ast_hash": "dbdf6c0c6454e9c53bfb4bd34b2f0d7a",
+    "semantic_hash": "dbdf6c0c6454e9c53bfb4bd34b2f0d7a"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_auth.login.tsx": {
+    "mtime": 1778063115.7782738,
+    "ast_hash": "1b44ca11f4cbc5b3ab1f8f64114d879b",
+    "semantic_hash": "1b44ca11f4cbc5b3ab1f8f64114d879b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_auth.register.tsx": {
+    "mtime": 1777453340.6003199,
+    "ast_hash": "dfd76c7eff3b283f1bb9d31d93d2e9b7",
+    "semantic_hash": "dfd76c7eff3b283f1bb9d31d93d2e9b7"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_auth.tsx": {
+    "mtime": 1777287283.476132,
+    "ast_hash": "d9028413feff5f9c29b9e9122d92fe57",
+    "semantic_hash": "d9028413feff5f9c29b9e9122d92fe57"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard.tsx": {
+    "mtime": 1778927055.5822954,
+    "ast_hash": "d3c401f12babaeefba6fff5d26f06733",
+    "semantic_hash": "d3c401f12babaeefba6fff5d26f06733"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\-shared\\-components\\JoinRequestsSection.tsx": {
+    "mtime": 1778932438.5313227,
+    "ast_hash": "98de0bb534a7e0e6474437e0f920373e",
+    "semantic_hash": "98de0bb534a7e0e6474437e0f920373e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\-shared\\-components\\UserFilters.tsx": {
+    "mtime": 1778932428.9629014,
+    "ast_hash": "1a14e277779848f743205d411d7d718d",
+    "semantic_hash": "1a14e277779848f743205d411d7d718d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\-shared\\-components\\UserStatCard.tsx": {
+    "mtime": 1778932420.1866007,
+    "ast_hash": "1a6d1a78e64ca43958a6814788dc3407",
+    "semantic_hash": "1a6d1a78e64ca43958a6814788dc3407"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\-shared\\-components\\UserTable.tsx": {
+    "mtime": 1778932452.638659,
+    "ast_hash": "547c0fac58f9e57a4b7fecf188e15a3f",
+    "semantic_hash": "547c0fac58f9e57a4b7fecf188e15a3f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\-shared\\-shared.types.ts": {
+    "mtime": 1779014631.5435357,
+    "ast_hash": "e768e12011337bd35f3f7735c6953b9a",
+    "semantic_hash": "e768e12011337bd35f3f7735c6953b9a"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\-affiliates.types.ts": {
+    "mtime": 1779095239.3302598,
+    "ast_hash": "5a1e252eda5038da938e21bcba550a7d",
+    "semantic_hash": "5a1e252eda5038da938e21bcba550a7d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\-components\\AffiliateDrawer.tsx": {
+    "mtime": 1779096257.713906,
+    "ast_hash": "1b0b44cc012b7c95442ab0be27cacad5",
+    "semantic_hash": "1b0b44cc012b7c95442ab0be27cacad5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\-components\\AffiliateWarnModal.tsx": {
+    "mtime": 1779096268.0533144,
+    "ast_hash": "8ecc952f6077622d5fb498646708b29f",
+    "semantic_hash": "8ecc952f6077622d5fb498646708b29f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\-components\\InviteAffiliatesModal.tsx": {
+    "mtime": 1779095931.9926383,
+    "ast_hash": "f51072e1f995536b32c0fef196d39568",
+    "semantic_hash": "f51072e1f995536b32c0fef196d39568"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\-components\\affiliateColumns.tsx": {
+    "mtime": 1779096286.3320243,
+    "ast_hash": "71dcdf545927e7fdca518a886d8ebf00",
+    "semantic_hash": "71dcdf545927e7fdca518a886d8ebf00"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\-server\\affiliates.api.ts": {
+    "mtime": 1779101124.8311129,
+    "ast_hash": "92be32dde717f89ed0cb1bbdd5f826a4",
+    "semantic_hash": "92be32dde717f89ed0cb1bbdd5f826a4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\-server\\affiliates.mock.ts": {
+    "mtime": 1779014614.0709882,
+    "ast_hash": "0e3c7834c515960908f44d0fbf2214e0",
+    "semantic_hash": "0e3c7834c515960908f44d0fbf2214e0"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\affiliates\\index.tsx": {
+    "mtime": 1779096298.945369,
+    "ast_hash": "63649a96c33c824f87c4b94aa3835d55",
+    "semantic_hash": "63649a96c33c824f87c4b94aa3835d55"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-analytics.types.ts": {
+    "mtime": 1778524178.3833296,
+    "ast_hash": "018881e51967ef38ff738c3b7ecea4a4",
+    "semantic_hash": "018881e51967ef38ff738c3b7ecea4a4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\AffiliatesTable.tsx": {
+    "mtime": 1778495427.6717255,
+    "ast_hash": "93f87ac0ad3e41b29596932309918006",
+    "semantic_hash": "93f87ac0ad3e41b29596932309918006"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\Change.tsx": {
+    "mtime": 1778495456.950577,
+    "ast_hash": "407664dc2c087422cc46c5dff2a241f8",
+    "semantic_hash": "407664dc2c087422cc46c5dff2a241f8"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\FunnelCard.tsx": {
+    "mtime": 1778515682.1957839,
+    "ast_hash": "417dbda38fdf424732054317f6152345",
+    "semantic_hash": "417dbda38fdf424732054317f6152345"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\GmvChart.tsx": {
+    "mtime": 1778495397.5270844,
+    "ast_hash": "9f94da725774a89a0fa2d5555cebde1c",
+    "semantic_hash": "9f94da725774a89a0fa2d5555cebde1c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\KpiCard.tsx": {
+    "mtime": 1778495389.8440773,
+    "ast_hash": "a0cde1273d06df0773cf971fbb577293",
+    "semantic_hash": "a0cde1273d06df0773cf971fbb577293"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\MerchantsTable.tsx": {
+    "mtime": 1778495435.1988182,
+    "ast_hash": "188edbf8b3282a6939a84d1a5bda29e0",
+    "semantic_hash": "188edbf8b3282a6939a84d1a5bda29e0"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\TimingCard.tsx": {
+    "mtime": 1778495419.0885556,
+    "ast_hash": "211bde22c73d4ba1fb6ede2e43a9f304",
+    "semantic_hash": "211bde22c73d4ba1fb6ede2e43a9f304"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-components\\WilayaList.tsx": {
+    "mtime": 1778495443.3840728,
+    "ast_hash": "6bf5a164972220047bd7f253adce704b",
+    "semantic_hash": "6bf5a164972220047bd7f253adce704b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\-server\\analytics.api.ts": {
+    "mtime": 1778580478.9653332,
+    "ast_hash": "06ac392b35a4b39c7c6cc6c421fa64d3",
+    "semantic_hash": "06ac392b35a4b39c7c6cc6c421fa64d3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\analytics\\index.tsx": {
+    "mtime": 1778516160.3721683,
+    "ast_hash": "b413522d58342d9a0ba292fd922e30ba",
+    "semantic_hash": "b413522d58342d9a0ba292fd922e30ba"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\-commissions.types.ts": {
+    "mtime": 1778443162.6703415,
+    "ast_hash": "c71af2b14236b6f6f0169023edcbdee1",
+    "semantic_hash": "c71af2b14236b6f6f0169023edcbdee1"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\-components\\CommissionStatsCard.tsx": {
+    "mtime": 1778444132.9293017,
+    "ast_hash": "bb18ae2c7ff31eca513a20a6a1afbd42",
+    "semantic_hash": "bb18ae2c7ff31eca513a20a6a1afbd42"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\-components\\MonthlyPayoutsChart.tsx": {
+    "mtime": 1778444605.112931,
+    "ast_hash": "e7b308870df7bc4b66707b3fb46b9a96",
+    "semantic_hash": "e7b308870df7bc4b66707b3fb46b9a96"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\-components\\PayoutTable.tsx": {
+    "mtime": 1778444152.5253944,
+    "ast_hash": "4fed0d5880e3f85628cf9bab54571142",
+    "semantic_hash": "4fed0d5880e3f85628cf9bab54571142"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\-components\\TransactionHistory.tsx": {
+    "mtime": 1778443727.3550043,
+    "ast_hash": "1df2f494aa1b132df0cfc9d357d6eed4",
+    "semantic_hash": "1df2f494aa1b132df0cfc9d357d6eed4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\-server\\commissions.api.ts": {
+    "mtime": 1778444259.63528,
+    "ast_hash": "5231a5d2240bbeed08fd9fd41eb9e4f5",
+    "semantic_hash": "5231a5d2240bbeed08fd9fd41eb9e4f5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\-server\\commissions.mock.ts": {
+    "mtime": 1775997858.4734151,
+    "ast_hash": "a9c7cd6104ea02b740382302fe9a2609",
+    "semantic_hash": "a9c7cd6104ea02b740382302fe9a2609"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\commissions\\index.tsx": {
+    "mtime": 1778443685.5418587,
+    "ast_hash": "e14cae1abf758348b548bad0e82c41d6",
+    "semantic_hash": "e14cae1abf758348b548bad0e82c41d6"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-components\\OverviewChart.tsx": {
+    "mtime": 1775935070.7365222,
+    "ast_hash": "11d9b3b26b796c3f424c32bce976a649",
+    "semantic_hash": "11d9b3b26b796c3f424c32bce976a649"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-components\\RecentActivity.tsx": {
+    "mtime": 1775941641.5631292,
+    "ast_hash": "c5d0950dcae5460096f6fcbd9c13a3a3",
+    "semantic_hash": "c5d0950dcae5460096f6fcbd9c13a3a3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-components\\StatsCard.tsx": {
+    "mtime": 1775935057.1399536,
+    "ast_hash": "58e2fb092c64192edc86d5fdd7681a4f",
+    "semantic_hash": "58e2fb092c64192edc86d5fdd7681a4f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-components\\TopAffiliates.tsx": {
+    "mtime": 1775935105.4126666,
+    "ast_hash": "c9462b73c71963d74153f63b770d2e21",
+    "semantic_hash": "c9462b73c71963d74153f63b770d2e21"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-components\\WilayaChart.tsx": {
+    "mtime": 1775935125.4855855,
+    "ast_hash": "19b54e201403052cc11a749ff0d87886",
+    "semantic_hash": "19b54e201403052cc11a749ff0d87886"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-dashboard.types.ts": {
+    "mtime": 1775934843.468332,
+    "ast_hash": "56491f0531f5549d6e08420834fe32dc",
+    "semantic_hash": "56491f0531f5549d6e08420834fe32dc"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-server\\dashboard.api.ts": {
+    "mtime": 1778317728.5673568,
+    "ast_hash": "f4c4581d7c48613516b4eeb8ee087cf1",
+    "semantic_hash": "f4c4581d7c48613516b4eeb8ee087cf1"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\-server\\dashboard.mock.ts": {
+    "mtime": 1775981614.3352835,
+    "ast_hash": "7c8fc713d8b842fa04f7b89821a28b68",
+    "semantic_hash": "7c8fc713d8b842fa04f7b89821a28b68"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\dashboard\\index.tsx": {
+    "mtime": 1775988601.286619,
+    "ast_hash": "22c5a48fa05955a3ae7acb6fa9030029",
+    "semantic_hash": "22c5a48fa05955a3ae7acb6fa9030029"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\integration\\-components\\ApiLogsPanel.tsx": {
+    "mtime": 1776072515.5180955,
+    "ast_hash": "fe412d17cbcdf4268198f096b707dd9d",
+    "semantic_hash": "fe412d17cbcdf4268198f096b707dd9d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\integration\\-components\\IntegrationCard.tsx": {
+    "mtime": 1776072533.488987,
+    "ast_hash": "f7bcd5a32e739ef4abde146f374d1417",
+    "semantic_hash": "f7bcd5a32e739ef4abde146f374d1417"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\integration\\-integration.types.ts": {
+    "mtime": 1776072483.670938,
+    "ast_hash": "5e509e532cae8c7497e4fa1f2401294e",
+    "semantic_hash": "5e509e532cae8c7497e4fa1f2401294e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\integration\\index.tsx": {
+    "mtime": 1776072475.075001,
+    "ast_hash": "39718cc5ca4991ac99d0a5be05f4f1ce",
+    "semantic_hash": "39718cc5ca4991ac99d0a5be05f4f1ce"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-components\\InviteMerchantModal.tsx": {
+    "mtime": 1779095770.701963,
+    "ast_hash": "9bf258972ce81058bb3af0c59d804f4f",
+    "semantic_hash": "9bf258972ce81058bb3af0c59d804f4f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-components\\MerchantDrawer.tsx": {
+    "mtime": 1779018689.1209602,
+    "ast_hash": "6607b3636877be88a2061a5ee5ea2d6e",
+    "semantic_hash": "6607b3636877be88a2061a5ee5ea2d6e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-components\\MerchantRowActions.tsx": {
+    "mtime": 1779018681.3363943,
+    "ast_hash": "003e9e969a8e8495377436f7c28b6c20",
+    "semantic_hash": "003e9e969a8e8495377436f7c28b6c20"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-components\\WarnModal.tsx": {
+    "mtime": 1779018696.7741592,
+    "ast_hash": "cab4c3c71b17e02f901e754202923461",
+    "semantic_hash": "cab4c3c71b17e02f901e754202923461"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-components\\merchantColumns.tsx": {
+    "mtime": 1779017729.8252265,
+    "ast_hash": "a18ba3ef3c177ebead47a1b0f6c7d54d",
+    "semantic_hash": "a18ba3ef3c177ebead47a1b0f6c7d54d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-merchants.types.ts": {
+    "mtime": 1779014996.2576149,
+    "ast_hash": "1e51dcbd768ecfcf039099d8c115d79a",
+    "semantic_hash": "1e51dcbd768ecfcf039099d8c115d79a"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-server\\merchants.api.ts": {
+    "mtime": 1779103378.3965566,
+    "ast_hash": "6b3461d21476578a9350313b2bca5d86",
+    "semantic_hash": "6b3461d21476578a9350313b2bca5d86"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-server\\merchants.mock.ts": {
+    "mtime": 1779014511.2763357,
+    "ast_hash": "b64ba24ea0c1884f9f581fcd891c97fb",
+    "semantic_hash": "b64ba24ea0c1884f9f581fcd891c97fb"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\-utils\\format.ts": {
+    "mtime": 1779017366.7035227,
+    "ast_hash": "4ecb7b85c92d1cd498e07b0be14b47a4",
+    "semantic_hash": "4ecb7b85c92d1cd498e07b0be14b47a4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\merchants\\index.tsx": {
+    "mtime": 1779095776.9268844,
+    "ast_hash": "b060923a72d065042301a3fbd98a8cec",
+    "semantic_hash": "b060923a72d065042301a3fbd98a8cec"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\products\\-campaigns.constants.ts": {
+    "mtime": 1778407875.7459428,
+    "ast_hash": "6119a2065098841c77f36158c736c034",
+    "semantic_hash": "6119a2065098841c77f36158c736c034"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\products\\-campaigns.types.ts": {
+    "mtime": 1778407367.0243075,
+    "ast_hash": "ef18da15bdca1341a96812610995258f",
+    "semantic_hash": "ef18da15bdca1341a96812610995258f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\products\\-components\\ProductStatsCard.tsx": {
+    "mtime": 1778407439.50284,
+    "ast_hash": "13bc3c4233a9bdea80f8e7ba43915516",
+    "semantic_hash": "13bc3c4233a9bdea80f8e7ba43915516"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\products\\-components\\ProductsTable.tsx": {
+    "mtime": 1778404258.9038765,
+    "ast_hash": "c8e4534b68b275ba7251d923de8a955b",
+    "semantic_hash": "c8e4534b68b275ba7251d923de8a955b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\products\\-server\\campaigns.api.ts": {
+    "mtime": 1778421729.3311095,
+    "ast_hash": "433b34b64219d29d32fed3c184574cbe",
+    "semantic_hash": "433b34b64219d29d32fed3c184574cbe"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\products\\-server\\campaigns.mock.ts": {
+    "mtime": 1778404142.3279643,
+    "ast_hash": "8c5581a6dc18b7c9180efa8284f642a2",
+    "semantic_hash": "8c5581a6dc18b7c9180efa8284f642a2"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\products\\index.tsx": {
+    "mtime": 1778408326.4537914,
+    "ast_hash": "70898ff78cee2dca4020ee8adf098f11",
+    "semantic_hash": "70898ff78cee2dca4020ee8adf098f11"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\-components\\FinancialTab.tsx": {
+    "mtime": 1778697194.0083516,
+    "ast_hash": "c4f1c9d1991abf49c63ad30e599ac61d",
+    "semantic_hash": "c4f1c9d1991abf49c63ad30e599ac61d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\-components\\GeneralTab.tsx": {
+    "mtime": 1778696772.6102407,
+    "ast_hash": "b4b493f1e4519589d88ba3502b6ad819",
+    "semantic_hash": "b4b493f1e4519589d88ba3502b6ad819"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\-components\\SecurityTab.tsx": {
+    "mtime": 1778697201.531483,
+    "ast_hash": "2f4b08b53b05d49101806a82e05c17c5",
+    "semantic_hash": "2f4b08b53b05d49101806a82e05c17c5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\-components\\TeamTab.tsx": {
+    "mtime": 1778750355.8568537,
+    "ast_hash": "59e2a3baf7a02e2b6d1b3b09a52d4020",
+    "semantic_hash": "59e2a3baf7a02e2b6d1b3b09a52d4020"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\-server\\settings.api.ts": {
+    "mtime": 1779094556.982696,
+    "ast_hash": "b51e3262c613ff2ec0fe2585dbbfb5dc",
+    "semantic_hash": "b51e3262c613ff2ec0fe2585dbbfb5dc"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\-server\\settings.mock.ts": {
+    "mtime": 1776074305.2890189,
+    "ast_hash": "94c535ec337333ae7ae81c8407f89383",
+    "semantic_hash": "94c535ec337333ae7ae81c8407f89383"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\-settings.types.ts": {
+    "mtime": 1778696497.1879497,
+    "ast_hash": "8de3085d28584dc0436a0aa0fe47d872",
+    "semantic_hash": "8de3085d28584dc0436a0aa0fe47d872"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\_dashboard\\settings\\index.tsx": {
+    "mtime": 1778695439.068463,
+    "ast_hash": "89f832a77d50b7c4d5cc23e1c2edc4cc",
+    "semantic_hash": "89f832a77d50b7c4d5cc23e1c2edc4cc"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\about.tsx": {
+    "mtime": 1775688112.5329387,
+    "ast_hash": "3514abb2abd27f2951d6e086f0f403eb",
+    "semantic_hash": "3514abb2abd27f2951d6e086f0f403eb"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate.tsx": {
+    "mtime": 1778063284.9975526,
+    "ast_hash": "bbd701c9ea502390a3e621e368cd9135",
+    "semantic_hash": "bbd701c9ea502390a3e621e368cd9135"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\dashboard\\-components\\RecentActivity.tsx": {
+    "mtime": 1776683755.9342134,
+    "ast_hash": "2247558705859cb55473f8bf5442acde",
+    "semantic_hash": "2247558705859cb55473f8bf5442acde"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\dashboard\\-components\\StatsCards.tsx": {
+    "mtime": 1776683737.922131,
+    "ast_hash": "9bcd51e0dc66e7af9d7a2f0fcb9454ee",
+    "semantic_hash": "9bcd51e0dc66e7af9d7a2f0fcb9454ee"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\dashboard\\-components\\TopMerchants.tsx": {
+    "mtime": 1776683746.2957613,
+    "ast_hash": "b4250a7719f08e74faebc74d346d63de",
+    "semantic_hash": "b4250a7719f08e74faebc74d346d63de"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\dashboard\\-dashboard.types.ts": {
+    "mtime": 1776683695.9109335,
+    "ast_hash": "fc217b9026452e131fe88bae4155b7c3",
+    "semantic_hash": "fc217b9026452e131fe88bae4155b7c3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\dashboard\\-server\\dashboard.api.ts": {
+    "mtime": 1776683734.6728847,
+    "ast_hash": "f4862dd8d838285a64abecfbae7a39e5",
+    "semantic_hash": "f4862dd8d838285a64abecfbae7a39e5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\dashboard\\-server\\dashboard.mock.ts": {
+    "mtime": 1776683705.4478443,
+    "ast_hash": "734b5d9030fa1c8bbacf6138381c4627",
+    "semantic_hash": "734b5d9030fa1c8bbacf6138381c4627"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\dashboard\\index.tsx": {
+    "mtime": 1776683765.6419988,
+    "ast_hash": "d0e0b51d0976fb8ea07756c25ee92256",
+    "semantic_hash": "d0e0b51d0976fb8ea07756c25ee92256"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\marketplace\\-components\\MarketplaceFiltersBar.tsx": {
+    "mtime": 1776688350.9100566,
+    "ast_hash": "655d1d8a58f44a76bdf1b5efcf3265c0",
+    "semantic_hash": "655d1d8a58f44a76bdf1b5efcf3265c0"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\marketplace\\-components\\ProductCard.tsx": {
+    "mtime": 1776688270.744669,
+    "ast_hash": "67bf800768e421b85dfe47e550bcb527",
+    "semantic_hash": "67bf800768e421b85dfe47e550bcb527"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\marketplace\\-components\\QuickViewModal.tsx": {
+    "mtime": 1776689040.1930504,
+    "ast_hash": "5b973f04238bdc2110b475006aed76c1",
+    "semantic_hash": "5b973f04238bdc2110b475006aed76c1"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\marketplace\\-marketplace.types.ts": {
+    "mtime": 1776688236.0988889,
+    "ast_hash": "73a2900af34bec7ba216f4ceec1c08a8",
+    "semantic_hash": "73a2900af34bec7ba216f4ceec1c08a8"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\marketplace\\-server\\marketplace.api.ts": {
+    "mtime": 1776688259.460815,
+    "ast_hash": "1ac271de5fd32f0dfa0f784940e9d1d3",
+    "semantic_hash": "1ac271de5fd32f0dfa0f784940e9d1d3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\marketplace\\-server\\marketplace.mock.ts": {
+    "mtime": 1776688246.3046708,
+    "ast_hash": "b116c478542a8205d32655f1604ae557",
+    "semantic_hash": "b116c478542a8205d32655f1604ae557"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\marketplace\\index.tsx": {
+    "mtime": 1776688380.1782248,
+    "ast_hash": "966caceb8695523178611a02d7c9499f",
+    "semantic_hash": "966caceb8695523178611a02d7c9499f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\-components\\AddLeadModal.tsx": {
+    "mtime": 1776692936.772732,
+    "ast_hash": "3723f9f54d2c8f81f7bc706a9cf70706",
+    "semantic_hash": "3723f9f54d2c8f81f7bc706a9cf70706"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\-components\\OrdersFilters.tsx": {
+    "mtime": 1776690089.523666,
+    "ast_hash": "1278fe8f9db8fae10c0823deaf166d21",
+    "semantic_hash": "1278fe8f9db8fae10c0823deaf166d21"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\-components\\OrdersStats.tsx": {
+    "mtime": 1776690352.2995675,
+    "ast_hash": "5fd832b056d3bb9c9761def38cc8402d",
+    "semantic_hash": "5fd832b056d3bb9c9761def38cc8402d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\-components\\OrdersTable.tsx": {
+    "mtime": 1776690106.1901681,
+    "ast_hash": "3b9989ff2eddad2c490ba52b490896a6",
+    "semantic_hash": "3b9989ff2eddad2c490ba52b490896a6"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\-orders.types.ts": {
+    "mtime": 1776690168.5900774,
+    "ast_hash": "6a704820a8d179b93184ebbea58c9a6e",
+    "semantic_hash": "6a704820a8d179b93184ebbea58c9a6e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\-server\\orders.api.ts": {
+    "mtime": 1776689996.5564604,
+    "ast_hash": "a30711777a64ee2a98a2f9a9911faf32",
+    "semantic_hash": "a30711777a64ee2a98a2f9a9911faf32"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\-server\\orders.mock.ts": {
+    "mtime": 1776689850.6449316,
+    "ast_hash": "05f7b8baf2c6292be2dd54765aa395b8",
+    "semantic_hash": "05f7b8baf2c6292be2dd54765aa395b8"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\orders\\index.tsx": {
+    "mtime": 1776690134.0521848,
+    "ast_hash": "785047152a074660172f113d0389344d",
+    "semantic_hash": "785047152a074660172f113d0389344d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\-components\\NotificationsTab.tsx": {
+    "mtime": 1776761388.7201388,
+    "ast_hash": "6ac3841541777c07042f364eb4ce060f",
+    "semantic_hash": "6ac3841541777c07042f364eb4ce060f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\-components\\PayoutTab.tsx": {
+    "mtime": 1776761379.6172245,
+    "ast_hash": "d678decf6e8a7250ae17d7a80ea20e62",
+    "semantic_hash": "d678decf6e8a7250ae17d7a80ea20e62"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\-components\\ProfileTab.tsx": {
+    "mtime": 1776761372.4230971,
+    "ast_hash": "44df919082416d7f7af4f41ae7908b7f",
+    "semantic_hash": "44df919082416d7f7af4f41ae7908b7f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\-components\\SecurityTab.tsx": {
+    "mtime": 1776761397.0456586,
+    "ast_hash": "84eb7efab6497dab7cb9413e3d3445a3",
+    "semantic_hash": "84eb7efab6497dab7cb9413e3d3445a3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\-server\\settings.api.ts": {
+    "mtime": 1776761363.6908689,
+    "ast_hash": "93e2e107537cdae24c6ac7791c440bd3",
+    "semantic_hash": "93e2e107537cdae24c6ac7791c440bd3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\-server\\settings.mock.ts": {
+    "mtime": 1776761321.8991978,
+    "ast_hash": "9c37d1e00d1a7116e3301bfac60e3180",
+    "semantic_hash": "9c37d1e00d1a7116e3301bfac60e3180"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\-settings.types.ts": {
+    "mtime": 1776761312.6443713,
+    "ast_hash": "2facf7e29b1740244ffee8ce60f8e486",
+    "semantic_hash": "2facf7e29b1740244ffee8ce60f8e486"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\settings\\index.tsx": {
+    "mtime": 1776761437.555978,
+    "ast_hash": "bf06a5d6dc3bf7b1b83c73eaf5036a84",
+    "semantic_hash": "bf06a5d6dc3bf7b1b83c73eaf5036a84"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\-components\\BalanceCards.tsx": {
+    "mtime": 1776698848.8756764,
+    "ast_hash": "6af111b550cf2af47ee72efdb83532c5",
+    "semantic_hash": "6af111b550cf2af47ee72efdb83532c5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\-components\\TransactionsLedger.tsx": {
+    "mtime": 1776698867.278693,
+    "ast_hash": "3b5094d6b9837e11ccf1a8127c91ba8e",
+    "semantic_hash": "3b5094d6b9837e11ccf1a8127c91ba8e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\-components\\WithdrawCTA.tsx": {
+    "mtime": 1776698858.4347405,
+    "ast_hash": "e242c4d182d9504a66c87fc10692fc28",
+    "semantic_hash": "e242c4d182d9504a66c87fc10692fc28"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\-components\\WithdrawModal.tsx": {
+    "mtime": 1776698877.6198938,
+    "ast_hash": "d8a756bb9350e6d6076d6cf44604cdc4",
+    "semantic_hash": "d8a756bb9350e6d6076d6cf44604cdc4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\-server\\wallet.api.ts": {
+    "mtime": 1776699244.8101757,
+    "ast_hash": "6c6783ef7e7ae983dce011a04db091d7",
+    "semantic_hash": "6c6783ef7e7ae983dce011a04db091d7"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\-server\\wallet.mock.ts": {
+    "mtime": 1776698639.4504614,
+    "ast_hash": "5ff337e2ff3fdea1cb3dc28ba4e2233b",
+    "semantic_hash": "5ff337e2ff3fdea1cb3dc28ba4e2233b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\-wallet.types.ts": {
+    "mtime": 1776698630.3014712,
+    "ast_hash": "c67e605c2a7b8dd65fb106cefe4ded2f",
+    "semantic_hash": "c67e605c2a7b8dd65fb106cefe4ded2f"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\affiliate\\wallet\\index.tsx": {
+    "mtime": 1776699277.9085457,
+    "ast_hash": "abb273a27364a1d20fdd2b83de6f5efd",
+    "semantic_hash": "abb273a27364a1d20fdd2b83de6f5efd"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\api\\auth\\$.ts": {
+    "mtime": 1777966679.9739306,
+    "ast_hash": "04afb1d1f73a345a4ed588761598c121",
+    "semantic_hash": "04afb1d1f73a345a4ed588761598c121"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\index.tsx": {
+    "mtime": 1776758544.5189815,
+    "ast_hash": "d6d01e1b6be4935973ecb6dc7c3b65b5",
+    "semantic_hash": "d6d01e1b6be4935973ecb6dc7c3b65b5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant.tsx": {
+    "mtime": 1778063297.728467,
+    "ast_hash": "5e4305b33b1e463fa498baac1c617db6",
+    "semantic_hash": "5e4305b33b1e463fa498baac1c617db6"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\-affiliates.types.ts": {
+    "mtime": 1776607404.474846,
+    "ast_hash": "3cbe7e96dcdb33b54e718e93af0d79d5",
+    "semantic_hash": "3cbe7e96dcdb33b54e718e93af0d79d5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\-components\\AffiliateDrawer.tsx": {
+    "mtime": 1776607790.0450356,
+    "ast_hash": "bb0d83428881e374460b8b9362abee52",
+    "semantic_hash": "bb0d83428881e374460b8b9362abee52"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\-components\\AffiliateKPIs.tsx": {
+    "mtime": 1776607783.348036,
+    "ast_hash": "6f8406bed2c182600e03aabc5948e342",
+    "semantic_hash": "6f8406bed2c182600e03aabc5948e342"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\-components\\AffiliatesFilters.tsx": {
+    "mtime": 1776608042.4989343,
+    "ast_hash": "855107b868562ad8bcb6ca7b6f5aa184",
+    "semantic_hash": "855107b868562ad8bcb6ca7b6f5aa184"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\-components\\AffiliatesTable.tsx": {
+    "mtime": 1776608618.30262,
+    "ast_hash": "3052dbaa2c9d0f4a4458555203a172a4",
+    "semantic_hash": "3052dbaa2c9d0f4a4458555203a172a4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\-server\\affiliates.api.ts": {
+    "mtime": 1776607466.6649327,
+    "ast_hash": "b8f636c9ca00282f1e843c55191a978b",
+    "semantic_hash": "b8f636c9ca00282f1e843c55191a978b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\-server\\affiliates.mock.ts": {
+    "mtime": 1776607426.4053066,
+    "ast_hash": "66e822f8130337008113f32bd764c855",
+    "semantic_hash": "66e822f8130337008113f32bd764c855"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\affiliates\\index.tsx": {
+    "mtime": 1776607532.124771,
+    "ast_hash": "e9efbb5899f35758bdaac239f69a3710",
+    "semantic_hash": "e9efbb5899f35758bdaac239f69a3710"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-components\\LowStockAlerts.tsx": {
+    "mtime": 1776590266.0367804,
+    "ast_hash": "aca9128158626672043b33b28f8f33b4",
+    "semantic_hash": "aca9128158626672043b33b28f8f33b4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-components\\OverviewChart.tsx": {
+    "mtime": 1776590240.499388,
+    "ast_hash": "1ae2726ffc62b65e100537ea191853e5",
+    "semantic_hash": "1ae2726ffc62b65e100537ea191853e5"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-components\\RecentOrders.tsx": {
+    "mtime": 1776590253.474227,
+    "ast_hash": "334da8d906818b6ccbf4f708af465e9d",
+    "semantic_hash": "334da8d906818b6ccbf4f708af465e9d"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-components\\StatsCard.tsx": {
+    "mtime": 1776591173.5651565,
+    "ast_hash": "38be6330f50e61e3c14cc546a36c11e3",
+    "semantic_hash": "38be6330f50e61e3c14cc546a36c11e3"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-components\\TopProducts.tsx": {
+    "mtime": 1776590819.2389514,
+    "ast_hash": "914b7a96a754bb0415c9a94cf8dedab2",
+    "semantic_hash": "914b7a96a754bb0415c9a94cf8dedab2"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-dashboard.types.ts": {
+    "mtime": 1776590788.3354235,
+    "ast_hash": "85fa6a25ef43524235d3e07d41f2bb08",
+    "semantic_hash": "85fa6a25ef43524235d3e07d41f2bb08"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-server\\dashboard.api.ts": {
+    "mtime": 1776590299.860497,
+    "ast_hash": "b5e6bba7190d633eace7ebcc239e2c9c",
+    "semantic_hash": "b5e6bba7190d633eace7ebcc239e2c9c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\-server\\dashboard.mock.ts": {
+    "mtime": 1776590804.069808,
+    "ast_hash": "760eb89eee4d1233a1b9a3bf78b02836",
+    "semantic_hash": "760eb89eee4d1233a1b9a3bf78b02836"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\dashboard\\index.tsx": {
+    "mtime": 1776591231.6090214,
+    "ast_hash": "bac213dfda6b2ab38a2c3e3d1ae2a6b7",
+    "semantic_hash": "bac213dfda6b2ab38a2c3e3d1ae2a6b7"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\-components\\BulkActionBar.tsx": {
+    "mtime": 1776592294.11615,
+    "ast_hash": "71d43471a91cc34a1abfe9b8ca29a371",
+    "semantic_hash": "71d43471a91cc34a1abfe9b8ca29a371"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\-components\\OrdersPagination.tsx": {
+    "mtime": 1776592309.340074,
+    "ast_hash": "711dba597788b36a2e8a1473d5313953",
+    "semantic_hash": "711dba597788b36a2e8a1473d5313953"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\-components\\OrdersTable.tsx": {
+    "mtime": 1776592277.5376675,
+    "ast_hash": "4dc93c0522498426a157836aaf97573e",
+    "semantic_hash": "4dc93c0522498426a157836aaf97573e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\-components\\OrdersTabs.tsx": {
+    "mtime": 1776592000.766033,
+    "ast_hash": "9c9c9fd5a7ec907cd531a83497f95435",
+    "semantic_hash": "9c9c9fd5a7ec907cd531a83497f95435"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\-orders.types.ts": {
+    "mtime": 1776592254.8961308,
+    "ast_hash": "3894989337504560dd772bd780f9f95c",
+    "semantic_hash": "3894989337504560dd772bd780f9f95c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\-server\\orders.api.ts": {
+    "mtime": 1776592034.8237536,
+    "ast_hash": "655885bbcf1a38ea22de950954d8ceab",
+    "semantic_hash": "655885bbcf1a38ea22de950954d8ceab"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\-server\\orders.mock.ts": {
+    "mtime": 1776591911.92504,
+    "ast_hash": "01f4cbc467988b2211bd613690d01a40",
+    "semantic_hash": "01f4cbc467988b2211bd613690d01a40"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\orders\\index.tsx": {
+    "mtime": 1776619782.495698,
+    "ast_hash": "0e38667b4380eb4e60f2ff9319699bc8",
+    "semantic_hash": "0e38667b4380eb4e60f2ff9319699bc8"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\-components\\AddProductDrawer.tsx": {
+    "mtime": 1776605993.1036248,
+    "ast_hash": "764fdbbc36b0659e554a2303c57d248e",
+    "semantic_hash": "764fdbbc36b0659e554a2303c57d248e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\-components\\AffiliatePreviewModal.tsx": {
+    "mtime": 1776604546.055759,
+    "ast_hash": "8d73c33f1fcb28a96559717d5ce4d093",
+    "semantic_hash": "8d73c33f1fcb28a96559717d5ce4d093"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\-components\\ProductStatsBar.tsx": {
+    "mtime": 1776603969.7521834,
+    "ast_hash": "2b134ea418d059ae7e0f558ac0273867",
+    "semantic_hash": "2b134ea418d059ae7e0f558ac0273867"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\-components\\ProductsTable.tsx": {
+    "mtime": 1776605947.0677302,
+    "ast_hash": "2789bbb3f6dd2550c9d5cd957b88f9ee",
+    "semantic_hash": "2789bbb3f6dd2550c9d5cd957b88f9ee"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\-products.types.ts": {
+    "mtime": 1776603909.2539544,
+    "ast_hash": "d59aae94d5e0a2143c072e279536f388",
+    "semantic_hash": "d59aae94d5e0a2143c072e279536f388"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\-server\\products.api.ts": {
+    "mtime": 1776604093.7942376,
+    "ast_hash": "f5fac7e9f573bb12b6836543bb5e5a57",
+    "semantic_hash": "f5fac7e9f573bb12b6836543bb5e5a57"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\-server\\products.mock.ts": {
+    "mtime": 1776603921.619866,
+    "ast_hash": "0e03f7fee203db4af8eb3d320a05e9e6",
+    "semantic_hash": "0e03f7fee203db4af8eb3d320a05e9e6"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\products\\index.tsx": {
+    "mtime": 1776619750.3429136,
+    "ast_hash": "c1285fa39a777d55d98f16b0f6c23c1c",
+    "semantic_hash": "c1285fa39a777d55d98f16b0f6c23c1c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-components\\NotificationsTab.tsx": {
+    "mtime": 1776638167.2071245,
+    "ast_hash": "e12431222cff8910709632e818ed6088",
+    "semantic_hash": "e12431222cff8910709632e818ed6088"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-components\\PayoutTab.tsx": {
+    "mtime": 1776678402.573926,
+    "ast_hash": "6bb29ee89e4b33d3739b7dcec2bd2792",
+    "semantic_hash": "6bb29ee89e4b33d3739b7dcec2bd2792"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-components\\ProfileTab.tsx": {
+    "mtime": 1776638129.0661693,
+    "ast_hash": "00817d54f5286ea6f81629073199b638",
+    "semantic_hash": "00817d54f5286ea6f81629073199b638"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-components\\SecurityTab.tsx": {
+    "mtime": 1776638158.3373604,
+    "ast_hash": "8ea0616a0298057a6087476acf5c9f17",
+    "semantic_hash": "8ea0616a0298057a6087476acf5c9f17"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-components\\SettingsSidebar.tsx": {
+    "mtime": 1776638179.107433,
+    "ast_hash": "773b4287fc539b41ef2d7fa2f8cee8f0",
+    "semantic_hash": "773b4287fc539b41ef2d7fa2f8cee8f0"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-server\\settings.api.ts": {
+    "mtime": 1776638328.5772731,
+    "ast_hash": "55ac54ddab314410b3750c695595fb02",
+    "semantic_hash": "55ac54ddab314410b3750c695595fb02"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-server\\settings.mock.ts": {
+    "mtime": 1776638102.9079766,
+    "ast_hash": "2f92dabac1048cc293d1bc43e92e9e8c",
+    "semantic_hash": "2f92dabac1048cc293d1bc43e92e9e8c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\-settings.types.ts": {
+    "mtime": 1776638004.1204941,
+    "ast_hash": "35accd1fe1c0df347b5e893eadefdba4",
+    "semantic_hash": "35accd1fe1c0df347b5e893eadefdba4"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\settings\\index.tsx": {
+    "mtime": 1776638353.2283685,
+    "ast_hash": "7f17158b55943446d56e6ad6d2afddf1",
+    "semantic_hash": "7f17158b55943446d56e6ad6d2afddf1"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\-components\\PayoutHistoryTable.tsx": {
+    "mtime": 1776616258.7556558,
+    "ast_hash": "9ab7468e9b1cd2779a53599630b514a1",
+    "semantic_hash": "9ab7468e9b1cd2779a53599630b514a1"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\-components\\PayoutModal.tsx": {
+    "mtime": 1776619708.8262453,
+    "ast_hash": "093e1b87bcf1cb6472be9d3304ae1631",
+    "semantic_hash": "093e1b87bcf1cb6472be9d3304ae1631"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\-components\\TransactionsTable.tsx": {
+    "mtime": 1776616247.762519,
+    "ast_hash": "ee1210610ef157874831246083a4f54c",
+    "semantic_hash": "ee1210610ef157874831246083a4f54c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\-components\\WalletKPIs.tsx": {
+    "mtime": 1776618306.2453535,
+    "ast_hash": "7c1d9196edaf720c2b98d765089973f7",
+    "semantic_hash": "7c1d9196edaf720c2b98d765089973f7"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\-server\\wallet.api.ts": {
+    "mtime": 1776616270.2659,
+    "ast_hash": "b30e7aee7a176b852e2e322fca32657e",
+    "semantic_hash": "b30e7aee7a176b852e2e322fca32657e"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\-server\\wallet.mock.ts": {
+    "mtime": 1776616218.3288486,
+    "ast_hash": "259bc37d420d670f1824dfe3bf6f9952",
+    "semantic_hash": "259bc37d420d670f1824dfe3bf6f9952"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\-wallet.types.ts": {
+    "mtime": 1776616107.0013244,
+    "ast_hash": "707c119f6c9e841af77995744695cdef",
+    "semantic_hash": "707c119f6c9e841af77995744695cdef"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\merchant\\wallet\\index.tsx": {
+    "mtime": 1776619802.5081735,
+    "ast_hash": "3c2e001fe70119d11acf26cea45ed0b6",
+    "semantic_hash": "3c2e001fe70119d11acf26cea45ed0b6"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\routes\\pending-approval.tsx": {
+    "mtime": 1778057767.0357268,
+    "ast_hash": "f8c6db022db188b7493b14ceb8ec2899",
+    "semantic_hash": "f8c6db022db188b7493b14ceb8ec2899"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\server\\auth.ts": {
+    "mtime": 1779097303.222577,
+    "ast_hash": "1d8a28ed721ae4b7b61acc87133b904c",
+    "semantic_hash": "1d8a28ed721ae4b7b61acc87133b904c"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\server\\db\\index.ts": {
+    "mtime": 1777969166.464647,
+    "ast_hash": "286d9ae7fe34ff1ecff131918932ed5b",
+    "semantic_hash": "286d9ae7fe34ff1ecff131918932ed5b"
+  },
+  "C:\\Users\\wakil\\Desktop\\wakilo\\final-project-master-2\\affiliate-system\\src\\server\\db\\schema.ts": {
+    "mtime": 1779101283.4375992,
+    "ast_hash": "079230fee902a6708a3eb2887bd06378",
+    "semantic_hash": "079230fee902a6708a3eb2887bd06378"
+  }
+}

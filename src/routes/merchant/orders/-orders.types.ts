@@ -7,6 +7,17 @@ export type OrderStatus =
   | 'returned'
   | 'cancelled'
 
+// Raw DB order status (orders.status enum)
+export type DbOrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'shipped'
+  | 'at_wilaya'
+  | 'delivered'
+  | 'returned'
+  | 'cancelled'
+  | 'disputed'
+
 export type TabFilter = 'all' | 'pending' | 'shipped' | 'delivered' | 'returned'
 
 export interface Order {
@@ -23,7 +34,8 @@ export interface Order {
   wilaya: string
   totalPrice: number // سعر البيع النهائي
   merchantEarnings: number // حصة التاجر
-  status: OrderStatus
+  status: OrderStatus // UI-collapsed status (4 visible states)
+  dbStatus: DbOrderStatus // real DB status — drives valid transitions
   trackingNumber?: string
 }
 

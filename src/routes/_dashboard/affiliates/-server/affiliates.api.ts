@@ -461,43 +461,42 @@ export const inviteAffiliate = createServerFn({ method: 'POST' })
     if (existing) throw new Error('هذا البريد الإلكتروني مستخدم مسبقاً')
 
     const userId = crypto.randomUUID()
+    const slug = data.name.replace(/\s+/g, '').toLowerCase().slice(0, 6)
+    const referralCode = `${slug}-${Math.random().toString(36).slice(2, 6)}`
 
+    // 1. إنشاء المستخدم والملف معاً قبل إرسال الإيميل
     await db.insert(users).values({
       id: userId,
       name: data.name,
-      email: email,
+      email,
       phone: data.phone,
       emailVerified: true,
       role: 'affiliate',
       status: 'active',
     })
 
-    const slug = data.name.replace(/\s+/g, '').toLowerCase().slice(0, 6)
-    const referralCode = `${slug}-${Math.random().toString(36).slice(2, 6)}`
+    await db.insert(affiliateProfiles).values({
+      user_id: userId,
+      referral_code: referralCode,
+    })
 
-    // إرسال magic link
+    // 2. إرسال magic link — وعند الفشل نظّف كل شيء بالترتيب الصحيح
     try {
       setInviteType(email, 'affiliate')
       await auth.api.signInMagicLink({
         body: { email, callbackURL: '/set-password' },
         headers: new Headers(),
       })
- 
     } catch (err) {
-      await Promise.all([
-        db
-          .delete(affiliateProfiles)
-          .where(eq(affiliateProfiles.user_id, userId)),
-        db.delete(users).where(eq(users.id, userId)),
-      ])
-      console.error('❌ inviteAffiliate — signInMagicLink error:', err)
+      // الحذف بالترتيب: profile أولاً (FK)، ثم user
+      await db
+        .delete(affiliateProfiles)
+        .where(eq(affiliateProfiles.user_id, userId))
+      await db.delete(users).where(eq(users.id, userId))
+
+      console.error('inviteAffiliate — signInMagicLink error:', err)
       throw new Error('فشل إرسال البريد الإلكتروني، حاول مرة أخرى')
     }
-
-    await db.insert(affiliateProfiles).values({
-      user_id: userId,
-      referral_code: referralCode,
-    })
 
     return { success: true, userId, referralCode }
   })

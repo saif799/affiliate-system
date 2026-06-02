@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import type { ActiveSession, SessionDevice } from '../settings.types'
+import { useRouter } from '@tanstack/react-router'
+import { LogOut } from 'lucide-react'
+import { signOut } from '#/lib/auth-client'
+import type { ActiveSession, SessionDevice } from '../-settings.types'
 import {
   updatePassword,
   terminateSession,
@@ -298,11 +301,47 @@ function DangerZone() {
   )
 }
 
+function LogoutSection() {
+  const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await signOut()
+      await router.navigate({ to: '/login' })
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  return (
+    <section>
+      <div className="mb-4 pb-3 border-b border-gray-100">
+        <h2 className="text-sm font-semibold text-gray-900">تسجيل الخروج</h2>
+        <p className="text-xs text-gray-500 mt-0.5">
+          إنهاء جلستك الحالية على هذا الجهاز والعودة لصفحة الدخول
+        </p>
+      </div>
+      <button
+        onClick={handleLogout}
+        disabled={isLoggingOut}
+        className="flex items-center gap-2.5 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <LogOut size={14} className="shrink-0" />
+        {isLoggingOut ? 'جاري الخروج...' : 'تسجيل الخروج'}
+      </button>
+    </section>
+  )
+}
+
 export default function SecurityTab({ sessions }: Props) {
   return (
     <div className="space-y-8">
       <PasswordSection />
       <SessionsSection sessions={sessions} />
+      <LogoutSection />
       <DangerZone />
     </div>
   )

@@ -12,15 +12,20 @@ import {
   Package,
   Wallet,
 } from 'lucide-react'
+import { getMerchantWalletBalance } from './merchant/-server/layout.api'
 
 export const Route = createFileRoute('/merchant')({
-  beforeLoad: ({ context }) => {
+  beforeLoad: ({ context, location }) => {
     if (!context.session) throw redirect({ to: '/login' })
     if (context.session.user.status !== 'active')
       throw redirect({ to: '/pending-approval' })
     if (context.session.user.role !== 'merchant')
       throw redirect({ to: '/login' })
+    // الصفحة الجذر /merchant مجرد تخطيط بدون محتوى → وجّه مباشرة للوحة التحكم
+    if (location.pathname === '/merchant' || location.pathname === '/merchant/')
+      throw redirect({ to: '/merchant/dashboard', search: { range: '7days' } })
   },
+  loader: () => getMerchantWalletBalance(),
   component: MerchantLayout,
 })
 
@@ -34,6 +39,13 @@ const navItems = [
 ]
 
 function MerchantLayout() {
+  const { session } = Route.useRouteContext()
+  const { availableBalance } = Route.useLoaderData()
+  const userName = session?.user.name ?? 'Merchant'
+  const userRole = session?.user.role
+    ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1)
+    : 'Merchant'
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <aside className="flex w-56 flex-col justify-between border-r border-gray-200 bg-white px-3 py-5">
@@ -51,8 +63,8 @@ function MerchantLayout() {
               <User size={14} />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-800">Abdelouakil</p>
-              <p className="text-xs text-gray-500">Merchant</p>
+              <p className="text-xs font-medium text-gray-800">{userName}</p>
+              <p className="text-xs text-gray-500">{userRole}</p>
             </div>
           </div>
           <nav className="flex flex-col gap-0.5">
@@ -77,9 +89,8 @@ function MerchantLayout() {
             <CreditCard size={15} className="text-gray-400 shrink-0" />
             <div>
               <p className="text-xs font-medium text-gray-700">Wallet</p>
-              <p className="mt-0.5 flex items-center gap-1 text-xs text-green-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Active
+              <p className="mt-0.5 text-xs font-semibold text-gray-900">
+                {availableBalance.toLocaleString('ar-DZ')} DZD
               </p>
             </div>
           </div>

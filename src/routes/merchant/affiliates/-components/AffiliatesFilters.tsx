@@ -1,6 +1,6 @@
 // src/routes/merchant/affiliates/-components/AffiliatesFilters.tsx
 
-import type { FilterStatus, SortKey } from '../affiliates.types'
+import type { FilterStatus, SortKey } from '../-affiliates.types'
 
 interface Props {
   search: string

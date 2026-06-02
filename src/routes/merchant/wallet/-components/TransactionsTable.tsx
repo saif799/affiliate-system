@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ExternalLink } from 'lucide-react'
-import type { Transaction } from '../wallet.types'
+import type { Transaction } from '../-wallet.types'
 
 const typeConfig: Record<
   Transaction['type'],

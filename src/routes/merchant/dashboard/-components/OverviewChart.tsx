@@ -4,18 +4,25 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
-import type { ChartDataPoint } from '../dashboard.types'
+import type { ChartDataPoint, DateRange } from '../-dashboard.types'
 
 interface OverviewChartProps {
   data: ChartDataPoint[]
+  range: DateRange
 }
 
-export function OverviewChart({ data }: OverviewChartProps) {
+const RANGE_LABELS: Record<DateRange, string> = {
+  today: 'أداء اليوم',
+  '7days': 'أداء آخر 7 أيام',
+  '30days': 'أداء هذا الشهر',
+}
+
+export function OverviewChart({ data, range }: OverviewChartProps) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-800">
-          أداء آخر 7 أيام
+          {RANGE_LABELS[range]}
         </h2>
         <span className="text-xs text-gray-400">بالعدد</span>
       </div>

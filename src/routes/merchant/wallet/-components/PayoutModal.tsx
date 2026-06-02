@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, ArrowDownToLine } from 'lucide-react'
-import type { PayoutMethodOption } from '../wallet.types'
+import { requestWithdrawal } from '../-server/wallet.api'
+import type { PayoutMethod, PayoutMethodOption } from '../-wallet.types'
 
 interface PayoutModalProps {
   isOpen: boolean
@@ -8,6 +9,7 @@ interface PayoutModalProps {
   availableBalance: number
   minimumPayout: number
   payoutMethods: PayoutMethodOption[]
+  onSuccess: () => void | Promise<void>
 }
 
 export function PayoutModal({
@@ -16,36 +18,52 @@ export function PayoutModal({
   availableBalance,
   minimumPayout,
   payoutMethods,
+  onSuccess,
 }: PayoutModalProps) {
   const [amount, setAmount] = useState('')
-  const [selectedMethod, setSelectedMethod] = useState<string>(payoutMethods[0]?.id ?? '')
+  const [selectedMethod, setSelectedMethod] = useState<PayoutMethod>(
+    payoutMethods[0]?.id ?? 'CCP',
+  )
+  const [accountNumber, setAccountNumber] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   if (!isOpen) return null
 
   const fmt = (n: number) => n.toLocaleString('ar-DZ')
 
   const numAmount = parseFloat(amount) || 0
-  const method = payoutMethods.find((m) => m.id === selectedMethod)
-  const fee = method
-    ? method.feeType === 'fixed'
-      ? method.fee
-      : Math.round((numAmount * method.fee) / 100)
-    : 0
+  const fee = 0
   const netAmount = numAmount - fee
 
   const hasError = (numAmount > 0 && numAmount < minimumPayout) || numAmount > availableBalance
-  const isValid = numAmount >= minimumPayout && numAmount <= availableBalance
-  const showSummary = isValid
+  const isValid =
+    numAmount >= minimumPayout &&
+    numAmount <= availableBalance &&
+    accountNumber.trim().length >= 5
+  const showSummary = numAmount >= minimumPayout && numAmount <= availableBalance
 
   const handleSubmit = async () => {
-    if (!isValid) return
+    if (!isValid || isSubmitting) return
     setIsSubmitting(true)
-    // محاكاة إرسال الطلب (API Call)
-    await new Promise((r) => setTimeout(r, 1200))
-    setIsSubmitting(false)
-    onClose()
-    setAmount('')
+    setError('')
+    try {
+      await requestWithdrawal({
+        data: {
+          amount: Math.round(numAmount),
+          method: selectedMethod,
+          accountNumber: accountNumber.trim(),
+        },
+      })
+      await onSuccess()
+      setAmount('')
+      setAccountNumber('')
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل إرسال طلب السحب')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -167,20 +185,25 @@ export function PayoutModal({
                       <p className="text-[10px] text-gray-400 mt-0.5">{m.accountInfo}</p>
                     </div>
                   </div>
-                  <span className={`text-[10px] font-medium rounded-full px-2 py-0.5 ${
-                    m.fee === 0
-                      ? 'bg-green-50 text-green-700'
-                      : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {m.fee === 0
-                      ? 'مجاناً'
-                      : m.feeType === 'fixed'
-                      ? `${m.fee} DZD رسوم`
-                      : `${m.fee}% رسوم`}
+                  <span className="text-[10px] font-medium rounded-full px-2 py-0.5 bg-green-50 text-green-700">
+                    مجاناً
                   </span>
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* رقم الحساب */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              {selectedMethod === 'CCP' ? 'رقم الحساب البريدي (CCP)' : 'رقم الهاتف المرتبط'}
+            </label>
+            <input
+              value={accountNumber}
+              onChange={(e) => setAccountNumber(e.target.value)}
+              placeholder={selectedMethod === 'CCP' ? '0012345678 clé 90' : '0770 000 000'}
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-200"
+            />
           </div>
 
           {/* ملخص الشفافية (تم تصغيره ليكون أنيقاً ومتماسكاً) */}
@@ -201,6 +224,10 @@ export function PayoutModal({
                 <span className="text-sm font-bold text-green-700">{fmt(netAmount)} DZD</span>
               </div>
             </div>
+          )}
+
+          {error && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>
           )}
         </div>
 

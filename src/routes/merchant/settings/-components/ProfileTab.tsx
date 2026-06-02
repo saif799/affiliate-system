@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ProfileData, VerificationStatus } from '../settings.types'
+import type { ProfileData } from '../-settings.types'
 import { updateProfile } from '../-server/settings.api'
 
 interface Props {
@@ -24,29 +24,6 @@ const WILAYAS = [
   'تيبازة',
 ]
 
-function VerificationBadge({ status }: { status: VerificationStatus }) {
-  if (status === 'verified')
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-        <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
-        موثق
-      </span>
-    )
-  if (status === 'pending')
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
-        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-        قيد التحقق
-      </span>
-    )
-  return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-      <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-      غير موثق
-    </span>
-  )
-}
-
 export default function ProfileTab({ data }: Props) {
   const [form, setForm] = useState<ProfileData>(data)
   const [saving, setSaving] = useState(false)
@@ -65,7 +42,15 @@ export default function ProfileTab({ data }: Props) {
 
   const handleSave = async () => {
     setSaving(true)
-    await updateProfile({ data: form })
+    await updateProfile({
+      data: {
+        name: form.profile.fullName,
+        phone: form.profile.phone,
+        wilaya: form.pickup.wilaya,
+        storeName: form.profile.storeName,
+        address: form.pickup.address,
+      },
+    })
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
@@ -177,49 +162,6 @@ export default function ProfileTab({ data }: Props) {
               onChange={(e) => update('pickup', 'address', e.target.value)}
               rows={3}
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400 transition-colors resize-none"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Legal Info */}
-      <section>
-        <div className="mb-4 pb-3 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-gray-900">
-              المعلومات القانونية
-            </h2>
-            <span className="text-xs text-gray-400">(اختياري)</span>
-          </div>
-          <p className="text-xs text-gray-500 mt-0.5">
-            التحقق يمنحك شارة "تاجر موثوق" ويجذب مسوقين أكثر
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-gray-600 flex items-center justify-between">
-              رقم السجل التجاري (RC)
-              <VerificationBadge status={form.legal.rcStatus} />
-            </label>
-            <input
-              type="text"
-              value={form.legal.rc}
-              onChange={(e) => update('legal', 'rc', e.target.value)}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-gray-400 transition-colors"
-              dir="ltr"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-gray-600 flex items-center justify-between">
-              التعريف الضريبي (NIF)
-              <VerificationBadge status={form.legal.nifStatus} />
-            </label>
-            <input
-              type="text"
-              value={form.legal.nif}
-              onChange={(e) => update('legal', 'nif', e.target.value)}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-gray-400 transition-colors"
-              dir="ltr"
             />
           </div>
         </div>
