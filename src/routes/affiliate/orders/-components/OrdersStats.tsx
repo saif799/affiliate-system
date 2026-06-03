@@ -1,4 +1,4 @@
-import type { OrdersStats } from '../orders.types'
+import type { OrdersStats } from '../-orders.types'
 
 interface Props {
   stats: OrdersStats

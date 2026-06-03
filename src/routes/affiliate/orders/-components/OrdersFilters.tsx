@@ -1,17 +1,10 @@
-import type { OrderStatus } from '../orders.types'
-
-const TABS: { key: OrderStatus | 'all'; label: string; count: number }[] = [
-  { key: 'all',       label: 'الكل',              count: 47 },
-  { key: 'pending',   label: 'بانتظار التأكيد',   count: 8  },
-  { key: 'shipping',  label: 'مشحونة',             count: 12 },
-  { key: 'delivered', label: 'مُسلّمة',            count: 22 },
-  { key: 'returned',  label: 'مرتجعة',             count: 5  },
-]
+import type { OrderStatus, TabCounts } from '../-orders.types'
 
 interface Props {
   activeTab: OrderStatus | 'all'
   search: string
   wilaya: string
+  counts: TabCounts
   onTabChange: (tab: OrderStatus | 'all') => void
   onSearchChange: (v: string) => void
   onWilayaChange: (v: string) => void
@@ -26,10 +19,18 @@ export function OrdersFilters({
   activeTab,
   search,
   wilaya,
+  counts,
   onTabChange,
   onSearchChange,
   onWilayaChange,
 }: Props) {
+  const TABS: { key: OrderStatus | 'all'; label: string; count: number }[] = [
+    { key: 'all',       label: 'الكل',            count: counts.all       },
+    { key: 'pending',   label: 'بانتظار التأكيد', count: counts.pending   },
+    { key: 'shipping',  label: 'مشحونة',          count: counts.shipping  },
+    { key: 'delivered', label: 'مُسلّمة',          count: counts.delivered },
+    { key: 'returned',  label: 'مرتجعة',          count: counts.returned  },
+  ]
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
       {/* Tabs */}

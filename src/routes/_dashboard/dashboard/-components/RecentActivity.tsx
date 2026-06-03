@@ -1,4 +1,4 @@
-import type { ActivityItem, ActivityType } from '../dashboard.types'
+import type { ActivityItem, ActivityType } from '../-dashboard.types'
 
 const activityConfig: Record<ActivityType, { icon: string; color: string; label: string }> = {
   conversion:      { icon: '💰', color: 'bg-green-50 text-green-700',   label: 'تحويل جديد'   },

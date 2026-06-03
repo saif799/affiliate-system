@@ -6,7 +6,7 @@ export type TransactionType = 'commission' | 'withdrawal' | 'deduction'
 
 export type WithdrawalStatus = 'pending' | 'completed' | 'rejected'
 
-export type PaymentMethod = 'ccp' | 'bank'
+export type PaymentMethod = 'CCP' | 'BaridiMob'
 
 export interface WalletBalance {
   available: number      // عمولات الطلبيات المُسلّمة فقط

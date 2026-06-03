@@ -9,9 +9,7 @@ import {
   Code2,
   Settings,
   Zap,
-  CreditCard,
   User,
-  ChevronDown,
   Store
 } from 'lucide-react'
 

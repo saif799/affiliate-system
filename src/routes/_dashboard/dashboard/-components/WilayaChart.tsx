@@ -2,7 +2,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts'
-import type { WilayaStat } from '../dashboard.types'
+import type { WilayaStat } from '../-dashboard.types'
 
 const COLORS = [
   '#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff',

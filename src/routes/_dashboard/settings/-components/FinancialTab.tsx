@@ -15,22 +15,25 @@ const scheduleLabels: Record<string, string> = {
 }
 
 export function FinancialTab({ data }: Props) {
-  const [fee, setFee]             = useState(String(data.platform_fee_per_order))
-  const [minPayout, setMinPayout] = useState(String(data.minimum_payout))
-  const [saving, setSaving]       = useState(false)
-  const [saved, setSaved]         = useState(false)
-  const [error, setError]         = useState<string | null>(null)
+  const [merchantFee, setMerchantFee]   = useState(String(data.platform_fee_merchant))
+  const [affiliateFee, setAffiliateFee] = useState(String(data.platform_fee_affiliate))
+  const [minPayout, setMinPayout]       = useState(String(data.minimum_payout))
+  const [saving, setSaving]             = useState(false)
+  const [saved, setSaved]               = useState(false)
+  const [error, setError]               = useState<string | null>(null)
 
   const isDirty =
-    Number(fee) !== data.platform_fee_per_order ||
+    Number(merchantFee) !== data.platform_fee_merchant ||
+    Number(affiliateFee) !== data.platform_fee_affiliate ||
     Number(minPayout) !== data.minimum_payout
 
   async function handleSave() {
-    const feeNum = Number(fee)
+    const merchantNum = Number(merchantFee)
+    const affiliateNum = Number(affiliateFee)
     const minNum = Number(minPayout)
 
-    if (isNaN(feeNum) || feeNum < 0) {
-      setError('رسوم المنصة يجب أن تكون رقماً موجباً')
+    if (isNaN(merchantNum) || merchantNum < 0 || isNaN(affiliateNum) || affiliateNum < 0) {
+      setError('رسوم المنصة يجب أن تكون أرقاماً موجبة')
       return
     }
     if (isNaN(minNum) || minNum < 0) {
@@ -44,7 +47,8 @@ export function FinancialTab({ data }: Props) {
     try {
       await updateFinancialSettings({
         data: {
-          platform_fee_per_order: feeNum,
+          platform_fee_merchant:  merchantNum,
+          platform_fee_affiliate: affiliateNum,
           minimum_payout:         minNum,
           payout_schedule:        data.payout_schedule,
           payout_methods:         data.payout_methods,
@@ -74,14 +78,14 @@ export function FinancialTab({ data }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">
-              رسوم المنصة لكل طلبية موصّلة
+              رسوم المنصة من التاجر
             </label>
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition">
               <input
                 type="number"
                 min={0}
-                value={fee}
-                onChange={(e) => { setFee(e.target.value); setSaved(false) }}
+                value={merchantFee}
+                onChange={(e) => { setMerchantFee(e.target.value); setSaved(false) }}
                 className="flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
               />
               <span className="px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
@@ -89,7 +93,28 @@ export function FinancialTab({ data }: Props) {
               </span>
             </div>
             <p className="text-xs text-gray-400">
-              تُحسب فقط على الطلبيات بحالة "موصّلة" — لا تُطبّق على المرتجعات أو الملغاة
+              تُخصم من أرباح التاجر لكل طلبية موصّلة
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              رسوم المنصة من المسوّق
+            </label>
+            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition">
+              <input
+                type="number"
+                min={0}
+                value={affiliateFee}
+                onChange={(e) => { setAffiliateFee(e.target.value); setSaved(false) }}
+                className="flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
+              />
+              <span className="px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
+                DZD
+              </span>
+            </div>
+            <p className="text-xs text-gray-400">
+              تُخصم من عمولة المسوّق لكل طلبية موصّلة
             </p>
           </div>
 
@@ -166,8 +191,9 @@ export function FinancialTab({ data }: Props) {
         <div className="text-sm text-blue-800 space-y-1">
           <p className="font-semibold">كيف تعمل الرسوم؟</p>
           <ul className="list-disc list-inside space-y-0.5 text-blue-700">
-            <li>عند تسجيل طلبية بحالة <strong>موصّلة</strong>، تُخصم رسوم المنصة تلقائياً.</li>
-            <li>الفرق بين سعر المسوّق وسعر التاجر يبقى ربح المسوّق كاملاً.</li>
+            <li>عند تسجيل طلبية بحالة <strong>موصّلة</strong>، تُخصم رسوم المنصة تلقائياً من الطرفين.</li>
+            <li>عمولة المسوّق = (سعر بيعه − سعر التاجر) − رسوم المنصة من المسوّق.</li>
+            <li>أرباح التاجر = سعر التاجر − رسوم المنصة من التاجر.</li>
             <li>الطلبيات المرتجعة أو الملغاة لا تخضع لأي رسوم.</li>
           </ul>
         </div>

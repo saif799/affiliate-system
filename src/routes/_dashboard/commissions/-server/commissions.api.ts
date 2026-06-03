@@ -1,12 +1,14 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { db } from '#/server/db'
+import { getSession } from '#/lib/session'
 import {
   users,
   wallets,
   withdrawalRequests,
   transactions,
   affiliateProfiles,
+  orders,
 } from '#/server/db/schema'
 import {
   eq,
@@ -31,6 +33,12 @@ import type {
 // HELPERS
 // ============================================================
 
+async function requireSuperAdmin() {
+  const session = await getSession()
+  if (!session || session.user.role !== 'super_admin') throw new Error('Unauthorized')
+  return session
+}
+
 const ARABIC_MONTHS = [
   'يناير','فبراير','مارس','أبريل','مايو','يونيو',
   'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر',
@@ -43,36 +51,30 @@ async function fetchStats(): Promise<CommissionStats> {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
 
+  // إيراد المنصة = مجموع رسوم الطلبات المُسلَّمة (مصدر واحد متّسق مع لوحة التحكم)
   const [totalResult] = await db
-    .select({ total: sum(transactions.amount_dzd) })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.type, 'platform_fee'),
-        eq(transactions.status, 'completed'),
-      ),
-    )
+    .select({ total: sum(orders.platform_fee_dzd) })
+    .from(orders)
+    .where(eq(orders.status, 'delivered'))
 
   const [currentMonthResult] = await db
-    .select({ total: sum(transactions.amount_dzd) })
-    .from(transactions)
+    .select({ total: sum(orders.platform_fee_dzd) })
+    .from(orders)
     .where(
       and(
-        eq(transactions.type, 'platform_fee'),
-        eq(transactions.status, 'completed'),
-        gte(transactions.created_at, startOfMonth),
+        eq(orders.status, 'delivered'),
+        gte(orders.created_at, startOfMonth),
       ),
     )
 
   const [prevMonthResult] = await db
-    .select({ total: sum(transactions.amount_dzd) })
-    .from(transactions)
+    .select({ total: sum(orders.platform_fee_dzd) })
+    .from(orders)
     .where(
       and(
-        eq(transactions.type, 'platform_fee'),
-        eq(transactions.status, 'completed'),
-        gte(transactions.created_at, startOfLastMonth),
-        lt(transactions.created_at, startOfMonth),
+        eq(orders.status, 'delivered'),
+        gte(orders.created_at, startOfLastMonth),
+        lt(orders.created_at, startOfMonth),
       ),
     )
 
@@ -294,6 +296,8 @@ async function fetchTransactionHistory(): Promise<TransactionRecord[]> {
 
 export const getCommissionsPageData = createServerFn({ method: 'GET' }).handler(
   async (): Promise<CommissionsPageData> => {
+    await requireSuperAdmin()
+
     const [stats, breakdown, monthlyPayouts, withdrawalReqs, history] =
       await Promise.all([
         fetchStats(),
@@ -316,47 +320,54 @@ export const confirmWithdrawal = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const [request] = await db
-      .select()
-      .from(withdrawalRequests)
-      .where(eq(withdrawalRequests.id, data.withdrawalId))
-      .limit(1)
+    await requireSuperAdmin()
 
-    if (!request) throw new Error('الطلب غير موجود')
-    if (request.status === 'paid') throw new Error('تم دفع هذا الطلب مسبقاً')
+    await db.transaction(async (tx) => {
+      // قفل الصف لمنع المعالجة المزدوجة عند ضغطتين متزامنتين
+      const [request] = await tx
+        .select()
+        .from(withdrawalRequests)
+        .where(eq(withdrawalRequests.id, data.withdrawalId))
+        .for('update')
+        .limit(1)
 
-    const now = new Date()
+      if (!request) throw new Error('الطلب غير موجود')
+      if (request.status === 'paid') throw new Error('تم دفع هذا الطلب مسبقاً')
+      if (request.status === 'rejected') throw new Error('هذا الطلب مرفوض')
 
-    await db
-      .update(withdrawalRequests)
-      .set({ status: 'paid', processed_at: now })
-      .where(eq(withdrawalRequests.id, data.withdrawalId))
+      const now = new Date()
 
-    await db
-      .update(wallets)
-      .set({
-        available_balance_dzd: sql`${wallets.available_balance_dzd} + ${request.amount_dzd}`,
-        pending_balance_dzd: sql`GREATEST(${wallets.pending_balance_dzd} - ${request.amount_dzd}, 0)`,
-      })
-      .where(eq(wallets.user_id, request.user_id))
+      await tx
+        .update(withdrawalRequests)
+        .set({ status: 'paid', processed_at: now })
+        .where(eq(withdrawalRequests.id, data.withdrawalId))
 
-    const [wallet] = await db
-      .select({ id: wallets.id })
-      .from(wallets)
-      .where(eq(wallets.user_id, request.user_id))
-      .limit(1)
+      // المال خرج فعلياً للمستخدم — نُنقص pending فقط
+      // (available انخفض مسبقاً عند إنشاء طلب السحب)
+      await tx
+        .update(wallets)
+        .set({
+          pending_balance_dzd: sql`GREATEST(${wallets.pending_balance_dzd} - ${request.amount_dzd}, 0)`,
+        })
+        .where(eq(wallets.user_id, request.user_id))
 
-    if (wallet) {
-      await db.insert(transactions).values({
-        id: crypto.randomUUID(),
-        wallet_id: wallet.id,
-        type: 'withdrawal',
-        status: 'completed',
-        amount_dzd: -request.amount_dzd,
-        description: `سحب مُسدَّد — رقم الإثبات: ${data.transactionRef}`,
-        created_at: now,
-      })
-    }
+      const [wallet] = await tx
+        .select({ id: wallets.id })
+        .from(wallets)
+        .where(eq(wallets.user_id, request.user_id))
+        .limit(1)
+
+      if (wallet) {
+        await tx.insert(transactions).values({
+          wallet_id: wallet.id,
+          type: 'withdrawal',
+          status: 'completed',
+          amount_dzd: -request.amount_dzd,
+          description: `سحب مُسدَّد — رقم الإثبات: ${data.transactionRef}`,
+          created_at: now,
+        })
+      }
+    })
 
     return { success: true }
   })
@@ -365,26 +376,35 @@ export const confirmWithdrawal = createServerFn({ method: 'POST' })
 export const rejectWithdrawal = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ withdrawalId: z.string().uuid() }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const [request] = await db
-      .select()
-      .from(withdrawalRequests)
-      .where(eq(withdrawalRequests.id, data.withdrawalId))
-      .limit(1)
+    await requireSuperAdmin()
 
-    if (!request) throw new Error('الطلب غير موجود')
+    await db.transaction(async (tx) => {
+      // قفل الصف لمنع الاسترجاع المزدوج للرصيد
+      const [request] = await tx
+        .select()
+        .from(withdrawalRequests)
+        .where(eq(withdrawalRequests.id, data.withdrawalId))
+        .for('update')
+        .limit(1)
 
-    await db
-      .update(withdrawalRequests)
-      .set({ status: 'rejected', processed_at: new Date() })
-      .where(eq(withdrawalRequests.id, data.withdrawalId))
+      if (!request) throw new Error('الطلب غير موجود')
+      if (request.status === 'paid') throw new Error('لا يمكن رفض طلب مدفوع')
+      if (request.status === 'rejected') throw new Error('هذا الطلب مرفوض مسبقاً')
 
-    await db
-      .update(wallets)
-      .set({
-        available_balance_dzd: sql`${wallets.available_balance_dzd} + ${request.amount_dzd}`,
-        pending_balance_dzd: sql`GREATEST(${wallets.pending_balance_dzd} - ${request.amount_dzd}, 0)`,
-      })
-      .where(eq(wallets.user_id, request.user_id))
+      await tx
+        .update(withdrawalRequests)
+        .set({ status: 'rejected', processed_at: new Date() })
+        .where(eq(withdrawalRequests.id, data.withdrawalId))
+
+      // إرجاع المبلغ المحجوز: pending → available
+      await tx
+        .update(wallets)
+        .set({
+          available_balance_dzd: sql`${wallets.available_balance_dzd} + ${request.amount_dzd}`,
+          pending_balance_dzd: sql`GREATEST(${wallets.pending_balance_dzd} - ${request.amount_dzd}, 0)`,
+        })
+        .where(eq(wallets.user_id, request.user_id))
+    })
 
     return { success: true }
   })

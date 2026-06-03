@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { getAffiliateOrders } from './-server/orders.api'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { getAffiliateOrders, addLeadManual } from './-server/orders.api'
 import { OrdersStats } from './-components/OrdersStats'
 import { OrdersFilters } from './-components/OrdersFilters'
 import { OrdersTable } from './-components/OrdersTable'
 import { AddLeadModal } from './-components/AddLeadModal'
-import type { OrderStatus, AddLeadForm } from './orders.types'
+import type { OrderStatus, AddLeadForm } from './-orders.types'
 
 const PER_PAGE = 8
 
@@ -20,13 +20,25 @@ export const Route = createFileRoute('/affiliate/orders/')({
 })
 
 function AffiliateOrdersPage() {
-  const { orders, stats } = Route.useLoaderData()
+  const { orders, stats, products } = Route.useLoaderData()
+  const router = useRouter()
 
   const [activeTab, setActiveTab] = useState<OrderStatus | 'all'>('all')
   const [search, setSearch] = useState('')
   const [wilaya, setWilaya] = useState('')
   const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
+
+  const counts = useMemo(
+    () => ({
+      all: orders.length,
+      pending: orders.filter((o) => o.status === 'pending').length,
+      shipping: orders.filter((o) => o.status === 'shipping').length,
+      delivered: orders.filter((o) => o.status === 'delivered').length,
+      returned: orders.filter((o) => o.status === 'returned').length,
+    }),
+    [orders],
+  )
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -59,9 +71,13 @@ function AffiliateOrdersPage() {
     setPage(1)
   }
 
-  function handleAddLead(form: AddLeadForm) {
-    // لاحقاً: استدعاء addLeadManual(form)
-    console.log('New lead submitted:', form)
+  async function handleAddLead(form: AddLeadForm) {
+    try {
+      await addLeadManual({ data: form })
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل إنشاء الطلبية')
+    }
   }
 
   return (
@@ -89,6 +105,7 @@ function AffiliateOrdersPage() {
         activeTab={activeTab}
         search={search}
         wilaya={wilaya}
+        counts={counts}
         onTabChange={handleTabChange}
         onSearchChange={handleSearchChange}
         onWilayaChange={handleWilayaChange}
@@ -107,6 +124,7 @@ function AffiliateOrdersPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleAddLead}
+        products={products}
       />
     </div>
   )

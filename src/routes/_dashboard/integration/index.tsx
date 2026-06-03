@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { IntegrationCard } from './-components/IntegrationCard'
 import { ApiLogsPanel }    from './-components/ApiLogsPanel'
-import type { IntegrationGroup } from './integration.types'
+import type { IntegrationGroup } from './-integration.types'
 
 export const Route = createFileRoute('/_dashboard/integration/')({
   component: IntegrationHubPage,

@@ -10,7 +10,7 @@ import { ProfileTab } from './-components/ProfileTab'
 import { PayoutTab } from './-components/PayoutTab'
 import { NotificationsTab } from './-components/NotificationsTab'
 import { SecurityTab } from './-components/SecurityTab'
-import type { SettingsTab } from './settings.types'
+import type { SettingsTab } from './-settings.types'
 
 // ─── Route ───────────────────────────────────────────────────
 export const Route = createFileRoute('/affiliate/settings/')({

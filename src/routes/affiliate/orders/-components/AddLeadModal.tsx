@@ -1,14 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import type { AddLeadForm } from '../orders.types'
-
-const PRODUCTS = [
-  { id: 'JKT-001', name: 'جاكيت جلد كلاسيكي رجالي', minPrice: 10000, commission: 3000 },
-  { id: 'SHO-022', name: 'حذاء رياضي نسائي',          minPrice: 7500,  commission: 2000 },
-  { id: 'WTC-005', name: 'ساعة ذكية برو',              minPrice: 15000, commission: 4500 },
-  { id: 'BAG-011', name: 'حقيبة ظهر متعددة الاستخدام', minPrice: 8000,  commission: 2500 },
-  { id: 'PRF-003', name: 'عطر رجالي فاخر',             minPrice: 5000,  commission: 1500 },
-]
+import type { AddLeadForm, LeadProduct } from '../-orders.types'
 
 const WILAYAS = [
   'الجزائر', 'وهران', 'قسنطينة', 'عنابة', 'سطيف',
@@ -18,7 +10,8 @@ const WILAYAS = [
 interface Props {
   open: boolean
   onClose: () => void
-  onSubmit: (form: AddLeadForm) => void
+  onSubmit: (form: AddLeadForm) => void | Promise<void>
+  products: LeadProduct[]
 }
 
 const EMPTY: AddLeadForm = {
@@ -31,15 +24,16 @@ const EMPTY: AddLeadForm = {
   notes: '',
 }
 
-export function AddLeadModal({ open, onClose, onSubmit }: Props) {
+export function AddLeadModal({ open, onClose, onSubmit, products }: Props) {
   const [form, setForm] = useState<AddLeadForm>(EMPTY)
 
   if (!open) return null
 
-  const selectedProduct = PRODUCTS.find((p) => p.id === form.productId)
+  const selectedProduct = products.find((p) => p.id === form.productId)
 
+  // ربح المسوّق = سعر بيعه − سعر الجملة (يبيع بأي سعر يريد)
   const estimatedComm = selectedProduct
-    ? selectedProduct.commission + Math.max(0, form.salePrice - selectedProduct.minPrice)
+    ? Math.max(0, form.salePrice - selectedProduct.basePrice)
     : null
 
   function handleChange<K extends keyof AddLeadForm>(key: K, value: AddLeadForm[K]) {
@@ -47,17 +41,17 @@ export function AddLeadModal({ open, onClose, onSubmit }: Props) {
   }
 
   function handleProductChange(id: string) {
-    const p = PRODUCTS.find((x) => x.id === id)
+    const p = products.find((x) => x.id === id)
     setForm((prev) => ({
       ...prev,
       productId: id,
-      salePrice: p ? p.minPrice : 0,
+      salePrice: p ? p.basePrice : 0,
     }))
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!form.productId || !form.customerName || !form.customerPhone || !form.wilaya) return
-    onSubmit(form)
+    await onSubmit(form)
     setForm(EMPTY)
     onClose()
   }
@@ -95,7 +89,7 @@ export function AddLeadModal({ open, onClose, onSubmit }: Props) {
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400"
             >
               <option value="">اختر المنتج...</option>
-              {PRODUCTS.map((p) => (
+              {products.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
@@ -167,13 +161,13 @@ export function AddLeadModal({ open, onClose, onSubmit }: Props) {
             <input
               type="number"
               value={form.salePrice}
-              min={selectedProduct?.minPrice ?? 0}
+              min={selectedProduct?.basePrice ?? 0}
               onChange={(e) => handleChange('salePrice', Number(e.target.value))}
               className="rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
             />
             {selectedProduct && (
               <p className="text-xs text-gray-400">
-                الحد الأدنى: {selectedProduct.minPrice.toLocaleString('ar-DZ')} د.ج
+                سعر الجملة: {selectedProduct.basePrice.toLocaleString('ar-DZ')} د.ج — تبيع بالسعر الذي تريده
               </p>
             )}
           </div>

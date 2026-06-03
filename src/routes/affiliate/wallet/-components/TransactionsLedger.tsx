@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState } from 'react'
-import type { Transaction, WithdrawalRequest } from '../wallet.types'
+import type { Transaction, WithdrawalRequest } from '../-wallet.types'
 
 interface Props {
   transactions: Transaction[]
@@ -35,8 +35,8 @@ const WITHDRAWAL_STATUS_LABELS: Record<string, { label: string; color: string; d
 }
 
 const METHOD_LABELS: Record<string, string> = {
-  ccp: 'CCP — بريدي',
-  bank: 'حساب بنكي',
+  CCP: 'CCP — بريدي',
+  BaridiMob: 'BaridiMob',
 }
 
 function StatusBadge({ config }: { config: { label: string; color: string; dot: string } }) {

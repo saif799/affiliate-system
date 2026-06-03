@@ -3,9 +3,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
 import { getSession } from '#/lib/session'
-import { merchantProfiles, orders, orderStatusHistory, products } from '#/server/db/schema'
+import { affiliateProfiles, merchantProfiles, orders, orderStatusHistory, products } from '#/server/db/schema'
 import { and, eq, sql, desc, notInArray } from 'drizzle-orm'
 import { z } from 'zod'
+import { settleOrderTx } from '#/server/settlement'
 import type {
   MerchantOrdersData,
   Order,
@@ -68,6 +69,7 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
         quantity: orders.quantity,
         unitAffiliate: orders.unit_affiliate_price_dzd,
         unitMerchant: orders.unit_merchant_price_dzd,
+        feeMerchant: orders.platform_fee_merchant_dzd,
         status: orders.status,
         trackingNumber: orders.tracking_number,
       })
@@ -83,7 +85,7 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
       customer: { name: r.customerName, phone: r.customerPhone },
       wilaya: r.wilaya,
       totalPrice: r.unitAffiliate * r.quantity,
-      merchantEarnings: r.unitMerchant * r.quantity,
+      merchantEarnings: Math.max(0, r.unitMerchant * r.quantity - r.feeMerchant),
       status: (STATUS_MAP[r.status as DbOrderStatus] ?? 'pending') as OrderStatus,
       dbStatus: r.status as DbOrderStatus,
       trackingNumber: r.trackingNumber ?? undefined,
@@ -119,14 +121,16 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
 
 const UpdateStatusSchema = z.object({
   orderId: z.string(),
-  newStatus: z.enum(['confirmed', 'shipped', 'returned']),
+  newStatus: z.enum(['confirmed', 'shipped', 'at_wilaya', 'delivered', 'returned']),
 })
 
-// allowed merchant-initiated transitions: current -> next
-const ALLOWED_FROM: Record<'confirmed' | 'shipped' | 'returned', DbOrderStatus[]> = {
-  confirmed: ['pending'],
-  shipped: ['confirmed'],
-  returned: ['shipped', 'at_wilaya'],
+// الانتقالات المسموح بها للتاجر: الحالة الحالية → الحالة الجديدة
+const ALLOWED_FROM: Record<string, DbOrderStatus[]> = {
+  confirmed:  ['pending'],
+  shipped:    ['confirmed'],
+  at_wilaya:  ['shipped'],
+  delivered:  ['at_wilaya', 'shipped'], // shipped → delivered للتوصيل المباشر
+  returned:   ['shipped', 'at_wilaya', 'delivered'],
 }
 
 export const updateOrderStatus = createServerFn({ method: 'POST' })
@@ -135,7 +139,7 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
     const { profileId } = await requireMerchant()
 
     const [order] = await db
-      .select({ id: orders.id, status: orders.status })
+      .select({ id: orders.id, status: orders.status, affiliateId: orders.affiliate_id })
       .from(orders)
       .where(and(eq(orders.id, data.orderId), eq(orders.merchant_id, profileId)))
       .limit(1)
@@ -143,24 +147,53 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
     if (!order) throw new Error('الطلبية غير موجودة')
 
     const from = order.status as DbOrderStatus
-    if (!ALLOWED_FROM[data.newStatus].includes(from)) {
+    if (!ALLOWED_FROM[data.newStatus]?.includes(from)) {
       throw new Error('انتقال غير مسموح به للحالة المطلوبة')
     }
 
     const now = new Date()
     const patch: Record<string, unknown> = { status: data.newStatus }
-    if (data.newStatus === 'confirmed') patch.confirmed_at = now
-    if (data.newStatus === 'shipped') patch.shipped_at = now
+    if (data.newStatus === 'confirmed')  patch.confirmed_at = now
+    if (data.newStatus === 'shipped')    patch.shipped_at   = now
+    if (data.newStatus === 'at_wilaya')  patch.at_wilaya_at = now
+    if (data.newStatus === 'delivered')  patch.delivered_at = now
 
-    await db.update(orders).set(patch).where(eq(orders.id, data.orderId))
-
-    await db.insert(orderStatusHistory).values({
-      order_id: data.orderId,
+    const historyRow = {
+      order_id:    data.orderId,
       from_status: from,
-      to_status: data.newStatus,
+      to_status:   data.newStatus,
       occurred_at: now,
-      source: 'merchant',
-    })
+      source:      'merchant',
+    }
+
+    if (data.newStatus === 'delivered') {
+      // تغيير الحالة + التسوية المالية في transaction واحدة (ذرّية)
+      await db.transaction(async (tx) => {
+        await tx.update(orders).set(patch).where(eq(orders.id, data.orderId))
+        await tx.insert(orderStatusHistory).values(historyRow)
+        await settleOrderTx(tx, data.orderId)
+      })
+    } else {
+      await db.update(orders).set(patch).where(eq(orders.id, data.orderId))
+      await db.insert(orderStatusHistory).values(historyRow)
+
+      // تحديث نسبة الرفض للمسوّق عند الإرجاع (نسبة تراكمية على كل طلبياته)
+      if (data.newStatus === 'returned' && order.affiliateId) {
+        await db
+          .update(affiliateProfiles)
+          .set({
+            refusal_rate: sql`(
+              SELECT ROUND(
+                COUNT(*) FILTER (WHERE ${orders.status} = 'returned')::numeric
+                / NULLIF(COUNT(*), 0) * 100
+              , 2)
+              FROM ${orders}
+              WHERE ${orders.affiliate_id} = ${order.affiliateId}
+            )`,
+          })
+          .where(eq(affiliateProfiles.id, order.affiliateId))
+      }
+    }
 
     return { success: true }
   })

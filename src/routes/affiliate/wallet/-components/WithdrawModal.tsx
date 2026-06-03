@@ -4,7 +4,7 @@
 
 import { useState } from 'react'
 import { X, CreditCard, Building2, AlertCircle } from 'lucide-react'
-import type { WithdrawFormData, PaymentMethod } from '../wallet.types'
+import type { WithdrawFormData, PaymentMethod } from '../-wallet.types'
 
 interface Props {
   availableBalance: number
@@ -18,7 +18,7 @@ function formatDZD(amount: number): string {
 
 export function WithdrawModal({ availableBalance, onClose, onSubmit }: Props) {
   const [amount, setAmount] = useState<string>('')
-  const [method, setMethod] = useState<PaymentMethod>('ccp')
+  const [method, setMethod] = useState<PaymentMethod>('CCP')
   const [accountNumber, setAccountNumber] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string>('')
@@ -98,9 +98,9 @@ export function WithdrawModal({ availableBalance, onClose, onSubmit }: Props) {
           <label className="mb-1.5 block text-xs text-gray-500">طريقة الدفع</label>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => setMethod('ccp')}
+              onClick={() => setMethod('CCP')}
               className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
-                method === 'ccp'
+                method === 'CCP'
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                   : 'border-gray-200 text-gray-500 hover:border-gray-300'
               }`}
@@ -109,15 +109,15 @@ export function WithdrawModal({ availableBalance, onClose, onSubmit }: Props) {
               CCP — بريدي
             </button>
             <button
-              onClick={() => setMethod('bank')}
+              onClick={() => setMethod('BaridiMob')}
               className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
-                method === 'bank'
+                method === 'BaridiMob'
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                   : 'border-gray-200 text-gray-500 hover:border-gray-300'
               }`}
             >
               <Building2 size={14} />
-              حساب بنكي
+              BaridiMob
             </button>
           </div>
         </div>
@@ -125,13 +125,13 @@ export function WithdrawModal({ availableBalance, onClose, onSubmit }: Props) {
         {/* رقم الحساب */}
         <div className="mb-4">
           <label className="mb-1.5 block text-xs text-gray-500">
-            {method === 'ccp' ? 'رقم CCP' : 'رقم الحساب البنكي'}
+            {method === 'CCP' ? 'رقم CCP' : 'رقم BaridiMob (RIP)'}
           </label>
           <input
             type="text"
             value={accountNumber}
             onChange={(e) => setAccountNumber(e.target.value)}
-            placeholder={method === 'ccp' ? 'مثال: 0799 123 456' : 'مثال: 0021 0017 1234 5678'}
+            placeholder={method === 'CCP' ? 'مثال: 0799 123 456' : 'مثال: 007999990001079912'}
             className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none transition-colors focus:border-gray-400"
           />
         </div>

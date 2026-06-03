@@ -2,7 +2,7 @@ import {
   AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
-import type { MonthlyRevenue } from '../dashboard.types'
+import type { MonthlyRevenue } from '../-dashboard.types'
 
 interface OverviewChartProps {
   data: MonthlyRevenue[]

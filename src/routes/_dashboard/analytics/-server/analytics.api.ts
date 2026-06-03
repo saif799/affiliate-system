@@ -262,7 +262,7 @@ async function fetchTopAffiliates(from: Date, to: Date): Promise<TopAffiliate[]>
         SUM(
           (${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd})
           * ${orders.quantity}
-          - ${orders.platform_fee_dzd}
+          - ${orders.platform_fee_affiliate_dzd}
         ) FILTER (WHERE ${orders.status} = 'delivered')
       , 0)`,
       // orders_delivered للاتساق مع الإيراد + orders_total للسياق
@@ -285,7 +285,7 @@ async function fetchTopAffiliates(from: Date, to: Date): Promise<TopAffiliate[]>
         sql`SUM(
           (${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd})
           * ${orders.quantity}
-          - ${orders.platform_fee_dzd}
+          - ${orders.platform_fee_affiliate_dzd}
         ) FILTER (WHERE ${orders.status} = 'delivered')`,
       ),
     )
@@ -310,10 +310,9 @@ async function fetchTopMerchants(from: Date, to: Date): Promise<TopMerchant[]> {
       merchant_id:   merchantProfiles.id,
       business_name: merchantProfiles.business_name,
       orders_total:  sql<number>`COUNT(*)`,
-      // إجمالي مبيعات التاجر = سعره × الكمية على delivered فقط
-      // رسوم المنصة تُخصم من المنصة وليس من التاجر — لا تُطرح هنا
+      // صافي أرباح التاجر = (سعره × الكمية − رسوم المنصة من التاجر) على delivered فقط
       revenue_dzd: sql<number>`COALESCE(
-        SUM(${orders.unit_merchant_price_dzd} * ${orders.quantity})
+        SUM(GREATEST(${orders.unit_merchant_price_dzd} * ${orders.quantity} - ${orders.platform_fee_merchant_dzd}, 0))
         FILTER (WHERE ${orders.status} = 'delivered')
       , 0)`,
       return_rate_pct: sql<number>`
@@ -329,7 +328,7 @@ async function fetchTopMerchants(from: Date, to: Date): Promise<TopMerchant[]> {
     .groupBy(merchantProfiles.id, merchantProfiles.business_name)
     .orderBy(
       desc(
-        sql`SUM(${orders.unit_merchant_price_dzd} * ${orders.quantity})
+        sql`SUM(GREATEST(${orders.unit_merchant_price_dzd} * ${orders.quantity} - ${orders.platform_fee_merchant_dzd}, 0))
             FILTER (WHERE ${orders.status} = 'delivered')`,
       ),
     )

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Integration } from '../integration.types'
+import type { Integration } from '../-integration.types'
 
 interface Props {
   integration: Integration

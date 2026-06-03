@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import type { TopAffiliate } from '../dashboard.types'
+import type { TopAffiliate } from '../-dashboard.types'
 
 interface TopAffiliatesProps {
   affiliates: TopAffiliate[]

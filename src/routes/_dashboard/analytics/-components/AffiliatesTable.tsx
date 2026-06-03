@@ -67,7 +67,7 @@ export function AffiliatesTable({ affiliates }: AffiliatesTableProps) {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right text-gray-700">
-                  {a.orders_count}
+                  {a.orders_total}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <RefusalBadge pct={a.refusal_rate_pct} />

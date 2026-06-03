@@ -31,7 +31,23 @@ export interface OrdersStats {
   deliveryRate: number
 }
 
+// منتج متاح لإنشاء طلبية يدوية (المسوّق يبيع بأي سعر ≥ سعر الجملة)
+export interface LeadProduct {
+  id: string
+  name: string
+  basePrice: number // سعر الجملة (التكلفة على المسوّق)
+}
+
+export interface TabCounts {
+  all: number
+  pending: number
+  shipping: number
+  delivered: number
+  returned: number
+}
+
 export interface OrdersPageData {
   orders: AffiliateOrder[]
   stats: OrdersStats
+  products: LeadProduct[]
 }
