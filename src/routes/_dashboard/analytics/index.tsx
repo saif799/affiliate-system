@@ -144,8 +144,8 @@ function AnalyticsPage() {
           //TODO : make sure the data matches the type 
           <KpiCard
             label="معدل التوصيل"
-            value={`${kpis.retention_pct}%`}
-            change={kpis.retention_change_pct}
+            value={`${kpis.delivery_rate_pct}%`}
+            change={kpis.delivery_rate_change_pct}
             accent="amber"
           />
           <KpiCard

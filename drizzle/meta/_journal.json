@@ -15,6 +15,13 @@
       "when": 1780396156653,
       "tag": "0001_past_next_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780485381465,
+      "tag": "0002_noisy_stryfe",
+      "breakpoints": true
     }
   ]
 }

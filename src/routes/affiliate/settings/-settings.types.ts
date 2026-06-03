@@ -14,7 +14,7 @@ export interface SocialLinks {
 export interface AffiliateProfile {
   id: string
   fullName: string
-  username: string        // يُستخدم في رابط الـ affiliate link
+  username: string // = رمز الإحالة (يُستخدم في رابط المسوّق)
   email: string
   phone: string
   avatarUrl?: string
@@ -22,35 +22,15 @@ export interface AffiliateProfile {
   joinedAt: string
 }
 
-// ─── Payout Methods ──────────────────────────────────────────
-export type PayoutMethodType = 'ccp' | 'baridimob' | 'bank'
-
-export interface CCPAccount {
-  type: 'ccp'
-  accountNumber: string
-  key: string             // المفتاح (Clé)
-}
-
-export interface BaridiMobAccount {
-  type: 'baridimob'
-  rip: string             // 20 رقماً
-}
-
-export interface BankAccount {
-  type: 'bank'
-  bankName: string
-  accountNumber: string
-  rib: string
-}
-
-export type PayoutAccount = CCPAccount | BaridiMobAccount | BankAccount
+// ─── Payout Methods (مشتقّة من طلبات السحب السابقة — للعرض) ───
+export type PayoutMethodType = 'CCP' | 'BaridiMob'
 
 export interface PayoutMethod {
   id: string
-  label: string           // اسم مخصص: "CCP الشخصي"
-  account: PayoutAccount
+  type: PayoutMethodType
+  label: string
+  detail: string // رقم الحساب
   isDefault: boolean
-  createdAt: string
 }
 
 // ─── Notifications ───────────────────────────────────────────
@@ -74,10 +54,10 @@ export interface NotificationSettings {
 // ─── Security ────────────────────────────────────────────────
 export interface ActiveSession {
   id: string
-  device: string          // "Chrome - هاتف أندرويد"
-  location: string        // "وهران، الجزائر"
+  device: string // "Chrome - هاتف أندرويد"
+  location: string // "وهران، الجزائر"
   ip: string
-  lastActive: string      // ISO
+  lastActive: string // ISO
   isCurrent: boolean
 }
 
@@ -101,20 +81,6 @@ export interface UpdateProfileForm {
   username: string
   phone: string
   socialLinks: SocialLinks
-}
-
-export interface AddPayoutMethodForm {
-  label: string
-  type: PayoutMethodType
-  // CCP
-  ccpAccount?: string
-  ccpKey?: string
-  // BaridiMob
-  rip?: string
-  // Bank
-  bankName?: string
-  bankAccount?: string
-  rib?: string
 }
 
 export interface ChangePasswordForm {

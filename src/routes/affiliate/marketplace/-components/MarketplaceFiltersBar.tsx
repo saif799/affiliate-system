@@ -1,25 +1,30 @@
-import { Search} from 'lucide-react'
-import type { MarketplaceFilters, ProductCategory } from '../-marketplace.types'
+import { Search } from 'lucide-react'
+import type { MarketplaceFilters } from '../-marketplace.types'
 
 interface Props {
   filters: MarketplaceFilters
   onChange: (filters: MarketplaceFilters) => void
+  categories: string[]
   totalShown: number
   totalAll: number
 }
 
-const categories: Array<ProductCategory | 'الكل'> = [
-  'الكل', 'إلكترونيات', 'ملابس', 'تجميل', 'رياضة', 'أطفال', 'منزل', 'صحة',
-]
-
 const sortOptions: Array<{ value: MarketplaceFilters['sortBy']; label: string }> = [
-  { value: 'commission', label: 'أعلى عمولة' },
+  { value: 'newest', label: 'الأحدث' },
   { value: 'deliveredRate', label: 'أفضل معدل استلام' },
   { value: 'totalSales', label: 'الأكثر مبيعاً' },
-  { value: 'newest', label: 'الأحدث' },
+  { value: 'priceLow', label: 'أقل سعر جملة' },
 ]
 
-export function MarketplaceFiltersBar({ filters, onChange, totalShown, totalAll }: Props) {
+export function MarketplaceFiltersBar({
+  filters,
+  onChange,
+  categories,
+  totalShown,
+  totalAll,
+}: Props) {
+  const allCategories = ['الكل', ...categories]
+
   return (
     <div className="flex flex-col gap-3">
 
@@ -73,7 +78,7 @@ export function MarketplaceFiltersBar({ filters, onChange, totalShown, totalAll 
 
       {/* Row 2: Category tabs */}
       <div className="flex gap-1.5 flex-wrap">
-        {categories.map((cat) => (
+        {allCategories.map((cat) => (
           <button
             key={cat}
             onClick={() => onChange({ ...filters, category: cat })}

@@ -310,6 +310,10 @@ export const orders = pgTable(
     quantity: integer('quantity').notNull().default(1),
     unit_affiliate_price_dzd: integer('unit_affiliate_price_dzd').notNull(),
     unit_merchant_price_dzd: integer('unit_merchant_price_dzd').notNull(),
+    // رسوم المنصة الثابتة لكل طلبية مُسلَّمة — تُؤخذ من الطرفين
+    platform_fee_merchant_dzd: integer('platform_fee_merchant_dzd').notNull().default(0),
+    platform_fee_affiliate_dzd: integer('platform_fee_affiliate_dzd').notNull().default(0),
+    // الإجمالي (= رسم التاجر + رسم المسوّق) — يُختزن للتقارير
     platform_fee_dzd: integer('platform_fee_dzd').notNull().default(0),
     shipping_fee_dzd: integer('shipping_fee_dzd').notNull().default(0),
     status: orderStatusEnum('status').notNull().default('pending'),
@@ -332,10 +336,12 @@ export const orders = pgTable(
     sql`CONSTRAINT chk_quantity_positive
         CHECK (${table.quantity} > 0)`,
     sql`CONSTRAINT chk_prices_positive CHECK (
-      ${table.unit_affiliate_price_dzd} >= 0 AND
-      ${table.unit_merchant_price_dzd}  >= 0 AND
-      ${table.platform_fee_dzd}         >= 0 AND
-      ${table.shipping_fee_dzd}         >= 0
+      ${table.unit_affiliate_price_dzd}   >= 0 AND
+      ${table.unit_merchant_price_dzd}    >= 0 AND
+      ${table.platform_fee_merchant_dzd}  >= 0 AND
+      ${table.platform_fee_affiliate_dzd} >= 0 AND
+      ${table.platform_fee_dzd}           >= 0 AND
+      ${table.shipping_fee_dzd}           >= 0
     )`,
   ],
 )

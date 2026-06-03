@@ -4,7 +4,8 @@ export type TeamRole = 'super_admin' | 'merchant' | 'affiliate' | 'system'
 export type TeamMemberStatus = 'active' | 'pending' | 'suspended'
 
 export interface FinancialSettings {
-  platform_fee_per_order: number
+  platform_fee_merchant: number
+  platform_fee_affiliate: number
   minimum_payout: number
   payout_schedule: PayoutSchedule
   payout_methods: PayoutMethod[]
@@ -43,7 +44,8 @@ export interface SettingsData {
 // ── Mutation inputs ───────────────────────────────────────────
 
 export interface UpdateFinancialInput {
-  platform_fee_per_order: number
+  platform_fee_merchant: number
+  platform_fee_affiliate: number
   minimum_payout: number
   payout_schedule: PayoutSchedule
   payout_methods: PayoutMethod[]

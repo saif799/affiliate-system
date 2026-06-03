@@ -62,7 +62,7 @@ export function MerchantsTable({ merchants }: MerchantsTableProps) {
                   {m.business_name}
                 </td>
                 <td className="px-4 py-3 text-right text-gray-700">
-                  {m.orders_count}
+                  {m.orders_total}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <ReturnBadge pct={m.return_rate_pct} />

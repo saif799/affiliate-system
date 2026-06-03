@@ -221,6 +221,7 @@ export const requestWithdrawal = createServerFn({ method: 'POST' })
         })
         .from(wallets)
         .where(eq(wallets.user_id, userId))
+        .for('update')
         .limit(1)
 
       if (!wallet) throw new Error('المحفظة غير موجودة')

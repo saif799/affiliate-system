@@ -1,67 +1,45 @@
-export type ProductCategory =
-  | 'إلكترونيات'
-  | 'ملابس'
-  | 'تجميل'
-  | 'رياضة'
-  | 'أطفال'
-  | 'منزل'
-  | 'صحة'
+// affiliate/marketplace/-marketplace.types.ts
 
-export type ProductStatus = 'active' | 'limited' | 'hot'
-
-export interface ProductVariant {
-  id: string
-  label: string
-  stock: number
-}
-
-export interface ProductMedia {
-  images: string[] // emoji placeholders
-  driveUrl: string
-  hasVideo: boolean
-}
+export type ProductStatus = 'active' | 'limited'
 
 export interface Product {
   id: string
   name: string
-  merchantName: string
   merchantId: string
-  category: ProductCategory
+  merchantName: string
+  category: string
   status: ProductStatus
-  thumbnail: string
-  msrpPrice: number      // سعر البيع للمستهلك
-  basePrice: number      // سعر الجملة
-  minSellingPrice: number
-  commission: number     // msrpPrice - basePrice
-  commissionRate: number // نسبة مئوية
+  thumbnail: string // رابط الصورة الرئيسية (قد يكون فارغاً)
+  images: string[] // روابط الصور
+  videoUrl: string | null
+  basePrice: number // سعر الجملة (التكلفة على المسوّق) — يبيع بأي سعر أعلى
+  stockQty: number
   deliveredRate: number
   retourRate: number
-  totalSales: number
+  totalSales: number // عدد الطلبيات المُسلّمة لهذا المنتج
   description: string
-  copywriting: string
-  variants: ProductVariant[]
-  media: ProductMedia
-  tags: string[]
-}
-
-export interface GeneratedLink {
-  productId: string
-  subId: string
-  finalUrl: string
 }
 
 export interface MarketplaceFilters {
   search: string
-  category: ProductCategory | 'الكل'
-  sortBy: 'commission' | 'deliveredRate' | 'totalSales' | 'newest'
+  category: string // 'الكل' أو اسم فئة
+  sortBy: 'newest' | 'deliveredRate' | 'totalSales' | 'priceLow'
   hideHighRetour: boolean
+}
+
+export interface GeneratedLink {
+  productId: string
+  slug: string
+  subId: string | null
+  finalUrl: string
 }
 
 export interface MarketplaceData {
   products: Product[]
+  categories: string[]
   stats: {
     totalProducts: number
-    avgCommission: number
-    topCommission: number
+    avgBasePrice: number
+    minBasePrice: number
   }
 }

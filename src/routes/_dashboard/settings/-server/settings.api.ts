@@ -29,7 +29,8 @@ async function requireSuperAdmin() {
 // ═══════════════════════════════════════════════════════════════
 
 const FINANCIAL_DEFAULTS: FinancialSettings = {
-  platform_fee_per_order: 100,
+  platform_fee_merchant: 50,
+  platform_fee_affiliate: 50,
   minimum_payout: 5000,
   payout_schedule: 'monthly',
   payout_methods: ['BaridiMob', 'CCP'],
@@ -48,7 +49,8 @@ const GENERAL_DEFAULTS: GeneralSettings = {
 // ═══════════════════════════════════════════════════════════════
 
 const FINANCIAL_KEYS = [
-  'platform_fee_per_order',
+  'platform_fee_merchant',
+  'platform_fee_affiliate',
   'minimum_payout',
   'payout_schedule',
   'payout_methods',
@@ -93,10 +95,15 @@ async function upsertKey(key: string, value: string): Promise<void> {
 
 function parseFinancial(kv: KVMap): FinancialSettings {
   return {
-    platform_fee_per_order:
-      kv.platform_fee_per_order !== undefined
-        ? Number(kv.platform_fee_per_order)
-        : FINANCIAL_DEFAULTS.platform_fee_per_order,
+    platform_fee_merchant:
+      kv.platform_fee_merchant !== undefined
+        ? Number(kv.platform_fee_merchant)
+        : FINANCIAL_DEFAULTS.platform_fee_merchant,
+
+    platform_fee_affiliate:
+      kv.platform_fee_affiliate !== undefined
+        ? Number(kv.platform_fee_affiliate)
+        : FINANCIAL_DEFAULTS.platform_fee_affiliate,
 
     minimum_payout:
       kv.minimum_payout !== undefined
@@ -201,7 +208,8 @@ export const getSettingsData = createServerFn({ method: 'GET' }).handler(
 // ═══════════════════════════════════════════════════════════════
 
 const UpdateFinancialSchema = z.object({
-  platform_fee_per_order: z.number().min(0),
+  platform_fee_merchant: z.number().min(0),
+  platform_fee_affiliate: z.number().min(0),
   minimum_payout: z.number().min(0),
   payout_schedule: z.enum(['weekly', 'biweekly', 'monthly']),
   payout_methods: z.array(z.enum(['CCP', 'BaridiMob'])).min(1),
@@ -213,7 +221,8 @@ export const updateFinancialSettings = createServerFn({ method: 'POST' })
     await requireSuperAdmin()
 
     await Promise.all([
-      upsertKey('platform_fee_per_order', String(data.platform_fee_per_order)),
+      upsertKey('platform_fee_merchant', String(data.platform_fee_merchant)),
+      upsertKey('platform_fee_affiliate', String(data.platform_fee_affiliate)),
       upsertKey('minimum_payout', String(data.minimum_payout)),
       upsertKey('payout_schedule', data.payout_schedule),
       upsertKey('payout_methods', JSON.stringify(data.payout_methods)),

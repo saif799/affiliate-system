@@ -91,7 +91,7 @@ export const getMerchantDashboard = createServerFn({ method: 'GET' })
     // ── stats (range-scoped) ─────────────────────────────────
     const [statsRow] = await db
       .select({
-        netRevenue: sql<number>`COALESCE(SUM(${orders.unit_merchant_price_dzd} * ${orders.quantity}) FILTER (WHERE ${orders.status} = 'delivered'), 0)`,
+        netRevenue: sql<number>`COALESCE(SUM(GREATEST(${orders.unit_merchant_price_dzd} * ${orders.quantity} - ${orders.platform_fee_merchant_dzd}, 0)) FILTER (WHERE ${orders.status} = 'delivered'), 0)`,
         delivered: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'delivered')`,
         returned: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'returned')`,
         nonPending: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} != 'pending')`,
@@ -199,7 +199,7 @@ export const getMerchantDashboard = createServerFn({ method: 'GET' })
         id: products.id,
         name: products.name,
         totalSold: sql<number>`COUNT(${orders.id})`,
-        revenue: sql<number>`COALESCE(SUM(${orders.unit_merchant_price_dzd} * ${orders.quantity}), 0)`,
+        revenue: sql<number>`COALESCE(SUM(GREATEST(${orders.unit_merchant_price_dzd} * ${orders.quantity} - ${orders.platform_fee_merchant_dzd}, 0)), 0)`,
       })
       .from(orders)
       .innerJoin(products, eq(orders.product_id, products.id))

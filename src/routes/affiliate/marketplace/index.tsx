@@ -23,7 +23,7 @@ function MarketplacePage() {
   const [filters, setFilters] = useState<MarketplaceFilters>({
     search: '',
     category: 'الكل',
-    sortBy: 'commission',
+    sortBy: 'newest',
     hideHighRetour: false,
   })
 
@@ -50,9 +50,10 @@ function MarketplacePage() {
 
     result.sort((a, b) => {
       switch (filters.sortBy) {
-        case 'commission':     return b.commission - a.commission
+        case 'priceLow':       return a.basePrice - b.basePrice
         case 'deliveredRate':  return b.deliveredRate - a.deliveredRate
         case 'totalSales':     return b.totalSales - a.totalSales
+        case 'newest':
         default:               return 0
       }
     })
@@ -71,12 +72,12 @@ function MarketplacePage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-center">
-            <p className="text-xs text-gray-400">متوسط العمولة</p>
-            <p className="text-sm font-bold text-gray-900">{data.stats.avgCommission.toLocaleString("ar-DZ")} د.ج</p>
+            <p className="text-xs text-gray-400">متوسط سعر الجملة</p>
+            <p className="text-sm font-bold text-gray-900">{data.stats.avgBasePrice.toLocaleString("ar-DZ")} د.ج</p>
           </div>
           <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-center">
-            <p className="text-xs text-violet-400">أعلى عمولة</p>
-            <p className="text-sm font-bold text-violet-700">{data.stats.topCommission.toLocaleString("ar-DZ")} د.ج</p>
+            <p className="text-xs text-violet-400">أقل سعر جملة</p>
+            <p className="text-sm font-bold text-violet-700">{data.stats.minBasePrice.toLocaleString("ar-DZ")} د.ج</p>
           </div>
         </div>
       </div>
@@ -85,6 +86,7 @@ function MarketplacePage() {
       <MarketplaceFiltersBar
         filters={filters}
         onChange={setFilters}
+        categories={data.categories}
         totalShown={filteredProducts.length}
         totalAll={data.products.length}
       />

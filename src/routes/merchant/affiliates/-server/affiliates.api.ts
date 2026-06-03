@@ -41,8 +41,8 @@ async function requireMerchant() {
 
 const n = (v: unknown) => Number(v ?? 0)
 
-// commission per order = (affiliate price - merchant price - platform fee) * quantity
-const commissionExpr = sql<number>`(${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd} - ${orders.platform_fee_dzd}) * ${orders.quantity}`
+// عمولة الطلب = (سعر المسوّق - سعر التاجر) × الكمية - رسوم المنصة من المسوّق
+const commissionExpr = sql<number>`GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd}, 0)`
 
 const AVATAR_PALETTE = [
   '#ddd1fe',

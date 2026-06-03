@@ -11,15 +11,20 @@ import {
   Wallet,
   TrendingUp,
 } from 'lucide-react'
+import { getAffiliateWalletBalance } from './affiliate/-server/layout.api'
 
 export const Route = createFileRoute('/affiliate')({
-  beforeLoad: ({ context }) => {
+  beforeLoad: ({ context, location }) => {
     if (!context.session) throw redirect({ to: '/login' })
     if (context.session.user.status !== 'active')
       throw redirect({ to: '/pending-approval' })
     if (context.session.user.role !== 'affiliate')
       throw redirect({ to: '/login' })
+    // الصفحة الجذر /affiliate مجرد تخطيط بدون محتوى → وجّه مباشرة للوحة القيادة
+    if (location.pathname === '/affiliate' || location.pathname === '/affiliate/')
+      throw redirect({ to: '/affiliate/dashboard' })
   },
+  loader: () => getAffiliateWalletBalance(),
   component: AffiliateLayout,
 })
 
@@ -32,6 +37,10 @@ const navItems = [
 ]
 
 function AffiliateLayout() {
+  const { session } = Route.useRouteContext()
+  const { availableBalance } = Route.useLoaderData()
+  const userName = session?.user.name ?? 'مسوّق'
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <aside className="flex w-56 flex-col justify-between border-l border-gray-200 bg-white px-3 py-5">
@@ -49,7 +58,7 @@ function AffiliateLayout() {
               <User size={14} />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-800">عبد الوكيل</p>
+              <p className="text-xs font-medium text-gray-800">{userName}</p>
               <p className="text-xs text-gray-500">مسوّق</p>
             </div>
           </div>
@@ -76,7 +85,7 @@ function AffiliateLayout() {
             <div>
               <p className="text-xs font-medium text-gray-700">الرصيد المتاح</p>
               <p className="mt-0.5 text-xs font-semibold text-violet-600">
-                97,200 د.ج
+                {availableBalance.toLocaleString('ar-DZ')} د.ج
               </p>
             </div>
           </div>
