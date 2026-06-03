@@ -11,6 +11,7 @@ interface Props {
   settings: NotificationSettings
 }
 
+// TODO : replace it with a shadcn component 
 function Toggle({
   checked,
   onChange,
@@ -30,7 +31,7 @@ function Toggle({
     >
       <span
         className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-          checked ? 'translate-x-1' : 'translate-x-4'
+          checked ? 'translate-x-1' : '-translate-x-6.5'
         }`}
       />
     </button>
