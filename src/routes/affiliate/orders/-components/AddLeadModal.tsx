@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import type { AddLeadForm } from '../orders.types'
+import type { AddLeadForm } from '../-orders.types'
 
 const PRODUCTS = [
   { id: 'JKT-001', name: 'جاكيت جلد كلاسيكي رجالي', minPrice: 10000, commission: 3000 },

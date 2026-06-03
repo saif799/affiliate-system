@@ -4,7 +4,7 @@
 
 import { useState } from 'react'
 import { X, CreditCard, Building2, AlertCircle } from 'lucide-react'
-import type { WithdrawFormData, PaymentMethod } from '../wallet.types'
+import type { WithdrawFormData, PaymentMethod } from '../-wallet.types'
 
 interface Props {
   availableBalance: number

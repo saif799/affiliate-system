@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { BellOff } from 'lucide-react'
 import { updateNotifications } from '../-server/settings.api'
-import type { NotificationSettings, NotificationPreference } from '../settings.types'
+import type { NotificationSettings, NotificationPreference } from '../-settings.types'
 
 interface Props {
   settings: NotificationSettings

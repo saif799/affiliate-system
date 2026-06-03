@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { Monitor, Smartphone, Eye, EyeOff, Copy, LogOut, Shield } from 'lucide-react'
 import { changePassword, revokeAllSessions } from '../-server/settings.api'
-import type { SecuritySettings, ChangePasswordForm } from '../settings.types'
+import type { SecuritySettings, ChangePasswordForm } from '../-settings.types'
 
 interface Props {
   security: SecuritySettings

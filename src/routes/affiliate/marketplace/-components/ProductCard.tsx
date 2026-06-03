@@ -1,4 +1,4 @@
-import type { Product } from '../marketplace.types'
+import type { Product } from '../-marketplace.types'
 
 interface Props {
   product: Product

@@ -4,7 +4,7 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { mockWalletData } from './wallet.mock'
-import type { WalletData, WithdrawFormData, WithdrawalRequest } from '../wallet.types'
+import type { WalletData, WithdrawFormData, WithdrawalRequest } from '../-wallet.types'
 
 // جلب بيانات المحفظة الكاملة
 export const getWalletData = createServerFn({

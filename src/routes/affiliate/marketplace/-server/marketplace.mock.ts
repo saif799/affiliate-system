@@ -1,4 +1,4 @@
-import type { MarketplaceData } from '../marketplace.types'
+import type { MarketplaceData } from '../-marketplace.types'
 
 export const mockMarketplaceData: MarketplaceData = {
   stats: {

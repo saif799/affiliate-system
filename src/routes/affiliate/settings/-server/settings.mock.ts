@@ -2,7 +2,7 @@
 // -server/settings.mock.ts
 // ============================================================
 
-import type { SettingsData } from '../settings.types'
+import type { SettingsData } from '../-settings.types'
 
 export const mockSettingsData: SettingsData = {
   profile: {

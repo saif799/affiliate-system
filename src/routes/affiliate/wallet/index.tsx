@@ -9,7 +9,7 @@ import { BalanceCards } from './-components/BalanceCards'
 import { WithdrawCTA } from './-components/WithdrawCTA'
 import { TransactionsLedger } from './-components/TransactionsLedger'
 import { WithdrawModal } from './-components/WithdrawModal'
-import type { WithdrawFormData, WithdrawalRequest } from './wallet.types'
+import type { WithdrawFormData, WithdrawalRequest } from './-wallet.types'
 
 // ─── Route ───────────────────────────────────────────────────
 export const Route = createFileRoute('/affiliate/wallet/')({

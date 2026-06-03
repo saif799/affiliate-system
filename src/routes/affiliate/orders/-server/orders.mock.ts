@@ -1,4 +1,4 @@
-import type { OrdersPageData } from '../orders.types'
+import type { OrdersPageData } from '../-orders.types'
 
 export const mockOrdersData: OrdersPageData = {
   stats: {

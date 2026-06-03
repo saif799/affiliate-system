@@ -1,4 +1,4 @@
-import type { TopMerchant } from '../dashboard.types'
+import type { TopMerchant } from '../-dashboard.types'
 
 interface Props {
   merchants: TopMerchant[]

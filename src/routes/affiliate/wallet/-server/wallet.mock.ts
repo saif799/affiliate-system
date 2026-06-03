@@ -2,7 +2,7 @@
 // -server/wallet.mock.ts
 // ============================================================
 
-import type { WalletData } from '../wallet.types'
+import type { WalletData } from '../-wallet.types'
 
 export const mockWalletData: WalletData = {
   balance: {

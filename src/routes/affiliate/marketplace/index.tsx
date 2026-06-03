@@ -4,7 +4,7 @@ import { getMarketplaceData } from './-server/marketplace.api'
 import { ProductCard } from './-components/ProductCard'
 import { QuickViewModal } from './-components/QuickViewModal'
 import { MarketplaceFiltersBar } from './-components/MarketplaceFiltersBar'
-import type { Product, MarketplaceFilters } from './marketplace.types'
+import type { Product, MarketplaceFilters } from './-marketplace.types'
 
 export const Route = createFileRoute('/affiliate/marketplace/')({
   loader: () => getMarketplaceData(),

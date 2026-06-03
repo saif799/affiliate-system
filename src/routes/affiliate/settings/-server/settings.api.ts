@@ -11,7 +11,7 @@ import type {
   ChangePasswordForm,
   NotificationSettings,
   PayoutMethod,
-} from '../settings.types'
+} from '../-settings.types'
 
 // جلب كل بيانات الإعدادات
 export const getSettingsData = createServerFn({

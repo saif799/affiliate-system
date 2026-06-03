@@ -2,7 +2,7 @@
 // -components/BalanceCards.tsx
 // ============================================================
 
-import type { WalletBalance } from '../wallet.types'
+import type { WalletBalance } from '../-wallet.types'
 
 interface Props {
   balance: WalletBalance

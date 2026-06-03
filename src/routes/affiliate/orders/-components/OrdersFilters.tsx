@@ -1,4 +1,4 @@
-import type { OrderStatus } from '../orders.types'
+import type { OrderStatus } from '../-orders.types'
 
 const TABS: { key: OrderStatus | 'all'; label: string; count: number }[] = [
   { key: 'all',       label: 'الكل',              count: 47 },

@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { Camera, Link, ExternalLink } from 'lucide-react'
 import { updateProfile } from '../-server/settings.api'
-import type { AffiliateProfile, UpdateProfileForm } from '../settings.types'
+import type { AffiliateProfile, UpdateProfileForm } from '../-settings.types'
 
 interface Props {
   profile: AffiliateProfile

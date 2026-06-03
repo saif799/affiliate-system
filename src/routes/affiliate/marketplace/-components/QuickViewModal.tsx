@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, Copy, Check, ExternalLink, Download } from 'lucide-react'
-import type { Product } from '../marketplace.types'
+import type { Product } from '../-marketplace.types'
 
 interface Props {
   product: Product | null

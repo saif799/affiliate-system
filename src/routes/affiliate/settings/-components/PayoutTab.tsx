@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { Plus, Trash2, Star, AlertTriangle, CreditCard, Smartphone, Building2 } from 'lucide-react'
 import { addPayoutMethod, deletePayoutMethod, setDefaultPayoutMethod } from '../-server/settings.api'
-import type { PayoutMethod, AddPayoutMethodForm, PayoutMethodType } from '../settings.types'
+import type { PayoutMethod, AddPayoutMethodForm, PayoutMethodType } from '../-settings.types'
 
 interface Props {
   methods: PayoutMethod[]

@@ -1,4 +1,4 @@
-import type { RecentOrder, OrderStatus } from '../dashboard.types'
+import type { RecentOrder, OrderStatus } from '../-dashboard.types'
 
 interface Props {
   orders: RecentOrder[]

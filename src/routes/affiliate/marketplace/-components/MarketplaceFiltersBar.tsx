@@ -1,5 +1,5 @@
 import { Search} from 'lucide-react'
-import type { MarketplaceFilters, ProductCategory } from '../marketplace.types'
+import type { MarketplaceFilters, ProductCategory } from '../-marketplace.types'
 
 interface Props {
   filters: MarketplaceFilters

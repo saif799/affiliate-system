@@ -1,5 +1,5 @@
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
-import type { StatMetric } from '../dashboard.types'
+import type { StatMetric } from '../-dashboard.types'
 
 type Format = 'dzd' | 'number' | 'percent'
 

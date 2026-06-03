@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { mockMarketplaceData } from './marketplace.mock'
-import type { MarketplaceData } from '../marketplace.types'
+import type { MarketplaceData } from '../-marketplace.types'
 
 export const getMarketplaceData = createServerFn({
   method: 'GET',

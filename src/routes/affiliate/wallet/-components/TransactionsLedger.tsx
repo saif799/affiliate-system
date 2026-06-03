@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState } from 'react'
-import type { Transaction, WithdrawalRequest } from '../wallet.types'
+import type { Transaction, WithdrawalRequest } from '../-wallet.types'
 
 interface Props {
   transactions: Transaction[]

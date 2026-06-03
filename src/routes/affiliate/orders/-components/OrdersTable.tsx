@@ -1,4 +1,4 @@
-import type { AffiliateOrder, OrderStatus } from '../orders.types'
+import type { AffiliateOrder, OrderStatus } from '../-orders.types'
 
 const STATUS_MAP: Record<OrderStatus, { label: string; dot: string; bg: string; text: string }> = {
   pending:   { label: 'بانتظار التأكيد', dot: 'bg-amber-500',  bg: 'bg-amber-50',  text: 'text-amber-800'  },

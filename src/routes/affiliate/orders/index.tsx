@@ -5,7 +5,7 @@ import { OrdersStats } from './-components/OrdersStats'
 import { OrdersFilters } from './-components/OrdersFilters'
 import { OrdersTable } from './-components/OrdersTable'
 import { AddLeadModal } from './-components/AddLeadModal'
-import type { OrderStatus, AddLeadForm } from './orders.types'
+import type { OrderStatus, AddLeadForm } from './-orders.types'
 
 const PER_PAGE = 8
 

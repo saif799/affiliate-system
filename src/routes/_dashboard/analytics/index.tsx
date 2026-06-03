@@ -141,6 +141,7 @@ function AnalyticsPage() {
             change={kpis.take_rate_change_pct}
             accent="green"
           />
+          //TODO : make sure the data matches the type 
           <KpiCard
             label="معدل التوصيل"
             value={`${kpis.retention_pct}%`}
