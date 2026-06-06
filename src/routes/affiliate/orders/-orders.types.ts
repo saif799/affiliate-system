@@ -73,4 +73,5 @@ export interface TabCounts {
 export interface OrdersPageData {
   orders: AffiliateOrder[]
   stats: OrdersStats
+  products: LeadProduct[]
 }
