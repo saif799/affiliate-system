@@ -51,8 +51,9 @@ function LoginPage() {
     const role = user?.role ?? 'affiliate'
 
     // ① حساب pending أو suspended → غرفة الانتظار
+    // replace: true → لا يبقى /login في سجلّ المتصفح
     if (status !== 'active') {
-      router.navigate({ to: '/pending-approval' })
+      router.navigate({ to: '/pending-approval', replace: true })
       return
     }
 
@@ -62,7 +63,7 @@ function LoginPage() {
       merchant: '/merchant',
       affiliate: '/affiliate',
     }
-    router.navigate({ to: roleDashboard[role] ?? '/affiliate' })
+    router.navigate({ to: roleDashboard[role] ?? '/affiliate', replace: true })
   }
 
   return (

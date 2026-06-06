@@ -319,13 +319,21 @@ export const orders = pgTable(
     status: orderStatusEnum('status').notNull().default('pending'),
     tracking_number: text('tracking_number'),
     return_reason: text('return_reason'),
+    // مصدر الطلبية الخارجي (extension) — لمنع الاستيراد المكرّر
+    external_source: text('external_source'),
+    external_order_id: text('external_order_id'),
     created_at: timestamp('created_at').notNull().defaultNow(),
     confirmed_at: timestamp('confirmed_at'),
     shipped_at: timestamp('shipped_at'),
     at_wilaya_at: timestamp('at_wilaya_at'),
     delivered_at: timestamp('delivered_at'),
     settled_at: timestamp('settled_at'),
-    
+    // ── تكامل ECOTRACK للتوصيل ──
+    // رقم التتبّع يُخزَّن في tracking_number الموجود (لا عمود مكرّر).
+    ecotrack_account_id: uuid('ecotrack_account_id').references(() => deliveryAccounts.id),
+    delivery_status: text('delivery_status').default('pending'),
+    returned_at: timestamp('returned_at'),
+
   },
   (table) => [
     index('idx_orders_merchant_id').on(table.merchant_id),
@@ -333,6 +341,10 @@ export const orders = pgTable(
     index('idx_orders_tracking_link_id').on(table.tracking_link_id),
     index('idx_orders_customer_wilaya').on(table.customer_wilaya),
     index('idx_orders_status_created').on(table.status, table.created_at),
+    // منع استيراد نفس الطلبية الخارجية مرتين (idempotency)
+    uniqueIndex('idx_orders_external_unique')
+      .on(table.external_source, table.external_order_id)
+      .where(sql`${table.external_order_id} IS NOT NULL`),
     sql`CONSTRAINT chk_quantity_positive
         CHECK (${table.quantity} > 0)`,
     sql`CONSTRAINT chk_prices_positive CHECK (
@@ -370,6 +382,63 @@ export const orderStatusHistory = pgTable(
   ],
 )
 
+// ============================================================
+// DELIVERY ACCOUNTS — حسابات شركات التوصيل (ECOTRACK، متعدّد الحسابات)
+// ============================================================
+
+export const deliveryAccounts = pgTable(
+  'delivery_accounts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    provider: text('provider').notNull().default('ecotrack'),
+    api_key: text('api_key').notNull(),
+    is_active: boolean('is_active').notNull().default(true),
+    is_default: boolean('is_default').notNull().default(false),
+    deleted_at: timestamp('deleted_at'),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    // حساب افتراضي واحد فقط لكل مزوّد (قيد جزئي على مستوى DB)
+    uniqueIndex('idx_delivery_accounts_default')
+      .on(table.provider)
+      .where(sql`${table.is_default} = true AND ${table.deleted_at} IS NULL`),
+  ],
+)
+
+// ============================================================
+// ORDER TRACKING EVENTS — أرشيف محلّي لأحداث تتبّع ECOTRACK
+// ============================================================
+
+export const orderTrackingEvents = pgTable(
+  'order_tracking_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    order_id: uuid('order_id')
+      .notNull()
+      .references(() => orders.id, { onDelete: 'cascade' }),
+    status: text('status').notNull(), // حالة ECOTRACK الخام (livre, en_transit…)
+    status_label: text('status_label').notNull(), // التسمية العربية
+    description: text('description'),
+    wilaya: text('wilaya'),
+    occurred_at: timestamp('occurred_at').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_tracking_events_order_id').on(table.order_id),
+    index('idx_tracking_events_occurred_at').on(table.occurred_at),
+    // idempotency: لا تُكرَّر نفس الحدث (نفس الطلب + الحالة + الوقت)
+    uniqueIndex('idx_tracking_events_unique').on(
+      table.order_id,
+      table.status,
+      table.occurred_at,
+    ),
+  ],
+)
 
 // ============================================================
 // WALLETS
@@ -453,5 +522,40 @@ export const withdrawalRequests = pgTable(
     index('idx_withdrawals_status_user').on(table.status, table.user_id),
     sql`CONSTRAINT chk_withdrawal_amount
         CHECK (${table.amount_dzd} > 0)`,
+  ],
+)
+
+// ============================================================
+// NOTIFICATIONS — لكل مستخدم (مسوّق/تاجر/أدمن)
+// ============================================================
+
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'order_new',          // طلبية جديدة جاهزة للتجهيز (للتاجر)
+  'order_status',       // تغيّر حالة طلبية
+  'commission_earned',  // عمولة جديدة (للمسوّق)
+  'earning_received',   // أرباح جديدة (للتاجر)
+  'withdrawal_request', // طلب سحب جديد (للأدمن)
+  'withdrawal_update',  // تحديث طلب سحب (للمستخدم)
+  'low_stock',          // مخزون منخفض / نافد
+  'system',             // إشعار عام
+])
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    user_id: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: notificationTypeEnum('type').notNull(),
+    title: text('title').notNull(),
+    body: text('body'),
+    link: text('link'), // مسار داخلي للنقر (مثلاً /merchant/orders)
+    read_at: timestamp('read_at'),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_notifications_user_unread').on(table.user_id, table.read_at),
+    index('idx_notifications_user_created').on(table.user_id, table.created_at),
   ],
 )

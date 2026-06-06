@@ -1,4 +1,4 @@
-import type { Step } from '../types/register.types'
+import type { Step } from '../types/-register.types'
 
 export function ProgressBar({ step }: { step: Step }) {
   const pct = ((step - 1) / 2) * 100

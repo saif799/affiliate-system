@@ -10,8 +10,10 @@ import {
   withdrawalRequests,
   settings,
 } from '#/server/db/schema'
-import { and, eq, sql, desc } from 'drizzle-orm'
+import { and, eq, sql, desc, inArray } from 'drizzle-orm'
 import { z } from 'zod'
+import { releaseMaturedFunds } from '#/server/settlement'
+import { notifySuperAdmins } from '#/server/notify'
 import type {
   WalletData,
   Transaction,
@@ -92,6 +94,9 @@ export const getWalletData = createServerFn({ method: 'GET' }).handler(
   async (): Promise<WalletData> => {
     const { session } = await requireMerchant()
     const userId = session.user.id
+
+    // حرّر أي أرباح انقضت مدّة حجزها (pending → available) قبل العرض
+    await releaseMaturedFunds(userId)
 
     const [wallet] = await db
       .select({
@@ -213,11 +218,27 @@ export const requestWithdrawal = createServerFn({ method: 'POST' })
     if (data.amount < minimumPayout)
       throw new Error(`الحد الأدنى للسحب هو ${minimumPayout} DZD`)
 
+    // منع تعدّد طلبات السحب المعلّقة (rate limiting طبيعي + حماية)
+    const [openReq] = await db
+      .select({ id: withdrawalRequests.id })
+      .from(withdrawalRequests)
+      .where(
+        and(
+          eq(withdrawalRequests.user_id, userId),
+          inArray(withdrawalRequests.status, ['pending', 'approved']),
+        ),
+      )
+      .limit(1)
+    if (openReq)
+      throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+
+    // حرّر المستحقّ المنتهية مدّته أولاً، ثم نفّذ السحب على الرصيد المُحدَّث
+    await releaseMaturedFunds(userId)
+
     await db.transaction(async (tx) => {
       const [wallet] = await tx
         .select({
           available: wallets.available_balance_dzd,
-          pending: wallets.pending_balance_dzd,
         })
         .from(wallets)
         .where(eq(wallets.user_id, userId))
@@ -225,6 +246,21 @@ export const requestWithdrawal = createServerFn({ method: 'POST' })
         .limit(1)
 
       if (!wallet) throw new Error('المحفظة غير موجودة')
+
+      // تحقّق نهائي داخل القفل يمنع سباق طلبَي سحب متزامنين لنفس المستخدم
+      const [openInTx] = await tx
+        .select({ id: withdrawalRequests.id })
+        .from(withdrawalRequests)
+        .where(
+          and(
+            eq(withdrawalRequests.user_id, userId),
+            inArray(withdrawalRequests.status, ['pending', 'approved']),
+          ),
+        )
+        .limit(1)
+      if (openInTx)
+        throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+
       if (wallet.available < data.amount) throw new Error('الرصيد غير كافٍ')
 
       await tx.insert(withdrawalRequests).values({
@@ -235,13 +271,19 @@ export const requestWithdrawal = createServerFn({ method: 'POST' })
         status: 'pending',
       })
 
+      // المبلغ يُخصم من available ويُتتبَّع عبر جدول طلبات السحب
       await tx
         .update(wallets)
-        .set({
-          available_balance_dzd: wallet.available - data.amount,
-          pending_balance_dzd: wallet.pending + data.amount,
-        })
+        .set({ available_balance_dzd: wallet.available - data.amount })
         .where(eq(wallets.user_id, userId))
+    })
+
+    // إشعار الأدمن بطلب السحب الجديد (best-effort)
+    await notifySuperAdmins({
+      type: 'withdrawal_request',
+      title: 'طلب سحب جديد',
+      body: `${session.user.name} (تاجر) طلب سحب ${data.amount.toLocaleString('ar-DZ')} د.ج عبر ${data.method}`,
+      link: '/commissions',
     })
 
     return { success: true }

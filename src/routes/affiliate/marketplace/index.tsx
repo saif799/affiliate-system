@@ -1,10 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { getMarketplaceData } from './-server/marketplace.api'
 import { ProductCard } from './-components/ProductCard'
 import { QuickViewModal } from './-components/QuickViewModal'
 import { MarketplaceFiltersBar } from './-components/MarketplaceFiltersBar'
 import type { Product, MarketplaceFilters } from './-marketplace.types'
+import { AddLeadModal } from '../orders/-components/AddLeadModal'
+import { addLeadManual } from '../orders/-server/orders.api'
+import type { AddLeadForm, LeadProduct } from '../orders/-orders.types'
 
 export const Route = createFileRoute('/affiliate/marketplace/')({
   loader: () => getMarketplaceData(),
@@ -18,8 +21,11 @@ export const Route = createFileRoute('/affiliate/marketplace/')({
 
 function MarketplacePage() {
   const data = Route.useLoaderData()
+  const router = useRouter()
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [leadProduct, setLeadProduct] = useState<LeadProduct | null>(null)
+  const [leadDone, setLeadDone] = useState(false)
   const [filters, setFilters] = useState<MarketplaceFilters>({
     search: '',
     category: 'الكل',
@@ -61,8 +67,32 @@ function MarketplacePage() {
     return result
   }, [data.products, filters])
 
+  function openLeadForm(p: Product) {
+    setSelectedProduct(null)
+    setLeadProduct({ id: p.id, name: p.name, basePrice: p.basePrice })
+  }
+
+  async function handleAddLead(form: AddLeadForm) {
+    try {
+      await addLeadManual({ data: form })
+      setLeadProduct(null)
+      setLeadDone(true)
+      setTimeout(() => setLeadDone(false), 4000)
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل إنشاء الطلبية')
+    }
+  }
+
   return (
     <div className="space-y-5 p-6" dir="rtl">
+
+      {leadDone && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm text-green-700">
+          ✓ تم إنشاء الطلبية — ستجدها في صفحة «طلبياتي» بانتظار تأكيدك
+        </div>
+      )}
+
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -109,10 +139,20 @@ function MarketplacePage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Quick view */}
       <QuickViewModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
+        onAddOrder={openLeadForm}
+      />
+
+      {/* Manual order for a chosen product */}
+      <AddLeadModal
+        open={leadProduct !== null}
+        onClose={() => setLeadProduct(null)}
+        onSubmit={handleAddLead}
+        products={leadProduct ? [leadProduct] : []}
+        initialProductId={leadProduct?.id}
       />
     </div>
   )

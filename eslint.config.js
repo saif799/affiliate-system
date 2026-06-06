@@ -12,6 +12,10 @@ export default [
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/require-await': 'off',
       'pnpm/json-enforce-catalog': 'off',
+      // Drizzle يُرجِع نتائج `.limit(1)` بنوع غير-null رغم أنها undefined وقت
+      // التشغيل عند غياب الصفّ؛ فحوصاتنا الدفاعية (if (!row)) ضرورية للأمان
+      // المالي لكنّ هذه القاعدة تعتبرها زائدة (إيجابيات كاذبة كثيرة) → نُعطّلها.
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
   {

@@ -3,14 +3,14 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
 import { getSession } from '#/lib/session'
-import { affiliateProfiles, orders, products, settings } from '#/server/db/schema'
-import { and, eq, sql, desc, notInArray, isNull, gt, inArray } from 'drizzle-orm'
+import { affiliateProfiles, merchantProfiles, orders, orderStatusHistory, products, settings } from '#/server/db/schema'
+import { and, eq, sql, desc, notInArray, isNull, inArray } from 'drizzle-orm'
+import { notify } from '#/server/notify'
 import { z } from 'zod'
 import type {
   OrdersPageData,
   AffiliateOrder,
   OrderStatus,
-  LeadProduct,
 } from '../-orders.types'
 
 // ============================================================
@@ -80,6 +80,7 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
         createdAt: orders.created_at,
         productName: products.name,
         sku: products.sku,
+        merchantName: merchantProfiles.business_name,
         customerName: orders.customer_name,
         customerPhone: orders.customer_phone,
         wilaya: orders.customer_wilaya,
@@ -88,27 +89,47 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
         merchantPrice: orders.unit_merchant_price_dzd,
         platformFee: orders.platform_fee_affiliate_dzd,
         status: orders.status,
+        trackingNumber: orders.tracking_number,
+        confirmedAt: orders.confirmed_at,
+        shippedAt: orders.shipped_at,
+        atWilayaAt: orders.at_wilaya_at,
+        deliveredAt: orders.delivered_at,
       })
       .from(orders)
       .innerJoin(products, eq(orders.product_id, products.id))
+      .innerJoin(merchantProfiles, eq(orders.merchant_id, merchantProfiles.id))
       .where(visible)
       .orderBy(desc(orders.created_at))
 
+    const iso = (d: Date | null) => (d ? d.toISOString() : null)
+
     const ordersList: AffiliateOrder[] = rows.map((r) => ({
       id: ref(r.id, 'ORD'),
+      rawId: r.id,
       date: r.createdAt.toISOString().slice(0, 10),
       product: r.productName,
       productThumb: '📦',
       sku: r.sku ?? '—',
+      merchantName: r.merchantName,
       customer: r.customerName,
       phone: r.customerPhone,
       wilaya: r.wilaya,
+      quantity: r.quantity,
+      basePrice: r.merchantPrice,
       price: r.affiliatePrice * r.quantity,
       commission: Math.max(
         0,
         (r.affiliatePrice - r.merchantPrice) * r.quantity - r.platformFee,
       ),
       status: STATUS_MAP[r.status] ?? 'pending',
+      dbStatus: r.status,
+      needsAction: r.status === 'pending',
+      trackingNumber: r.trackingNumber,
+      createdAt: r.createdAt.toISOString(),
+      confirmedAt: iso(r.confirmedAt),
+      shippedAt: iso(r.shippedAt),
+      atWilayaAt: iso(r.atWilayaAt),
+      deliveredAt: iso(r.deliveredAt),
     }))
 
     // ── stats ────────────────────────────────────────────────
@@ -134,30 +155,7 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
       deliveryRate: finalized > 0 ? round1((delivered / finalized) * 100) : 0,
     }
 
-    // ── products (للطلبية اليدوية: أي منتج نشط ومتوفر) ────────
-    const productRows = await db
-      .select({
-        id: products.id,
-        name: products.name,
-        basePrice: products.merchant_price_dzd,
-      })
-      .from(products)
-      .where(
-        and(
-          eq(products.is_active, true),
-          isNull(products.deleted_at),
-          gt(products.stock_qty, 0),
-        ),
-      )
-      .orderBy(products.name)
-
-    const productList: LeadProduct[] = productRows.map((p) => ({
-      id: p.id,
-      name: p.name,
-      basePrice: p.basePrice,
-    }))
-
-    return { orders: ordersList, stats, products: productList }
+    return { orders: ordersList, stats }
   },
 )
 
@@ -214,6 +212,153 @@ export const addLeadManual = createServerFn({ method: 'POST' })
       platform_fee_affiliate_dzd: fees.affiliate,
       platform_fee_dzd: fees.merchant + fees.affiliate,
       status: 'pending',
+    })
+
+    return { success: true }
+  })
+
+// ============================================================
+// CONFIRM LEAD (المسوّق يؤكّد → تذهب للتاجر + يُنقَص المخزون)
+// ============================================================
+
+const OrderIdSchema = z.object({ orderId: z.string().uuid() })
+
+export const confirmLead = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) => OrderIdSchema.parse(input))
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const { session, profileId } = await requireAffiliate()
+
+    const info = await db.transaction(async (tx) => {
+      const [order] = await tx
+        .select({
+          id: orders.id,
+          status: orders.status,
+          productId: orders.product_id,
+          quantity: orders.quantity,
+        })
+        .from(orders)
+        .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+        .limit(1)
+
+      if (!order) throw new Error('الطلبية غير موجودة')
+      if (order.status !== 'pending')
+        throw new Error('لا يمكن تأكيد هذه الطلبية في حالتها الحالية')
+
+      // اقفل المنتج وتحقّق من توفّر المخزون قبل الخصم
+      const [product] = await tx
+        .select({
+          id: products.id,
+          stock: products.stock_qty,
+          merchantId: products.merchant_id,
+          name: products.name,
+          threshold: products.low_stock_threshold,
+        })
+        .from(products)
+        .where(eq(products.id, order.productId))
+        .for('update')
+        .limit(1)
+
+      if (!product) throw new Error('المنتج غير موجود')
+      if (product.stock < order.quantity)
+        throw new Error('المخزون غير كافٍ لتأكيد هذه الطلبية')
+
+      const now = new Date()
+      const newStock = product.stock - order.quantity
+
+      await tx
+        .update(products)
+        .set({ stock_qty: newStock })
+        .where(eq(products.id, product.id))
+
+      await tx
+        .update(orders)
+        .set({ status: 'confirmed', confirmed_at: now })
+        .where(eq(orders.id, order.id))
+
+      await tx.insert(orderStatusHistory).values({
+        order_id: order.id,
+        from_status: 'pending',
+        to_status: 'confirmed',
+        occurred_at: now,
+        source: 'affiliate',
+      })
+
+      return {
+        merchantId: product.merchantId,
+        productName: product.name,
+        newStock,
+        threshold: product.threshold,
+      }
+    })
+
+    // ── إشعارات (best-effort بعد نجاح المعاملة) ──
+    const [merchant] = await db
+      .select({ userId: merchantProfiles.user_id })
+      .from(merchantProfiles)
+      .where(eq(merchantProfiles.id, info.merchantId))
+      .limit(1)
+
+    if (merchant) {
+      await notify({
+        userId: merchant.userId,
+        type: 'order_new',
+        title: 'طلبية جديدة جاهزة للتجهيز',
+        body: `طلبية مؤكَّدة على «${info.productName}» — جهّزها واشحنها`,
+        link: '/merchant/orders',
+      })
+
+      // تنبيه قرب نفاد المخزون (للتاجر والمسوّق)
+      if (info.newStock <= info.threshold) {
+        await notify({
+          userId: merchant.userId,
+          type: 'low_stock',
+          title: 'مخزون منخفض',
+          body: `«${info.productName}» — بقي ${info.newStock} قطعة فقط`,
+          link: '/merchant/products',
+        })
+        await notify({
+          userId: session.user.id,
+          type: 'low_stock',
+          title: 'المنتج على وشك النفاد',
+          body: `«${info.productName}» — بقي ${info.newStock} قطعة، سارِع قبل النفاد`,
+          link: '/affiliate/marketplace',
+        })
+      }
+    }
+
+    return { success: true }
+  })
+
+// ============================================================
+// REJECT LEAD (المسوّق يرفض → cancelled، لا تذهب للتاجر)
+// ============================================================
+
+export const rejectLead = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) => OrderIdSchema.parse(input))
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const { profileId } = await requireAffiliate()
+
+    const [order] = await db
+      .select({ id: orders.id, status: orders.status })
+      .from(orders)
+      .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+      .limit(1)
+
+    if (!order) throw new Error('الطلبية غير موجودة')
+    if (order.status !== 'pending')
+      throw new Error('لا يمكن رفض هذه الطلبية في حالتها الحالية')
+
+    const now = new Date()
+
+    // المخزون لم يُنقَص بعد (يُنقَص عند التأكيد فقط) → لا حاجة لإرجاعه
+    await db.update(orders).set({ status: 'cancelled' }).where(eq(orders.id, order.id))
+
+    await db.insert(orderStatusHistory).values({
+      order_id: order.id,
+      from_status: 'pending',
+      to_status: 'cancelled',
+      occurred_at: now,
+      source: 'affiliate',
     })
 
     return { success: true }

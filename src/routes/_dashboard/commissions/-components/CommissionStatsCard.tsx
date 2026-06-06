@@ -114,7 +114,7 @@ export function CommissionStatsCard({
           iconBg="bg-orange-50 text-orange-700"
           label="مستحقات التجار"
           value={fmt(stats.merchantsPendingBalance)}
-          sub="لم تُسوَّى بعد"
+          sub="قيد الحجز (لم تُحرَّر بعد)"
           subColor="#d97706"
         />
         <KpiCard
@@ -122,7 +122,7 @@ export function CommissionStatsCard({
           iconBg="bg-purple-50 text-purple-700"
           label="مستحقات المسوّقين"
           value={fmt(stats.affiliatesPendingBalance)}
-          sub="في انتظار الموافقة"
+          sub="قيد الحجز (لم تُحرَّر بعد)"
           subColor="#d97706"
         />
       </div>
@@ -132,7 +132,7 @@ export function CommissionStatsCard({
         {/* المدفوع مقابل المعلق */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <div className="flex justify-between items-baseline mb-4">
-            <p className="text-sm font-semibold text-gray-800">ما تم دفعه مقابل ما تبقى</p>
+            <p className="text-sm font-semibold text-gray-800">المدفوع مقابل قيد الحجز</p>
             <p className="text-xs text-gray-400">إجمالي الطرفين</p>
           </div>
           <BarRow
@@ -142,7 +142,7 @@ export function CommissionStatsCard({
             color="#1D9E75"
           />
           <BarRow
-            label="معلق"
+            label="قيد الحجز"
             fill={100 - paidPct}
             value={`${fmt(breakdown.totalPending)} دج`}
             color="#EF9F27"
@@ -165,7 +165,7 @@ export function CommissionStatsCard({
         {/* توزيع الوسائل */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <div className="flex justify-between items-baseline mb-4">
-            <p className="text-sm font-semibold text-gray-800">المعلق حسب وسيلة الدفع</p>
+            <p className="text-sm font-semibold text-gray-800">طلبات السحب المعلّقة حسب الوسيلة</p>
             <p className="text-xs text-gray-400">لتحديد أولويات الصرف</p>
           </div>
           <div className="divide-y divide-gray-50">

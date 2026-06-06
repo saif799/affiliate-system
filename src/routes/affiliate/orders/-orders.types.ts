@@ -1,17 +1,41 @@
 export type OrderStatus = 'pending' | 'shipping' | 'delivered' | 'returned'
 
+// حالة قاعدة البيانات الكاملة — للخطّ الزمني التفصيلي في نافذة التفاصيل
+export type DbOrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'shipped'
+  | 'at_wilaya'
+  | 'delivered'
+  | 'returned'
+  | 'cancelled'
+  | 'disputed'
+
 export interface AffiliateOrder {
   id: string
+  rawId: string        // UUID الحقيقي — يُستخدم في إجراءات التأكيد/الرفض
   date: string
   product: string
   productThumb: string
   sku: string
+  merchantName: string // التاجر الذي تُرسَل إليه الطلبية
   customer: string
   phone: string
   wilaya: string
-  price: number
+  quantity: number
+  basePrice: number    // سعر الجملة للوحدة
+  price: number        // سعر البيع الإجمالي
   commission: number
   status: OrderStatus
+  dbStatus: DbOrderStatus
+  needsAction: boolean // true إذا كانت بانتظار تأكيد المسوّق (DB pending)
+  trackingNumber: string | null
+  // الخطّ الزمني (ISO أو null)
+  createdAt: string
+  confirmedAt: string | null
+  shippedAt: string | null
+  atWilayaAt: string | null
+  deliveredAt: string | null
 }
 
 export interface AddLeadForm {
@@ -49,5 +73,4 @@ export interface TabCounts {
 export interface OrdersPageData {
   orders: AffiliateOrder[]
   stats: OrdersStats
-  products: LeadProduct[]
 }

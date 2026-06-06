@@ -219,7 +219,9 @@ async function fetchMerchants(defaultCommissionRate: number): Promise<Merchant[]
 async function fetchJoinRequests(): Promise<JoinRequest[]> {
   const rows = await db
     .select({
-      id:           sql<string>`COALESCE(${merchantProfiles.id}::text, ${users.id})`,
+      // المعرّف يجب أن يكون user.id لأنّ accept/reject يعملان على المستخدم
+      // (لا merchant_profile.id الذي ينشئه hook التسجيل تلقائياً)
+      id:           users.id,
       name:         users.name,
       email:        users.email,
       phone:        users.phone,

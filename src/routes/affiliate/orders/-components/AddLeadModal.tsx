@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Package } from 'lucide-react'
 import type { AddLeadForm, LeadProduct } from '../-orders.types'
 
 const WILAYAS = [
@@ -12,6 +12,7 @@ interface Props {
   onClose: () => void
   onSubmit: (form: AddLeadForm) => void | Promise<void>
   products: LeadProduct[]
+  initialProductId?: string // لتثبيت منتج محدّد عند الفتح من السوق
 }
 
 const EMPTY: AddLeadForm = {
@@ -24,19 +25,31 @@ const EMPTY: AddLeadForm = {
   notes: '',
 }
 
-export function AddLeadModal({ open, onClose, onSubmit, products }: Props) {
+export function AddLeadModal({ open, onClose, onSubmit, products, initialProductId }: Props) {
   const [form, setForm] = useState<AddLeadForm>(EMPTY)
+
+  // عند الفتح: إعادة التهيئة مع تعبئة المنتج المحدّد مسبقاً إن وُجد
+  useEffect(() => {
+    if (open) {
+      const p = initialProductId
+        ? products.find((x) => x.id === initialProductId)
+        : undefined
+      setForm({ ...EMPTY, productId: p?.id ?? '', salePrice: p?.basePrice ?? 0 })
+    }
+  }, [open, initialProductId, products])
 
   if (!open) return null
 
   const selectedProduct = products.find((p) => p.id === form.productId)
+  // الطلبية اليدوية تُنشأ دائماً من السوق على منتج محدّد → اقفل المنتج
+  const locked = !!initialProductId || products.length <= 1
 
   // ربح المسوّق = سعر بيعه − سعر الجملة (يبيع بأي سعر يريد)
   const estimatedComm = selectedProduct
     ? Math.max(0, form.salePrice - selectedProduct.basePrice)
     : null
 
-  function handleChange<K extends keyof AddLeadForm>(key: K, value: AddLeadForm[K]) {
+  function handleChange<TKey extends keyof AddLeadForm>(key: TKey, value: AddLeadForm[TKey]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -80,19 +93,26 @@ export function AddLeadModal({ open, onClose, onSubmit, products }: Props) {
         {/* Body */}
         <div className="flex flex-col gap-1 px-1 py-3">
 
-          {/* المنتج */}
+          {/* المنتج — مقفل على المنتج المختار من السوق (يمنع أي اختلاط) */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-gray-600">المنتج</label>
-            <select
-              value={form.productId}
-              onChange={(e) => handleProductChange(e.target.value)}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400"
-            >
-              <option value="">اختر المنتج...</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+            {locked && selectedProduct ? (
+              <div className="flex items-center gap-2 rounded-lg border border-violet-100 bg-violet-50 px-3 py-2 text-xs font-medium text-gray-800">
+                <Package size={14} className="shrink-0 text-violet-500" />
+                {selectedProduct.name}
+              </div>
+            ) : (
+              <select
+                value={form.productId}
+                onChange={(e) => handleProductChange(e.target.value)}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400"
+              >
+                <option value="">اختر المنتج...</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* العمولة المتوقعة */}

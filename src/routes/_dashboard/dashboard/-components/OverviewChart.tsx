@@ -41,8 +41,18 @@ export function OverviewChart({ data }: OverviewChartProps) {
             ]}
           />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
-          <Area type="monotone" dataKey="gmv"             name="GMV"             stroke="#6366f1" strokeWidth={2} fill="url(#gmvGrad)" />
-          <Area type="monotone" dataKey="platformRevenue" name="عمولة المنصة" stroke="#22c55e" strokeWidth={2} fill="url(#revGrad)" />
+          <Area
+            type="monotone" dataKey="gmv" name="GMV"
+            stroke="#6366f1" strokeWidth={2.5} fill="url(#gmvGrad)"
+            dot={{ r: 3, fill: '#6366f1', strokeWidth: 0 }}
+            activeDot={{ r: 5 }}
+          />
+          <Area
+            type="monotone" dataKey="platformRevenue" name="عمولة المنصة"
+            stroke="#22c55e" strokeWidth={2.5} fill="url(#revGrad)"
+            dot={{ r: 3, fill: '#22c55e', strokeWidth: 0 }}
+            activeDot={{ r: 5 }}
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>

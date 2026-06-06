@@ -32,6 +32,7 @@ const FINANCIAL_DEFAULTS: FinancialSettings = {
   platform_fee_merchant: 50,
   platform_fee_affiliate: 50,
   minimum_payout: 5000,
+  clearance_days: 2,
   payout_schedule: 'monthly',
   payout_methods: ['BaridiMob', 'CCP'],
 }
@@ -52,6 +53,7 @@ const FINANCIAL_KEYS = [
   'platform_fee_merchant',
   'platform_fee_affiliate',
   'minimum_payout',
+  'clearance_days',
   'payout_schedule',
   'payout_methods',
 ] as const
@@ -109,6 +111,11 @@ function parseFinancial(kv: KVMap): FinancialSettings {
       kv.minimum_payout !== undefined
         ? Number(kv.minimum_payout)
         : FINANCIAL_DEFAULTS.minimum_payout,
+
+    clearance_days:
+      kv.clearance_days !== undefined
+        ? Number(kv.clearance_days)
+        : FINANCIAL_DEFAULTS.clearance_days,
 
     payout_schedule:
       (kv.payout_schedule as FinancialSettings['payout_schedule']) ??
@@ -211,6 +218,7 @@ const UpdateFinancialSchema = z.object({
   platform_fee_merchant: z.number().min(0),
   platform_fee_affiliate: z.number().min(0),
   minimum_payout: z.number().min(0),
+  clearance_days: z.number().int().min(0).max(30),
   payout_schedule: z.enum(['weekly', 'biweekly', 'monthly']),
   payout_methods: z.array(z.enum(['CCP', 'BaridiMob'])).min(1),
 })
@@ -224,6 +232,7 @@ export const updateFinancialSettings = createServerFn({ method: 'POST' })
       upsertKey('platform_fee_merchant', String(data.platform_fee_merchant)),
       upsertKey('platform_fee_affiliate', String(data.platform_fee_affiliate)),
       upsertKey('minimum_payout', String(data.minimum_payout)),
+      upsertKey('clearance_days', String(data.clearance_days)),
       upsertKey('payout_schedule', data.payout_schedule),
       upsertKey('payout_methods', JSON.stringify(data.payout_methods)),
     ])

@@ -5,14 +5,16 @@ import { FinancialTab } from './-components/FinancialTab'
 import { GeneralTab } from './-components/GeneralTab'
 import { TeamTab } from './-components/TeamTab'
 import { SecurityTab } from './-components/SecurityTab'
+import { DeliveryTab } from './-components/DeliveryTab'
 
-type Tab = 'financial' | 'general' | 'team' | 'security'
+type Tab = 'financial' | 'general' | 'team' | 'security' | 'delivery'
 
 const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: 'financial', label: 'المالية', icon: '💰' },
   { id: 'general', label: 'العام والقانوني', icon: '📋' },
   { id: 'team', label: 'الفريق والصلاحيات', icon: '👥' },
   { id: 'security', label: 'الأمان', icon: '🔒' },
+  { id: 'delivery', label: 'شركات التوصيل', icon: '🚚' },
 ]
 
 export const Route = createFileRoute('/_dashboard/settings/')({
@@ -58,6 +60,7 @@ function SettingsPage() {
         {activeTab === 'general' && <GeneralTab data={data.general} />}
         {activeTab === 'team' && <TeamTab members={data.team} />}
         {activeTab === 'security' && <SecurityTab data={data.security} />}
+        {activeTab === 'delivery' && <DeliveryTab />}
       </div>
     </div>
   )

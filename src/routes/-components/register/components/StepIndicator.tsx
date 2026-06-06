@@ -1,4 +1,4 @@
-import type { Step } from '../types/register.types'
+import type { Step } from '../types/-register.types'
 
 interface StepMeta {
   num: Step

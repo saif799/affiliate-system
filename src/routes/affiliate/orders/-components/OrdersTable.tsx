@@ -12,9 +12,22 @@ interface Props {
   currentPage: number
   totalPages: number
   onPageChange: (p: number) => void
+  onConfirm: (rawId: string) => void
+  onReject: (rawId: string) => void
+  onView: (order: AffiliateOrder) => void
+  busyId: string | null
 }
 
-export function OrdersTable({ orders, currentPage, totalPages, onPageChange }: Props) {
+export function OrdersTable({
+  orders,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onConfirm,
+  onReject,
+  onView,
+  busyId,
+}: Props) {
   if (orders.length === 0) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white py-16 text-center">
@@ -35,6 +48,7 @@ export function OrdersTable({ orders, currentPage, totalPages, onPageChange }: P
             <th className="px-4 py-3 text-xs font-medium text-gray-500">سعر البيع</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">عمولتي</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">الحالة</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500">إجراء</th>
           </tr>
         </thead>
         <tbody>
@@ -43,7 +57,8 @@ export function OrdersTable({ orders, currentPage, totalPages, onPageChange }: P
             return (
               <tr
                 key={order.id}
-                className="border-b border-gray-50 transition-colors hover:bg-gray-50"
+                onClick={() => onView(order)}
+                className="cursor-pointer border-b border-gray-50 transition-colors hover:bg-violet-50/40"
               >
                 {/* رقم الطلبية */}
                 <td className="px-4 py-3">
@@ -93,6 +108,36 @@ export function OrdersTable({ orders, currentPage, totalPages, onPageChange }: P
                     <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
                     {s.label}
                   </span>
+                </td>
+
+                {/* إجراء — تفاصيل دائماً + تأكيد/رفض للطلبيات بانتظار المسوّق */}
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-1.5">
+                    {order.needsAction && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onConfirm(order.rawId) }}
+                          disabled={busyId === order.rawId}
+                          className="rounded-lg bg-green-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-40"
+                        >
+                          تأكيد
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onReject(order.rawId) }}
+                          disabled={busyId === order.rawId}
+                          className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-40"
+                        >
+                          رفض
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onView(order) }}
+                      className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100"
+                    >
+                      تفاصيل
+                    </button>
+                  </div>
                 </td>
               </tr>
             )

@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { getAffiliateOrders, addLeadManual } from './-server/orders.api'
+import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
+import { getAffiliateOrders, confirmLead, rejectLead } from './-server/orders.api'
 import { OrdersStats } from './-components/OrdersStats'
 import { OrdersFilters } from './-components/OrdersFilters'
 import { OrdersTable } from './-components/OrdersTable'
-import { AddLeadModal } from './-components/AddLeadModal'
-import type { OrderStatus, AddLeadForm } from './-orders.types'
+import { OrderDetailsModal } from './-components/OrderDetailsModal'
+import type { OrderStatus, AffiliateOrder } from './-orders.types'
 
 const PER_PAGE = 8
 
@@ -20,14 +20,15 @@ export const Route = createFileRoute('/affiliate/orders/')({
 })
 
 function AffiliateOrdersPage() {
-  const { orders, stats, products } = Route.useLoaderData()
+  const { orders, stats } = Route.useLoaderData()
   const router = useRouter()
 
   const [activeTab, setActiveTab] = useState<OrderStatus | 'all'>('all')
   const [search, setSearch] = useState('')
   const [wilaya, setWilaya] = useState('')
   const [page, setPage] = useState(1)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<AffiliateOrder | null>(null)
 
   const counts = useMemo(
     () => ({
@@ -71,12 +72,29 @@ function AffiliateOrdersPage() {
     setPage(1)
   }
 
-  async function handleAddLead(form: AddLeadForm) {
+  async function handleConfirm(rawId: string) {
+    setBusyId(rawId)
     try {
-      await addLeadManual({ data: form })
+      await confirmLead({ data: { orderId: rawId } })
+      setSelectedOrder(null)
       await router.invalidate()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'فشل إنشاء الطلبية')
+      alert(err instanceof Error ? err.message : 'فشل تأكيد الطلبية')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function handleReject(rawId: string) {
+    setBusyId(rawId)
+    try {
+      await rejectLead({ data: { orderId: rawId } })
+      setSelectedOrder(null)
+      await router.invalidate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'فشل رفض الطلبية')
+    } finally {
+      setBusyId(null)
     }
   }
 
@@ -84,17 +102,14 @@ function AffiliateOrdersPage() {
     <div className="flex flex-col gap-5 p-6" dir="rtl">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">طلبياتي</h1>
-          <p className="text-sm text-gray-500">تتبع حالة كل طلبية وأضف عملاءك يدوياً</p>
-        </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:bg-gray-700"
-        >
-          + إضافة طلبية يدوية
-        </button>
+      <div>
+        <h1 className="text-xl font-bold text-gray-900">طلبياتي</h1>
+        <p className="text-sm text-gray-500">
+          تتبّع حالة كل طلبية — لإضافة طلبية يدوية اختر المنتج من{' '}
+          <Link to="/affiliate/marketplace" className="font-medium text-violet-600 hover:underline">
+            سوق المنتجات
+          </Link>
+        </p>
       </div>
 
       {/* Stats */}
@@ -117,14 +132,19 @@ function AffiliateOrdersPage() {
         currentPage={page}
         totalPages={totalPages}
         onPageChange={setPage}
+        onConfirm={handleConfirm}
+        onReject={handleReject}
+        onView={setSelectedOrder}
+        busyId={busyId}
       />
 
-      {/* Modal */}
-      <AddLeadModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleAddLead}
-        products={products}
+      {/* Order details + tracking */}
+      <OrderDetailsModal
+        order={selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        onConfirm={handleConfirm}
+        onReject={handleReject}
+        busy={busyId === selectedOrder?.rawId}
       />
     </div>
   )

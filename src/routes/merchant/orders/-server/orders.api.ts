@@ -3,10 +3,9 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
 import { getSession } from '#/lib/session'
-import { affiliateProfiles, merchantProfiles, orders, orderStatusHistory, products } from '#/server/db/schema'
+import { merchantProfiles, orders, orderStatusHistory, products } from '#/server/db/schema'
 import { and, eq, sql, desc, notInArray } from 'drizzle-orm'
 import { z } from 'zod'
-import { settleOrderTx } from '#/server/settlement'
 import type {
   MerchantOrdersData,
   Order,
@@ -53,9 +52,11 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
   async (): Promise<MerchantOrdersData> => {
     const { profileId } = await requireMerchant()
 
+    // التاجر يرى فقط الطلبيات التي أكّدها المسوّق (confirmed فما فوق)
+    // الطلبيات pending قيد قرار المسوّق، والملغاة/المتنازَع عليها مخفية
     const visible = and(
       eq(orders.merchant_id, profileId),
-      notInArray(orders.status, ['cancelled', 'disputed']),
+      notInArray(orders.status, ['pending', 'cancelled', 'disputed']),
     )
 
     const rows = await db
@@ -86,7 +87,7 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
       wilaya: r.wilaya,
       totalPrice: r.unitAffiliate * r.quantity,
       merchantEarnings: Math.max(0, r.unitMerchant * r.quantity - r.feeMerchant),
-      status: (STATUS_MAP[r.status as DbOrderStatus] ?? 'pending') as OrderStatus,
+      status: (STATUS_MAP[r.status as DbOrderStatus] ?? 'pending'),
       dbStatus: r.status as DbOrderStatus,
       trackingNumber: r.trackingNumber ?? undefined,
     }))
@@ -94,7 +95,7 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
     const [counts] = await db
       .select({
         all: sql<number>`COUNT(*)`,
-        pending: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} IN ('pending', 'confirmed'))`,
+        pending: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'confirmed')`,
         shipped: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} IN ('shipped', 'at_wilaya'))`,
         delivered: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'delivered')`,
         returned: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'returned')`,
@@ -119,19 +120,17 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
 // UPDATE ORDER STATUS
 // ============================================================
 
+// التاجر يملك إجراءً واحداً فقط: شحن الطلبية المؤكَّدة (confirmed → shipped).
+// كل ما بعد الشحن (at_wilaya / delivered / returned) مصدره الوحيد هو
+// webhook شركة التوصيل — التاجر لا يتحكّم به إطلاقاً.
 const UpdateStatusSchema = z.object({
   orderId: z.string(),
-  newStatus: z.enum(['confirmed', 'shipped', 'at_wilaya', 'delivered', 'returned']),
+  newStatus: z.literal('shipped'),
+  // رقم تتبّع الشحنة — مطلوب: هو مفتاح مطابقة تحديثات شركة التوصيل (webhook).
+  // بدونه تبقى الطلبية عالقة في "shipped" ولا تُسوّى أبداً.
+  // حالياً يُدخله التاجر يدوياً؛ عند ربط الـ API يأتي من createShipment.
+  trackingNumber: z.string().trim().min(1).max(100),
 })
-
-// الانتقالات المسموح بها للتاجر: الحالة الحالية → الحالة الجديدة
-const ALLOWED_FROM: Record<string, DbOrderStatus[]> = {
-  confirmed:  ['pending'],
-  shipped:    ['confirmed'],
-  at_wilaya:  ['shipped'],
-  delivered:  ['at_wilaya', 'shipped'], // shipped → delivered للتوصيل المباشر
-  returned:   ['shipped', 'at_wilaya', 'delivered'],
-}
 
 export const updateOrderStatus = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) => UpdateStatusSchema.parse(input))
@@ -139,61 +138,33 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
     const { profileId } = await requireMerchant()
 
     const [order] = await db
-      .select({ id: orders.id, status: orders.status, affiliateId: orders.affiliate_id })
+      .select({ id: orders.id, status: orders.status })
       .from(orders)
       .where(and(eq(orders.id, data.orderId), eq(orders.merchant_id, profileId)))
       .limit(1)
 
     if (!order) throw new Error('الطلبية غير موجودة')
-
-    const from = order.status as DbOrderStatus
-    if (!ALLOWED_FROM[data.newStatus]?.includes(from)) {
-      throw new Error('انتقال غير مسموح به للحالة المطلوبة')
-    }
+    if (order.status !== 'confirmed')
+      throw new Error('لا يمكن شحن إلا طلبية مؤكَّدة')
 
     const now = new Date()
-    const patch: Record<string, unknown> = { status: data.newStatus }
-    if (data.newStatus === 'confirmed')  patch.confirmed_at = now
-    if (data.newStatus === 'shipped')    patch.shipped_at   = now
-    if (data.newStatus === 'at_wilaya')  patch.at_wilaya_at = now
-    if (data.newStatus === 'delivered')  patch.delivered_at = now
 
-    const historyRow = {
+    await db
+      .update(orders)
+      .set({
+        status: 'shipped',
+        shipped_at: now,
+        tracking_number: data.trackingNumber,
+      })
+      .where(eq(orders.id, data.orderId))
+
+    await db.insert(orderStatusHistory).values({
       order_id:    data.orderId,
-      from_status: from,
-      to_status:   data.newStatus,
+      from_status: 'confirmed',
+      to_status:   'shipped',
       occurred_at: now,
       source:      'merchant',
-    }
-
-    if (data.newStatus === 'delivered') {
-      // تغيير الحالة + التسوية المالية في transaction واحدة (ذرّية)
-      await db.transaction(async (tx) => {
-        await tx.update(orders).set(patch).where(eq(orders.id, data.orderId))
-        await tx.insert(orderStatusHistory).values(historyRow)
-        await settleOrderTx(tx, data.orderId)
-      })
-    } else {
-      await db.update(orders).set(patch).where(eq(orders.id, data.orderId))
-      await db.insert(orderStatusHistory).values(historyRow)
-
-      // تحديث نسبة الرفض للمسوّق عند الإرجاع (نسبة تراكمية على كل طلبياته)
-      if (data.newStatus === 'returned' && order.affiliateId) {
-        await db
-          .update(affiliateProfiles)
-          .set({
-            refusal_rate: sql`(
-              SELECT ROUND(
-                COUNT(*) FILTER (WHERE ${orders.status} = 'returned')::numeric
-                / NULLIF(COUNT(*), 0) * 100
-              , 2)
-              FROM ${orders}
-              WHERE ${orders.affiliate_id} = ${order.affiliateId}
-            )`,
-          })
-          .where(eq(affiliateProfiles.id, order.affiliateId))
-      }
-    }
+    })
 
     return { success: true }
   })

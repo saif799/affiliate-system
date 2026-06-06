@@ -7,6 +7,7 @@ export interface FinancialSettings {
   platform_fee_merchant: number
   platform_fee_affiliate: number
   minimum_payout: number
+  clearance_days: number   // مدّة حجز الأرباح (pending→available) بالأيام
   payout_schedule: PayoutSchedule
   payout_methods: PayoutMethod[]
 }
@@ -47,6 +48,7 @@ export interface UpdateFinancialInput {
   platform_fee_merchant: number
   platform_fee_affiliate: number
   minimum_payout: number
+  clearance_days: number
   payout_schedule: PayoutSchedule
   payout_methods: PayoutMethod[]
 }

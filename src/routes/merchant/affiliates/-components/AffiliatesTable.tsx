@@ -30,15 +30,17 @@ export function AffiliatesTable({ affiliates, onSelect }: Props) {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+        {/* الأعمدة بالترتيب: المسوق · المستوى · الطلبيات · معدل الروتور ·
+            إجمالي المبيعات · العمولات · الحالة · إجراءات */}
         <colgroup>
-          <col style={{ width: '22%' }} /> {/* المسوق */}
-          <col style={{ width: '9%' }} /> {/* المستوى */}
-          <col style={{ width: '13%' }} /> {/* الطلبيات */}
-          <col style={{ width: '11%' }} /> {/* معدل الروتور */}
-          <col style={{ width: '15%' }} /> {/* إجمالي المبيعات */}
-          <col style={{ width: '13%' }} /> {/* العمولات */}
-          <col style={{ width: '10%' }} /> {/* الحالة */}
-          <col style={{ width: '9%' }} /> {/* إجراءات */}
+          <col style={{ width: '22%' }} />
+          <col style={{ width: '9%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '11%' }} />
+          <col style={{ width: '15%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '10%' }} />
+          <col style={{ width: '9%' }} />
         </colgroup>
 
         <thead>

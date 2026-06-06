@@ -6,9 +6,7 @@ import { getSession } from '#/lib/session'
 import { merchantProfiles, products } from '#/server/db/schema'
 import { and, eq, isNull, sql, desc } from 'drizzle-orm'
 import { z } from 'zod'
-import { promises as fs } from 'node:fs'
-import path from 'node:path'
-import { randomUUID } from 'node:crypto'
+import { saveImage } from '#/server/storage'
 import type {
   MerchantProductsData,
   Product,
@@ -64,28 +62,10 @@ export const uploadProductImages = createServerFn({ method: 'POST' })
 
     if (files.length > 5) throw new Error('الحد الأقصى 5 صور')
 
+    // التخزين معزول خلف saveImage — يدعم القرص المحلي والسحابي (STORAGE_DRIVER)
     const urls: string[] = []
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products')
-    await fs.mkdir(uploadDir, { recursive: true })
-
-    const MIME_TO_EXT: Record<string, string> = {
-      'image/jpeg': 'jpg',
-      'image/png': 'png',
-      'image/webp': 'webp',
-      'image/gif': 'gif',
-    }
-
     for (const file of files) {
-      if (!file.type.startsWith('image/')) throw new Error('الملف يجب أن يكون صورة')
-      if (file.size > 5 * 1024 * 1024)
-        throw new Error('حجم الصورة يجب أن يكون أقل من 5MB')
-
-      const buffer = Buffer.from(await file.arrayBuffer())
-      const ext = MIME_TO_EXT[file.type] ?? 'jpg'
-      const filename = `${randomUUID()}.${ext}`
-
-      await fs.writeFile(path.join(uploadDir, filename), buffer)
-      urls.push(`/uploads/products/${filename}`)
+      urls.push(await saveImage(file))
     }
 
     return { urls }

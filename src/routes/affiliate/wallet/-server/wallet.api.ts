@@ -12,8 +12,10 @@ import {
   withdrawalRequests,
   settings,
 } from '#/server/db/schema'
-import { eq, sql, desc } from 'drizzle-orm'
+import { eq, sql, desc, and, inArray } from 'drizzle-orm'
 import { z } from 'zod'
+import { releaseMaturedFunds } from '#/server/settlement'
+import { notifySuperAdmins } from '#/server/notify'
 import type {
   WalletData,
   Transaction,
@@ -80,6 +82,9 @@ export const getWalletData = createServerFn({ method: 'GET' }).handler(
     const { session } = await requireAffiliate()
     const userId = session.user.id
 
+    // حرّر أي أرباح انقضت مدّة حجزها (pending → available) قبل العرض
+    await releaseMaturedFunds(userId)
+
     const [wallet] = await db
       .select({
         id: wallets.id,
@@ -92,11 +97,11 @@ export const getWalletData = createServerFn({ method: 'GET' }).handler(
 
     const minWithdrawAmount = await getMinimumPayout()
 
-    // إجمالي الأرباح = مجموع كل عمولات السجل المكتملة
+    // إجمالي الأرباح = كل العمولات (المحجوزة + المُحرَّرة) منذ البداية
     const [earnedRow] = wallet
       ? await db
           .select({
-            total: sql<number>`COALESCE(SUM(${transactions.amount_dzd}) FILTER (WHERE ${transactions.type} = 'commission' AND ${transactions.status} = 'completed'), 0)`,
+            total: sql<number>`COALESCE(SUM(${transactions.amount_dzd}) FILTER (WHERE ${transactions.type} = 'commission' AND ${transactions.status} <> 'reversed'), 0)`,
           })
           .from(transactions)
           .where(eq(transactions.wallet_id, wallet.id))
@@ -192,11 +197,27 @@ export const createWithdrawalRequest = createServerFn({ method: 'POST' })
     if (data.amount < minimumPayout)
       throw new Error(`الحد الأدنى للسحب هو ${minimumPayout} د.ج`)
 
+    // منع تعدّد طلبات السحب المعلّقة (rate limiting طبيعي + حماية)
+    const [openReq] = await db
+      .select({ id: withdrawalRequests.id })
+      .from(withdrawalRequests)
+      .where(
+        and(
+          eq(withdrawalRequests.user_id, userId),
+          inArray(withdrawalRequests.status, ['pending', 'approved']),
+        ),
+      )
+      .limit(1)
+    if (openReq)
+      throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+
+    // حرّر المستحقّ المنتهية مدّته أولاً، ثم نفّذ السحب على الرصيد المُحدَّث
+    await releaseMaturedFunds(userId)
+
     const created = await db.transaction(async (tx) => {
       const [wallet] = await tx
         .select({
           available: wallets.available_balance_dzd,
-          pending: wallets.pending_balance_dzd,
         })
         .from(wallets)
         .where(eq(wallets.user_id, userId))
@@ -204,6 +225,21 @@ export const createWithdrawalRequest = createServerFn({ method: 'POST' })
         .limit(1)
 
       if (!wallet) throw new Error('المحفظة غير موجودة')
+
+      // تحقّق نهائي داخل القفل يمنع سباق طلبَي سحب متزامنين لنفس المستخدم
+      const [openInTx] = await tx
+        .select({ id: withdrawalRequests.id })
+        .from(withdrawalRequests)
+        .where(
+          and(
+            eq(withdrawalRequests.user_id, userId),
+            inArray(withdrawalRequests.status, ['pending', 'approved']),
+          ),
+        )
+        .limit(1)
+      if (openInTx)
+        throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+
       if (wallet.available < data.amount) throw new Error('الرصيد غير كافٍ')
 
       const [row] = await tx
@@ -217,15 +253,21 @@ export const createWithdrawalRequest = createServerFn({ method: 'POST' })
         })
         .returning({ id: withdrawalRequests.id, requestedAt: withdrawalRequests.requested_at })
 
+      // المبلغ يُخصم من available ويُتتبَّع عبر جدول طلبات السحب
       await tx
         .update(wallets)
-        .set({
-          available_balance_dzd: wallet.available - data.amount,
-          pending_balance_dzd: wallet.pending + data.amount,
-        })
+        .set({ available_balance_dzd: wallet.available - data.amount })
         .where(eq(wallets.user_id, userId))
 
       return row
+    })
+
+    // إشعار الأدمن بطلب السحب الجديد (best-effort)
+    await notifySuperAdmins({
+      type: 'withdrawal_request',
+      title: 'طلب سحب جديد',
+      body: `${session.user.name} (مسوّق) طلب سحب ${data.amount.toLocaleString('ar-DZ')} د.ج عبر ${data.method}`,
+      link: '/commissions',
     })
 
     return {

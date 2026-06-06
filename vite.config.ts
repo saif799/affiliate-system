@@ -15,6 +15,12 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  server: {
+    watch: {
+      // مخرجات graphify مولَّدة — لا تُعِد تحميل الخادم عند كل `graphify update`
+      ignored: ['**/graphify-out/**'],
+    },
+  },
 })
 
 export default config

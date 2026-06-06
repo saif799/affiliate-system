@@ -3,8 +3,10 @@
 // ============================================================
 
 import { useState } from 'react'
+import { useRouter } from '@tanstack/react-router'
 import { Monitor, Smartphone, Eye, EyeOff, Copy, LogOut, Shield } from 'lucide-react'
 import { changePassword, revokeAllSessions } from '../-server/settings.api'
+import { signOut } from '#/lib/auth-client'
 import type { SecuritySettings, ChangePasswordForm } from '../-settings.types'
 
 interface Props {
@@ -34,7 +36,21 @@ function DeviceIcon({ device }: { device: string }) {
 }
 
 export function SecurityTab({ security }: Props) {
+  const router = useRouter()
   const [sessions, setSessions] = useState(security.sessions)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  async function handleLogout() {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await signOut()
+      await router.navigate({ to: '/login' })
+    } catch {
+      setIsLoggingOut(false)
+    }
+  }
+
   const [form, setForm] = useState<ChangePasswordForm>({
     currentPassword: '',
     newPassword: '',
@@ -215,6 +231,24 @@ export function SecurityTab({ security }: Props) {
             {referralCopied ? 'تم النسخ' : 'نسخ'}
           </button>
         </div>
+      </div>
+
+      {/* تسجيل الخروج — إنهاء الجلسة الحالية على هذا الجهاز */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="mb-3">
+          <p className="text-xs font-medium text-gray-700">تسجيل الخروج</p>
+          <p className="mt-0.5 text-xs text-gray-400">
+            إنهاء جلستك الحالية على هذا الجهاز والعودة لصفحة الدخول
+          </p>
+        </div>
+        <button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <LogOut size={14} className="shrink-0" />
+          {isLoggingOut ? 'جارٍ الخروج...' : 'تسجيل الخروج'}
+        </button>
       </div>
     </div>
   )

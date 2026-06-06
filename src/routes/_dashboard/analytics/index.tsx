@@ -1,6 +1,6 @@
 import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { getAnalytics } from './-server/analytics.api'
-import type { DateRange, AnalyticsData } from './-analytics.types'
+import type { DateRange } from './-analytics.types'
 import { KpiCard }         from './-components/KpiCard'
 import { GmvChart }        from './-components/GmvChart'
 import { TimingCard }      from './-components/TimingCard'
@@ -78,7 +78,7 @@ function WithdrawalsAlert({ amount }: { amount: number }) {
 // ─────────────────────────────────────────────────────────────
 
 function AnalyticsPage() {
-  const data     = useLoaderData({ from: '/_dashboard/analytics/' }) as AnalyticsData
+  const data     = useLoaderData({ from: '/_dashboard/analytics/' })
   const navigate = Route.useNavigate()
   const { range } = Route.useLoaderDeps()
 
@@ -141,7 +141,6 @@ function AnalyticsPage() {
             change={kpis.take_rate_change_pct}
             accent="green"
           />
-          //TODO : make sure the data matches the type 
           <KpiCard
             label="معدل التوصيل"
             value={`${kpis.delivery_rate_pct}%`}

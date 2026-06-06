@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Role } from '../types/register.types'
+import type { Role } from '../types/-register.types'
 import { Field } from '../../shared/Field'
 import { ErrorBox } from '../../shared/ErrorBox'
 import { EyeIcon } from '../../shared/EyeIcon'

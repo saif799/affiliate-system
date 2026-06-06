@@ -55,7 +55,7 @@ async function fetchProductStats(): Promise<ProductStats> {
     db.select({
       total:     sql<number>`COUNT(*)`,
       active:    sql<number>`COUNT(*) FILTER (WHERE "products"."is_active" = true)`,
-      suspended: sql<number>`COUNT(*) FILTER (WHERE "products"."is_active" = false)`,//hna kont ra7 ndirha tata7sab hkda (total-active)-> bs7 9rit 3liha wl9itha kif kif
+      suspended: sql<number>`COUNT(*) FILTER (WHERE "products"."is_active" = false)`,// hna kont ra7 ndirha tata7sab hkda (total-active)-> bs7 9rit 3liha wl9itha kif kif
 
       newTotal:      sql<number>`COUNT(*) FILTER (
                        WHERE "products"."created_at" >= ${t1}::timestamptz

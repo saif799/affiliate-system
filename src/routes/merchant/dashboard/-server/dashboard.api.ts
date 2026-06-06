@@ -75,7 +75,7 @@ const n = (v: unknown) => Number(v ?? 0)
 export const getMerchantDashboard = createServerFn({ method: 'GET' })
   .inputValidator((data: unknown) => {
     const range = (data as { range?: DateRange } | undefined)?.range
-    return { range: (range ?? '7days') as DateRange }
+    return { range: (range ?? '7days') }
   })
   .handler(async ({ data }): Promise<MerchantDashboardData> => {
     const { profileId } = await requireMerchant()

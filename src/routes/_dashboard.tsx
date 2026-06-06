@@ -10,8 +10,10 @@ import {
   Settings,
   Zap,
   User,
-  Store
+  Store,
+  ListOrdered
 } from 'lucide-react'
+import { NotificationBell } from './-components/shared/NotificationBell'
 
 export const Route = createFileRoute('/_dashboard')({
   beforeLoad: ({ context }) => {
@@ -26,6 +28,7 @@ export const Route = createFileRoute('/_dashboard')({
 
 const navItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'Orders', to: '/orders', icon: ListOrdered },
   { label: 'Affiliates', to: '/affiliates', icon: Users },
   { label: 'Merchants', to: '/merchants', icon:Store  },
   { label: 'Products', to: '/products', icon: Megaphone },
@@ -40,13 +43,16 @@ function DashboardLayout() {
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <aside className="flex w-56 flex-col justify-between border-r border-gray-200 bg-white px-3 py-5">
         <div>
-          <div className="mb-5 flex items-center gap-2.5 px-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-              <Zap size={16} strokeWidth={2.5} />
+          <div className="mb-5 flex items-center justify-between px-2">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+                <Zap size={16} strokeWidth={2.5} />
+              </div>
+              <span className="text-sm font-semibold text-gray-900">
+                Tanstack-wakil
+              </span>
             </div>
-            <span className="text-sm font-semibold text-gray-900">
-              Tanstack-wakil
-            </span>
+            <NotificationBell />
           </div>
           <div className="mb-4 flex items-center gap-2.5 rounded-lg bg-gray-100 px-3 py-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-200 text-gray-500">

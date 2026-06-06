@@ -9,13 +9,9 @@ import { BulkActionBar }    from './-components/BulkActionBar'
 import { OrdersPagination } from './-components/OrdersPagination'
 import type { TabFilter, DateFilter, DbOrderStatus } from './-orders.types'
 
-// next valid merchant-initiated status for a given DB status
-function nextStatus(
-  db: DbOrderStatus,
-): 'confirmed' | 'shipped' | 'returned' | null {
-  if (db === 'pending') return 'confirmed'
+// إجراء التاجر الوحيد: شحن الطلبية المؤكَّدة. ما بعد الشحن مصدره شركة التوصيل.
+function nextStatus(db: DbOrderStatus): 'shipped' | null {
   if (db === 'confirmed') return 'shipped'
-  if (db === 'shipped' || db === 'at_wilaya') return 'returned'
   return null
 }
 
@@ -106,12 +102,15 @@ function MerchantOrdersPage() {
   // تغيير حالة طلبية واحدة
   const handleUpdateStatus = async (
     orderId: string,
-    newStatus: 'confirmed' | 'shipped' | 'returned',
+    newStatus: 'shipped',
   ) => {
     if (isUpdating) return
+    // رقم التتبّع مطلوب عند الشحن لمطابقة تحديثات شركة التوصيل
+    const trackingNumber = window.prompt('أدخل رقم تتبّع الشحنة من شركة التوصيل:')?.trim()
+    if (!trackingNumber) return
     setIsUpdating(true)
     try {
-      await updateOrderStatus({ data: { orderId, newStatus } })
+      await updateOrderStatus({ data: { orderId, newStatus, trackingNumber } })
       await router.invalidate()
     } catch (err) {
       console.error(err)
@@ -121,25 +120,34 @@ function MerchantOrdersPage() {
     }
   }
 
-  // تغيير حالة مجموعة طلبيات (تقدّم كل طلبية خطوة صالحة واحدة)
+  // شحن مجموعة طلبيات مؤكَّدة — كل شحنة لها رقم تتبّع فريد من شركة التوصيل،
+  // لذا نطلب رقماً لكل طلبية (بدونه تبقى غير قابلة للتتبّع ولا تُسوّى).
   const handleBulkChangeStatus = async () => {
     if (isUpdating) return
     const targets = orders
       .filter((o) => selectedIds.has(o.id))
-      .map((o) => ({ id: o.id, next: nextStatus(o.dbStatus) }))
-      .filter((t): t is { id: string; next: 'confirmed' | 'shipped' | 'returned' } =>
-        t.next !== null && t.next !== 'returned',
-      )
+      .map((o) => ({ id: o.id, customer: o.customer.name, next: nextStatus(o.dbStatus) }))
+      .filter((t): t is { id: string; customer: string; next: 'shipped' } => t.next !== null)
     if (targets.length === 0) {
-      alert('لا توجد طلبيات قابلة للتقدّم ضمن المحدد')
+      alert('لا توجد طلبيات مؤكَّدة قابلة للشحن ضمن المحدد')
       return
     }
+
+    const toShip: { id: string; trackingNumber: string }[] = []
+    for (const t of targets) {
+      const tn = window.prompt(`رقم تتبّع شحنة الزبون «${t.customer}»:`)?.trim()
+      if (tn) toShip.push({ id: t.id, trackingNumber: tn })
+    }
+    if (toShip.length === 0) return
+
     setIsUpdating(true)
     try {
       await Promise.all(
-        targets.map((t) =>
-          updateOrderStatus({ data: { orderId: t.id, newStatus: t.next } })
-        )
+        toShip.map((t) =>
+          updateOrderStatus({
+            data: { orderId: t.id, newStatus: 'shipped', trackingNumber: t.trackingNumber },
+          }),
+        ),
       )
       setSelectedIds(new Set())
       await router.invalidate()

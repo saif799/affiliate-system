@@ -149,6 +149,18 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  // الحد من المعدّل — يمنع تخمين كلمة المرور والإغراق على نقاط الدخول
+  rateLimit: {
+    enabled: true,
+    window: 60, // ثانية
+    max: 100, // الحدّ الافتراضي العام لكل IP في النافذة
+    customRules: {
+      '/sign-in/email': { window: 60, max: 5 },
+      '/sign-up/email': { window: 60, max: 5 },
+      '/magic-link/verify': { window: 60, max: 10 },
+    },
+  },
+
   plugins: [
     tanstackStartCookies(),
     magicLink({

@@ -84,27 +84,46 @@ async function fetchCardsStats(): Promise<PlatformStats> {
   }
 }
 
+const MONTHS_AR = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+]
+
 async function fetchRevenueChart(): Promise<MonthlyRevenue[]> {
-  const yearStart = new Date(new Date().getFullYear(), 0, 1)
-  const yearEnd   = new Date(new Date().getFullYear() + 1, 0, 1)
+  const now = new Date()
+  // نافذة ثابتة: آخر 6 أشهر (شاملة الشهر الحالي) — نملأ الأشهر الفارغة بصفر
+  // كي يبقى المنحنى متّصلاً ومقروءاً بدل نقطة وحيدة.
+  const windowStart = new Date(now.getFullYear(), now.getMonth() - 5, 1)
 
   const rows = await db
     .select({
-      month:           sql<string>`TO_CHAR(created_at, 'Mon')`,
-      monthNum:        sql<number>`EXTRACT(MONTH FROM created_at)`,
+      ym:              sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
       gmv:             sql<number>`COALESCE(SUM(unit_affiliate_price_dzd * quantity), 0)`,
       platformRevenue: sql<number>`COALESCE(SUM(platform_fee_dzd), 0)`,
     })
     .from(orders)
-    .where(and(eq(orders.status, 'delivered'), gte(orders.created_at, yearStart), lt(orders.created_at, yearEnd)))
-    .groupBy(sql`TO_CHAR(created_at, 'Mon')`, sql`EXTRACT(MONTH FROM created_at)`)
-    .orderBy(sql`EXTRACT(MONTH FROM created_at)`)
+    .where(and(eq(orders.status, 'delivered'), gte(orders.created_at, windowStart)))
+    .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
 
-  return rows.map((r) => ({
-    month:           r.month,
-    gmv:             Number(r.gmv),
-    platformRevenue: Number(r.platformRevenue),
-  }))
+  const byYm = new Map(
+    rows.map((r) => [
+      r.ym,
+      { gmv: Number(r.gmv), platformRevenue: Number(r.platformRevenue) },
+    ]),
+  )
+
+  const out: MonthlyRevenue[] = []
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1)
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const entry = byYm.get(ym) ?? { gmv: 0, platformRevenue: 0 }
+    out.push({
+      month: MONTHS_AR[d.getMonth()],
+      gmv: entry.gmv,
+      platformRevenue: entry.platformRevenue,
+    })
+  }
+  return out
 }
 
 async function fetchTopAffiliates(): Promise<TopAffiliate[]> {

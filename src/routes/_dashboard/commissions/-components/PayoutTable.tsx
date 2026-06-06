@@ -1,10 +1,19 @@
 // -components/PayoutTable.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from '@tanstack/react-router'
-import type { WithdrawalRequest, WithdrawalStatus } from '../-commissions.types'
-import { confirmWithdrawal, rejectWithdrawal } from '../-server/commissions.api'
+import type {
+  WithdrawalRequest,
+  WithdrawalStatus,
+  EarningSourceItem,
+} from '../-commissions.types'
+import {
+  confirmWithdrawal,
+  rejectWithdrawal,
+  approveWithdrawal,
+  getWithdrawalSource,
+} from '../-server/commissions.api'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ar-DZ', {
@@ -126,6 +135,114 @@ function ConfirmModal({
 }
 
 // ============================================================
+// SOURCE MODAL — كيف ربح المستخدم هذا الرصيد
+// ============================================================
+
+function SourceModal({
+  request,
+  onClose,
+}: {
+  request: WithdrawalRequest
+  onClose: () => void
+}) {
+  const [items, setItems] = useState<EarningSourceItem[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+    getWithdrawalSource({ data: { withdrawalId: request.id } })
+      .then((res) => active && setItems(res))
+      .catch((e) =>
+        active && setError(e instanceof Error ? e.message : 'فشل تحميل المصدر'),
+      )
+    return () => {
+      active = false
+    }
+  }, [request.id])
+
+  const total = (items ?? []).reduce((s, i) => s + i.amount, 0)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.35)' }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm w-full max-w-lg mx-4 p-6 text-right">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">مصدر أرباح {request.userName}</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          المنتجات/الطلبيات التي تكوّن منها رصيد هذا المستخدم
+        </p>
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        {!items && !error && <p className="text-sm text-gray-400">جارٍ التحميل...</p>}
+
+        {items && items.length === 0 && (
+          <p className="text-sm text-gray-400">لا توجد أرباح مسجّلة بعد.</p>
+        )}
+
+        {items && items.length > 0 && (
+          <div className="max-h-80 overflow-y-auto rounded-lg border border-gray-100">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  {['المنتج', 'الولاية', 'المبلغ', 'الحالة', 'التاريخ'].map((h) => (
+                    <th key={h} className="text-right text-gray-500 font-medium px-3 py-2 text-xs">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {items.map((i) => (
+                  <tr key={i.id}>
+                    <td className="px-3 py-2 text-gray-800">{i.productName}</td>
+                    <td className="px-3 py-2 text-gray-500 text-xs">{i.wilaya ?? '—'}</td>
+                    <td className="px-3 py-2 font-medium text-gray-800">
+                      {i.amount.toLocaleString('ar-DZ')} دج
+                    </td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          i.status === 'released'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {i.status === 'released' ? 'مُحرَّر' : 'قيد الحجز'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-gray-400 text-xs">
+                      {new Date(i.date).toLocaleDateString('ar-DZ')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {items && items.length > 0 && (
+          <div className="flex justify-between items-center mt-3 text-sm">
+            <span className="text-gray-500">إجمالي الأرباح المسجّلة</span>
+            <span className="font-semibold text-gray-900">{total.toLocaleString('ar-DZ')} دج</span>
+          </div>
+        )}
+
+        <div className="flex justify-end mt-5">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium transition-colors"
+          >
+            إغلاق
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
 // MAIN TABLE
 // ============================================================
 
@@ -135,7 +252,9 @@ export function PayoutTable({ requests }: { requests: WithdrawalRequest[] }) {
   const [methodFilter, setMethodFilter] = useState<'all' | 'CCP' | 'BaridiMob'>('all')
   const [wilayaFilter, setWilayaFilter] = useState('all')
   const [confirmTarget, setConfirmTarget] = useState<WithdrawalRequest | null>(null)
+  const [sourceTarget, setSourceTarget] = useState<WithdrawalRequest | null>(null)
   const [rejectingId, setRejectingId] = useState<string | null>(null)
+  const [approvingId, setApprovingId] = useState<string | null>(null)
 
   const wilayas = Array.from(
     new Set(requests.map((r) => r.userWilaya ?? '').filter(Boolean)),
@@ -162,6 +281,18 @@ export function PayoutTable({ requests }: { requests: WithdrawalRequest[] }) {
     }
   }
 
+  async function handleApprove(id: string) {
+    setApprovingId(id)
+    try {
+      await approveWithdrawal({ data: { withdrawalId: id } })
+      router.invalidate()
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'فشل الموافقة')
+    } finally {
+      setApprovingId(null)
+    }
+  }
+
   return (
     <>
       {confirmTarget && (
@@ -170,6 +301,10 @@ export function PayoutTable({ requests }: { requests: WithdrawalRequest[] }) {
           onClose={() => setConfirmTarget(null)}
           onConfirmed={() => { setConfirmTarget(null); router.invalidate() }}
         />
+      )}
+
+      {sourceTarget && (
+        <SourceModal request={sourceTarget} onClose={() => setSourceTarget(null)} />
       )}
 
       <div className="space-y-3">
@@ -304,14 +439,40 @@ export function PayoutTable({ requests }: { requests: WithdrawalRequest[] }) {
 
                     {/* إجراءات */}
                     <td className="px-5 py-4">
-                      {r.status === 'pending' || r.status === 'approved' ? (
-                        <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
+                        {/* عرض المصدر متاح طالما الطلب قيد المعالجة */}
+                        {(r.status === 'pending' || r.status === 'approved') && (
+                          <button
+                            onClick={() => setSourceTarget(r)}
+                            className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium transition-colors"
+                          >
+                            المصدر
+                          </button>
+                        )}
+
+                        {/* pending → موافقة */}
+                        {r.status === 'pending' && (
+                          <button
+                            onClick={() => handleApprove(r.id)}
+                            disabled={approvingId === r.id}
+                            className="text-xs px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium transition-colors disabled:opacity-40"
+                          >
+                            {approvingId === r.id ? '...' : 'موافقة'}
+                          </button>
+                        )}
+
+                        {/* approved → تأكيد الدفع */}
+                        {r.status === 'approved' && (
                           <button
                             onClick={() => setConfirmTarget(r)}
                             className="text-xs px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 font-medium transition-colors"
                           >
                             تأكيد الدفع
                           </button>
+                        )}
+
+                        {/* pending/approved → رفض */}
+                        {(r.status === 'pending' || r.status === 'approved') && (
                           <button
                             onClick={() => handleReject(r.id)}
                             disabled={rejectingId === r.id}
@@ -319,12 +480,15 @@ export function PayoutTable({ requests }: { requests: WithdrawalRequest[] }) {
                           >
                             {rejectingId === r.id ? '...' : 'رفض'}
                           </button>
-                        </div>
-                      ) : r.status === 'paid' ? (
-                        <span className="text-xs text-gray-400 font-medium">تم التحويل ✓</span>
-                      ) : (
-                        <span className="text-xs text-gray-300">—</span>
-                      )}
+                        )}
+
+                        {r.status === 'paid' && (
+                          <span className="text-xs text-gray-400 font-medium">تم التحويل ✓</span>
+                        )}
+                        {r.status === 'rejected' && (
+                          <span className="text-xs text-gray-300">—</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

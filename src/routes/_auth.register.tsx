@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { signUp } from '../lib/auth-client'
 
-import type { Role, Step, State } from './-components/register/types/register.types'
+import type { Role, Step, State } from './-components/register/types/-register.types'
 import { ProgressBar }    from './-components/register/components/ProgressBar'
 import { StepIndicator }  from './-components/register/components/StepIndicator'
 import { Step1RoleSelect } from './-components/register/components/Step1RoleSelect'
@@ -74,7 +74,7 @@ function RegisterPage() {
 
   if (state === 'success') return <SuccessScreen />
 
-  const stepTitles = {
+  const stepTitles: Record<Step, { title: string; sub: string }> = {
     1: { title: 'من أنت؟',             sub: 'اختر نوع حسابك للبدء' },
     2: { title: 'معلوماتك الأساسية',   sub: 'سيُستخدم هذا لإعداد حسابك' },
     3: { title: 'اختر كلمة مرور',      sub: 'يجب أن تكون 8 أحرف على الأقل' },

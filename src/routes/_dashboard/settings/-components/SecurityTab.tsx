@@ -10,9 +10,62 @@ interface Props {
 }
 
 export function SecurityTab({ data }: Props) {
-  const router                        = useRouter()
-  const [loggingOut, setLoggingOut]   = useState(false)
+  const router = useRouter()
+  const [loggingOut, setLoggingOut] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+
+  // change password
+  const [pwCurrent, setPwCurrent] = useState('')
+  const [pwNew, setPwNew] = useState('')
+  const [pwConfirm, setPwConfirm] = useState('')
+  const [pwSaving, setPwSaving] = useState(false)
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  // sessions
+  const [revoking, setRevoking] = useState(false)
+  const [revokeMsg, setRevokeMsg] = useState<string | null>(null)
+
+  async function handleChangePassword() {
+    setPwMsg(null)
+    if (pwNew.length < 8)
+      return setPwMsg({ ok: false, text: 'كلمة المرور الجديدة 8 أحرف على الأقل' })
+    if (pwNew !== pwConfirm)
+      return setPwMsg({ ok: false, text: 'كلمتا المرور غير متطابقتين' })
+
+    setPwSaving(true)
+    try {
+      const { error } = await authClient.changePassword({
+        currentPassword: pwCurrent,
+        newPassword: pwNew,
+        revokeOtherSessions: true,
+      })
+      if (error) {
+        setPwMsg({ ok: false, text: 'كلمة المرور الحالية غير صحيحة' })
+      } else {
+        setPwMsg({ ok: true, text: '✓ تم تغيير كلمة المرور بنجاح' })
+        setPwCurrent('')
+        setPwNew('')
+        setPwConfirm('')
+      }
+    } catch {
+      setPwMsg({ ok: false, text: 'تعذّر تغيير كلمة المرور' })
+    } finally {
+      setPwSaving(false)
+    }
+  }
+
+  async function handleRevokeOthers() {
+    setRevoking(true)
+    setRevokeMsg(null)
+    try {
+      const { error } = await authClient.revokeOtherSessions()
+      setRevokeMsg(error ? 'تعذّر إنهاء الجلسات' : '✓ تم إنهاء جميع الجلسات الأخرى')
+    } catch {
+      setRevokeMsg('تعذّر إنهاء الجلسات')
+    } finally {
+      setRevoking(false)
+    }
+  }
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -26,31 +79,6 @@ export function SecurityTab({ data }: Props) {
 
   return (
     <div className="space-y-4">
-
-      {/* 2FA */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-gray-900">المصادقة الثنائية (2FA)</h2>
-            <p className="text-sm text-gray-500 mt-0.5">طبقة حماية إضافية لحساب المدير</p>
-          </div>
-          <div
-            className={`relative w-12 h-6 rounded-full transition-colors ${
-              data.two_factor_enabled ? 'bg-blue-600' : 'bg-gray-200'
-            }`}
-          >
-            <div
-              className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                data.two_factor_enabled ? 'translate-x-7' : 'translate-x-1'
-              }`}
-            />
-          </div>
-        </div>
-        <div className="mt-3 text-xs text-yellow-700 bg-yellow-50 rounded-lg px-3 py-2">
-          🔧 سيتم تفعيل هذه الميزة عند ربط قاعدة البيانات
-        </div>
-      </div>
-
       {/* Sessions */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
@@ -67,7 +95,7 @@ export function SecurityTab({ data }: Props) {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">الجلسة الحالية</p>
-              <p className="text-xs text-gray-400">Sétif, Algeria • Chrome</p>
+              <p className="text-xs text-gray-400">هذا الجهاز</p>
             </div>
           </div>
           <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium">
@@ -75,13 +103,15 @@ export function SecurityTab({ data }: Props) {
           </span>
         </div>
 
-        <div className="mt-4">
-          <button className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors">
-            إنهاء جميع الجلسات الأخرى
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            onClick={handleRevokeOthers}
+            disabled={revoking}
+            className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors disabled:opacity-50"
+          >
+            {revoking ? 'جارٍ الإنهاء...' : 'إنهاء جميع الجلسات الأخرى'}
           </button>
-        </div>
-        <div className="mt-3 text-xs text-yellow-700 bg-yellow-50 rounded-lg px-3 py-2">
-          🔧 إدارة الجلسات الكاملة ستكون متاحة بعد ربط قاعدة البيانات
+          {revokeMsg && <span className="text-xs text-emerald-600">{revokeMsg}</span>}
         </div>
       </div>
 
@@ -90,20 +120,40 @@ export function SecurityTab({ data }: Props) {
         <h2 className="text-base font-semibold text-gray-900 mb-1">تغيير كلمة المرور</h2>
         <p className="text-sm text-gray-500 mb-4">يُنصح بتغييرها كل 3 أشهر</p>
         <div className="space-y-3">
-          {['كلمة المرور الحالية', 'كلمة المرور الجديدة', 'تأكيد كلمة المرور'].map((label) => (
-            <div key={label} className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">{label}</label>
+          {[
+            { label: 'كلمة المرور الحالية', value: pwCurrent, set: setPwCurrent },
+            { label: 'كلمة المرور الجديدة', value: pwNew, set: setPwNew },
+            { label: 'تأكيد كلمة المرور', value: pwConfirm, set: setPwConfirm },
+          ].map((f) => (
+            <div key={f.label} className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">{f.label}</label>
               <input
                 type="password"
+                value={f.value}
+                onChange={(e) => {
+                  f.set(e.target.value)
+                  setPwMsg(null)
+                }}
                 placeholder="••••••••"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition bg-gray-50"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition bg-white"
               />
             </div>
           ))}
         </div>
-        <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-          حفظ كلمة المرور
-        </button>
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            onClick={handleChangePassword}
+            disabled={pwSaving || !pwCurrent || !pwNew || !pwConfirm}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {pwSaving ? 'جاري الحفظ...' : 'حفظ كلمة المرور'}
+          </button>
+          {pwMsg && (
+            <span className={`text-xs ${pwMsg.ok ? 'text-emerald-600' : 'text-red-600'}`}>
+              {pwMsg.text}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Logout */}
@@ -142,7 +192,6 @@ export function SecurityTab({ data }: Props) {
           )}
         </div>
       </div>
-
     </div>
   )
 }

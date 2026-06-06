@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
-import { X, Copy, Check, ExternalLink, Link2 } from 'lucide-react'
+import { X, Copy, Check, ExternalLink, Link2, Plus, Package } from 'lucide-react'
 import { createTrackingLink } from '../-server/marketplace.api'
 import type { Product } from '../-marketplace.types'
 
 interface Props {
   product: Product | null
   onClose: () => void
+  onAddOrder: (product: Product) => void
 }
 
-export function QuickViewModal({ product, onClose }: Props) {
+export function QuickViewModal({ product, onClose, onAddOrder }: Props) {
   const [subId, setSubId] = useState('')
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
@@ -57,206 +58,185 @@ export function QuickViewModal({ product, onClose }: Props) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const hasImages = product.images.length > 0
+  const retourDanger = product.retourRate > 25
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="qv-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      dir="rtl"
     >
-      <div className="relative flex w-full max-w-3xl flex-col rounded-2xl bg-white shadow-2xl overflow-hidden max-h-[90vh]">
+      <div className="qv-card relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl md:flex-row">
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute left-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+          aria-label="إغلاق"
+          className="absolute left-4 top-4 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-500 shadow-md ring-1 ring-black/5 transition-colors hover:bg-gray-100 hover:text-gray-900"
         >
-          <X size={14} />
+          <X size={15} />
         </button>
 
-        <div className="flex flex-1 overflow-hidden">
-          {/* ─── Left: Media ─── */}
-          <div className="flex w-64 flex-col shrink-0 border-l border-gray-100 bg-gray-50">
-            {/* Main image */}
-            <div className="flex h-52 items-center justify-center bg-gray-100 border-b border-gray-200 overflow-hidden">
-              {product.images.length > 0 ? (
-                <img
-                  src={product.images[activeImage]}
-                  alt={product.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-6xl">📦</span>
-              )}
+        {/* ── Media panel ── */}
+        <div className="relative h-52 shrink-0 overflow-hidden bg-gradient-to-br from-violet-500 via-violet-600 to-violet-700 md:h-auto md:w-2/5">
+          {hasImages ? (
+            <img
+              src={product.images[activeImage]}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <>
+              <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
+              <div className="absolute -bottom-16 -left-10 h-52 w-52 rounded-full bg-violet-900/40 blur-2xl" />
+              <div className="flex h-full w-full items-center justify-center">
+                <div className="flex h-24 w-24 items-center justify-center rounded-[1.75rem] bg-white/10 ring-1 ring-white/25 backdrop-blur-sm">
+                  <Package size={46} className="text-white/85" strokeWidth={1.3} />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* category badge */}
+          <span className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-violet-700 shadow-sm">
+            {product.category}
+          </span>
+
+          {/* thumbnails */}
+          {product.images.length > 1 && (
+            <div className="absolute bottom-4 right-4 flex gap-1.5">
+              {product.images.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImage(i)}
+                  className={`h-9 w-9 overflow-hidden rounded-lg border-2 transition-all ${
+                    activeImage === i
+                      ? 'border-white shadow-md'
+                      : 'border-white/40 hover:border-white/70'
+                  }`}
+                >
+                  <img src={img} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
             </div>
+          )}
+        </div>
 
-            {/* Thumbnails */}
-            {product.images.length > 1 && (
-              <div className="flex gap-2 p-3">
-                {product.images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImage(i)}
-                    className={`h-10 w-10 overflow-hidden rounded-lg border transition-all ${
-                      activeImage === i
-                        ? 'border-violet-500 ring-1 ring-violet-200'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <img src={img} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* ── Details panel ── */}
+        <div className="custom-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto p-6">
+          {/* Header */}
+          <div className="pl-9">
+            <h2 className="text-xl font-bold leading-snug text-gray-900">{product.name}</h2>
+            <p className="mt-1 text-xs text-gray-400">
+              {product.merchantName} · {product.totalSales.toLocaleString('ar-DZ')} مبيعة
+            </p>
+          </div>
 
-            {/* Video link */}
-            {product.videoUrl && (
-              <div className="flex flex-col gap-2 p-3 pt-0">
-                <p className="text-xs font-medium text-gray-500 mb-1">
-                  مواد الحملة الإعلانية
-                </p>
-                <a
-                  href={product.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-700 hover:bg-violet-100 transition-colors"
-                >
-                  <span className="text-sm">📹</span>
-                  مشاهدة الفيديو
-                  <ExternalLink size={11} className="mr-auto text-violet-300" />
-                </a>
-              </div>
-            )}
+          {/* Price hero */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-violet-600 to-indigo-500 p-4 text-white shadow-sm">
+            <div className="absolute -left-8 -top-10 h-28 w-28 rounded-full bg-white/10 blur-xl" />
+            <div className="relative flex items-center justify-between">
+              <p className="text-xs font-medium text-violet-100">سعر الجملة (تكلفتك)</p>
+              <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-medium backdrop-blur">
+                بِع بأي سعر
+              </span>
+            </div>
+            <p className="relative mt-1 text-3xl font-extrabold tracking-tight">
+              {product.basePrice.toLocaleString('ar-DZ')}{' '}
+              <span className="text-base font-bold text-violet-100">د.ج</span>
+            </p>
+            <p className="relative mt-1 text-xs text-violet-100">ربحك = سعر بيعك − سعر الجملة</p>
+          </div>
 
-            {/* Stats */}
-            <div className="mt-auto border-t border-gray-100 p-3 grid grid-cols-2 gap-2">
-              <div className="rounded-lg bg-green-50 p-2 text-center">
-                <p className="text-sm font-bold text-green-700">
-                  {product.deliveredRate}%
-                </p>
-                <p className="text-xs text-green-500">استلام</p>
-              </div>
-              <div
-                className={`rounded-lg p-2 text-center ${product.retourRate > 25 ? 'bg-red-50' : 'bg-gray-50'}`}
-              >
-                <p
-                  className={`text-sm font-bold ${product.retourRate > 25 ? 'text-red-700' : 'text-gray-700'}`}
-                >
-                  {product.retourRate}%
-                </p>
-                <p
-                  className={`text-xs ${product.retourRate > 25 ? 'text-red-400' : 'text-gray-400'}`}
-                >
-                  روتور
-                </p>
-              </div>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <div className="rounded-xl bg-green-50 py-2.5 text-center">
+              <p className="text-lg font-bold text-green-600">{product.deliveredRate}%</p>
+              <p className="text-xs text-green-500">استلام</p>
+            </div>
+            <div className={`rounded-xl py-2.5 text-center ${retourDanger ? 'bg-red-50' : 'bg-gray-50'}`}>
+              <p className={`text-lg font-bold ${retourDanger ? 'text-red-600' : 'text-gray-700'}`}>
+                {product.retourRate}%
+              </p>
+              <p className={`text-xs ${retourDanger ? 'text-red-400' : 'text-gray-400'}`}>روتور</p>
+            </div>
+            <div className="rounded-xl bg-violet-50 py-2.5 text-center">
+              <p className="text-lg font-bold text-violet-600">
+                {product.totalSales.toLocaleString('ar-DZ')}
+              </p>
+              <p className="text-xs text-violet-400">مبيعة</p>
             </div>
           </div>
 
-          {/* ─── Right: Details + Actions ─── */}
-          <div className="flex flex-1 flex-col overflow-y-auto p-5 gap-4 custom-scrollbar">
-            {/* Header */}
-            <div>
-              <div className="flex items-start justify-between gap-2">
-                <h2 className="text-base font-bold text-gray-900 leading-snug">
-                  {product.name}
-                </h2>
-                <span className="shrink-0 rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-medium text-violet-700">
-                  {product.category}
-                </span>
-              </div>
-              <p className="mt-0.5 text-xs text-gray-400">
-                {product.merchantName} · {product.totalSales} مبيعة
+          {/* Description + video */}
+          {product.description && (
+            <p className="line-clamp-2 text-xs leading-relaxed text-gray-500">
+              {product.description}
+            </p>
+          )}
+          {product.videoUrl && (
+            <a
+              href={product.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs font-medium text-violet-600 transition-colors hover:text-violet-800"
+            >
+              <span>📹</span> مشاهدة فيديو الحملة
+              <ExternalLink size={12} className="text-violet-300" />
+            </a>
+          )}
+
+          {/* Actions — pinned to bottom */}
+          <div className="mt-auto space-y-2.5 pt-1">
+            {/* Generate link */}
+            <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3">
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                <Link2 size={13} className="text-violet-500" /> توليد رابط التتبع
               </p>
-            </div>
-
-            {/* Base price highlight */}
-            <div className="rounded-xl bg-linear-to-l from-violet-600 to-violet-500 p-4 text-white">
-              <p className="text-xs text-violet-200">سعر الجملة (تكلفتك)</p>
-              <p className="mt-1 text-2xl font-bold">
-                {product.basePrice.toLocaleString('ar-DZ')} د.ج
-              </p>
-              <p className="mt-2 text-xs text-violet-200">
-                بِع بأي سعر تريده — ربحك = سعر بيعك − سعر الجملة
-              </p>
-            </div>
-
-            {/* Description */}
-            {product.description && (
-              <div>
-                <p className="mb-1.5 text-xs font-medium text-gray-500">
-                  وصف المنتج
-                </p>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
-            )}
-
-            {/* Generate Link */}
-            <div className="rounded-xl border border-gray-200 p-4 bg-gray-50">
-              <p className="mb-3 text-xs font-semibold text-gray-700">
-                🔗 توليد رابط التتبع
-              </p>
-
-              <div className="mb-3">
-                <label className="mb-1 block text-xs text-gray-500">
-                  كود التتبع SubID (اختياري)
-                </label>
-                <input
-                  type="text"
-                  value={subId}
-                  onChange={(e) => {
-                    setSubId(e.target.value)
-                    setGeneratedUrl(null)
-                  }}
-                  placeholder="مثال: tiktok_v1 أو story_ad"
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-100 transition-all"
-                />
-                <p className="mt-1 text-xs text-gray-400">
-                  لمعرفة مصدر كل مبيعة (تيك توك، فيسبوك...)
-                </p>
-              </div>
-
               {generatedUrl ? (
-                <>
-                  <div className="mb-3">
-                    <label className="mb-1 block text-xs text-gray-500">
-                      رابطك النهائي
-                    </label>
-                    <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
-                      <p className="flex-1 truncate text-xs text-gray-600 font-mono">
-                        {generatedUrl}
-                      </p>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white p-1.5 pr-3">
+                  <p className="flex-1 truncate font-mono text-xs text-gray-600">{generatedUrl}</p>
                   <button
                     onClick={handleCopyLink}
-                    className={`flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all ${
-                      copied
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-900 text-white hover:bg-gray-700'
+                    className={`flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                      copied ? 'bg-green-500 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'
                     }`}
                   >
-                    {copied ? (
-                      <>
-                        <Check size={13} /> تم نسخ الرابط!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={13} /> نسخ الرابط
-                      </>
-                    )}
+                    {copied ? <Check size={12} /> : <Copy size={12} />}
+                    {copied ? 'نُسخ' : 'نسخ'}
                   </button>
-                </>
+                </div>
               ) : (
-                <button
-                  onClick={handleGenerate}
-                  disabled={generating}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-600 py-2.5 text-xs font-semibold text-white transition-all hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-violet-300"
-                >
-                  <Link2 size={13} />
-                  {generating ? 'جارٍ التوليد...' : 'توليد الرابط'}
-                </button>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={subId}
+                    onChange={(e) => {
+                      setSubId(e.target.value)
+                      setGeneratedUrl(null)
+                    }}
+                    placeholder="SubID اختياري (tiktok_v1)"
+                    className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none transition-all focus:border-violet-400 focus:ring-1 focus:ring-violet-100"
+                  />
+                  <button
+                    onClick={handleGenerate}
+                    disabled={generating}
+                    className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-violet-700 disabled:bg-violet-300"
+                  >
+                    <Link2 size={13} />
+                    {generating ? '...' : 'توليد'}
+                  </button>
+                </div>
               )}
             </div>
+
+            {/* Add manual order */}
+            <button
+              onClick={() => onAddOrder(product)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-900 bg-white py-2.5 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-900 hover:text-white"
+            >
+              <Plus size={15} /> إضافة طلبية يدوية لهذا المنتج
+            </button>
           </div>
         </div>
       </div>

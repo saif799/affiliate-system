@@ -22,6 +22,27 @@
       "when": 1780485381465,
       "tag": "0002_noisy_stryfe",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780590597494,
+      "tag": "0003_wild_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780606803281,
+      "tag": "0004_daily_sasquatch",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780745447356,
+      "tag": "0005_ecotrack_delivery",
+      "breakpoints": true
     }
   ]
 }

@@ -47,7 +47,7 @@ export function OrdersPagination({
               Math.abs(p - currentPage) <= 1
             )
             .reduce<(number | '...')[]>((acc, page, idx, arr) => {
-              if (idx > 0 && (page as number) - (arr[idx - 1] as number) > 1) {
+              if (idx > 0 && (page) - (arr[idx - 1]) > 1) {
                 acc.push('...')
               }
               acc.push(page)
@@ -61,7 +61,7 @@ export function OrdersPagination({
               ) : (
                 <button
                   key={page}
-                  onClick={() => onPageChange(page as number)}
+                  onClick={() => onPageChange(page)}
                   className={`min-w-[28px] rounded-lg px-2 py-1.5 text-xs transition-colors ${
                     page === currentPage
                       ? 'bg-gray-900 text-white'

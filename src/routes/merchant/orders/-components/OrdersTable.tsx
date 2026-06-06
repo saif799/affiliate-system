@@ -2,13 +2,11 @@
 
 import type { Order, OrderStatus, DbOrderStatus } from '../-orders.types'
 
-// next merchant-initiated status + button label for a given DB status
+// إجراء التاجر الوحيد: شحن الطلبية المؤكَّدة. ما بعد الشحن مصدره شركة التوصيل.
 function statusAction(
   db: DbOrderStatus,
-): { next: 'confirmed' | 'shipped' | 'returned'; label: string } | null {
-  if (db === 'pending') return { next: 'confirmed', label: 'تأكيد' }
+): { next: 'shipped'; label: string } | null {
   if (db === 'confirmed') return { next: 'shipped', label: 'شحن' }
-  if (db === 'shipped' || db === 'at_wilaya') return { next: 'returned', label: 'إرجاع' }
   return null
 }
 
@@ -27,7 +25,7 @@ interface OrdersTableProps {
   onToggleAll: (ids: string[]) => void
   onUpdateStatus: (
     orderId: string,
-    newStatus: 'confirmed' | 'shipped' | 'returned',
+    newStatus: 'shipped',
   ) => void
   isUpdating: boolean
 }

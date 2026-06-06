@@ -32,12 +32,15 @@ import { Route as AffiliateMarketplaceIndexRouteImport } from './routes/affiliat
 import { Route as AffiliateDashboardIndexRouteImport } from './routes/affiliate/dashboard/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardProductsIndexRouteImport } from './routes/_dashboard/products/index'
+import { Route as DashboardOrdersIndexRouteImport } from './routes/_dashboard/orders/index'
 import { Route as DashboardMerchantsIndexRouteImport } from './routes/_dashboard/merchants/index'
 import { Route as DashboardIntegrationIndexRouteImport } from './routes/_dashboard/integration/index'
 import { Route as DashboardDashboardIndexRouteImport } from './routes/_dashboard/dashboard/index'
 import { Route as DashboardCommissionsIndexRouteImport } from './routes/_dashboard/commissions/index'
 import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard/analytics/index'
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
+import { Route as ApiWebhooksEcotrackRouteImport } from './routes/api/webhooks/ecotrack'
+import { Route as ApiCronReleaseFundsRouteImport } from './routes/api/cron/release-funds'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const SetPasswordRoute = SetPasswordRouteImport.update({
@@ -154,6 +157,11 @@ const DashboardProductsIndexRoute = DashboardProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardOrdersIndexRoute = DashboardOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardMerchantsIndexRoute = DashboardMerchantsIndexRouteImport.update({
   id: '/merchants/',
   path: '/merchants/',
@@ -187,6 +195,16 @@ const DashboardAffiliatesIndexRoute =
     path: '/affiliates/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const ApiWebhooksEcotrackRoute = ApiWebhooksEcotrackRouteImport.update({
+  id: '/api/webhooks/ecotrack',
+  path: '/api/webhooks/ecotrack',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronReleaseFundsRoute = ApiCronReleaseFundsRouteImport.update({
+  id: '/api/cron/release-funds',
+  path: '/api/cron/release-funds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -203,12 +221,15 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/analytics/': typeof DashboardAnalyticsIndexRoute
   '/commissions/': typeof DashboardCommissionsIndexRoute
   '/dashboard/': typeof DashboardDashboardIndexRoute
   '/integration/': typeof DashboardIntegrationIndexRoute
   '/merchants/': typeof DashboardMerchantsIndexRoute
+  '/orders/': typeof DashboardOrdersIndexRoute
   '/products/': typeof DashboardProductsIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
@@ -233,12 +254,15 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates': typeof DashboardAffiliatesIndexRoute
   '/analytics': typeof DashboardAnalyticsIndexRoute
   '/commissions': typeof DashboardCommissionsIndexRoute
   '/dashboard': typeof DashboardDashboardIndexRoute
   '/integration': typeof DashboardIntegrationIndexRoute
   '/merchants': typeof DashboardMerchantsIndexRoute
+  '/orders': typeof DashboardOrdersIndexRoute
   '/products': typeof DashboardProductsIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard': typeof AffiliateDashboardIndexRoute
@@ -266,12 +290,15 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/_dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
   '/_dashboard/commissions/': typeof DashboardCommissionsIndexRoute
   '/_dashboard/dashboard/': typeof DashboardDashboardIndexRoute
   '/_dashboard/integration/': typeof DashboardIntegrationIndexRoute
   '/_dashboard/merchants/': typeof DashboardMerchantsIndexRoute
+  '/_dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/_dashboard/products/': typeof DashboardProductsIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
@@ -298,12 +325,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/api/auth/$'
+    | '/api/cron/release-funds'
+    | '/api/webhooks/ecotrack'
     | '/affiliates/'
     | '/analytics/'
     | '/commissions/'
     | '/dashboard/'
     | '/integration/'
     | '/merchants/'
+    | '/orders/'
     | '/products/'
     | '/settings/'
     | '/affiliate/dashboard/'
@@ -328,12 +358,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/api/auth/$'
+    | '/api/cron/release-funds'
+    | '/api/webhooks/ecotrack'
     | '/affiliates'
     | '/analytics'
     | '/commissions'
     | '/dashboard'
     | '/integration'
     | '/merchants'
+    | '/orders'
     | '/products'
     | '/settings'
     | '/affiliate/dashboard'
@@ -360,12 +393,15 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/register'
     | '/api/auth/$'
+    | '/api/cron/release-funds'
+    | '/api/webhooks/ecotrack'
     | '/_dashboard/affiliates/'
     | '/_dashboard/analytics/'
     | '/_dashboard/commissions/'
     | '/_dashboard/dashboard/'
     | '/_dashboard/integration/'
     | '/_dashboard/merchants/'
+    | '/_dashboard/orders/'
     | '/_dashboard/products/'
     | '/_dashboard/settings/'
     | '/affiliate/dashboard/'
@@ -391,6 +427,8 @@ export interface RootRouteChildren {
   PendingApprovalRoute: typeof PendingApprovalRoute
   SetPasswordRoute: typeof SetPasswordRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCronReleaseFundsRoute: typeof ApiCronReleaseFundsRoute
+  ApiWebhooksEcotrackRoute: typeof ApiWebhooksEcotrackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -556,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProductsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/orders/': {
+      id: '/_dashboard/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof DashboardOrdersIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/merchants/': {
       id: '/_dashboard/merchants/'
       path: '/merchants'
@@ -598,6 +643,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAffiliatesIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/webhooks/ecotrack': {
+      id: '/api/webhooks/ecotrack'
+      path: '/api/webhooks/ecotrack'
+      fullPath: '/api/webhooks/ecotrack'
+      preLoaderRoute: typeof ApiWebhooksEcotrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/release-funds': {
+      id: '/api/cron/release-funds'
+      path: '/api/cron/release-funds'
+      fullPath: '/api/cron/release-funds'
+      preLoaderRoute: typeof ApiCronReleaseFundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -627,6 +686,7 @@ interface DashboardRouteChildren {
   DashboardDashboardIndexRoute: typeof DashboardDashboardIndexRoute
   DashboardIntegrationIndexRoute: typeof DashboardIntegrationIndexRoute
   DashboardMerchantsIndexRoute: typeof DashboardMerchantsIndexRoute
+  DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
   DashboardProductsIndexRoute: typeof DashboardProductsIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
 }
@@ -638,6 +698,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardDashboardIndexRoute: DashboardDashboardIndexRoute,
   DashboardIntegrationIndexRoute: DashboardIntegrationIndexRoute,
   DashboardMerchantsIndexRoute: DashboardMerchantsIndexRoute,
+  DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
   DashboardProductsIndexRoute: DashboardProductsIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
 }
@@ -698,6 +759,8 @@ const rootRouteChildren: RootRouteChildren = {
   PendingApprovalRoute: PendingApprovalRoute,
   SetPasswordRoute: SetPasswordRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCronReleaseFundsRoute: ApiCronReleaseFundsRoute,
+  ApiWebhooksEcotrackRoute: ApiWebhooksEcotrackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

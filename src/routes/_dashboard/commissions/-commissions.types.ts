@@ -64,6 +64,16 @@ export type ConfirmPaymentPayload = {
   transactionRef: string   // رقم الإثبات الذي يدخله المدير
 }
 
+// ---------- مصدر الأموال (كيف ربح المستخدم هذا الرصيد) ----------
+export type EarningSourceItem = {
+  id: string
+  productName: string
+  wilaya: string | null
+  amount: number
+  status: 'held' | 'released'   // قيد الحجز / مُحرَّر
+  date: string                  // ISO
+}
+
 // ---------- Transaction History (القسم 5) ----------
 export type TransactionRecord = {
   id: string

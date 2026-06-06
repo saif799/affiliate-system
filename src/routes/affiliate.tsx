@@ -12,6 +12,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { getAffiliateWalletBalance } from './affiliate/-server/layout.api'
+import { NotificationBell } from './-components/shared/NotificationBell'
 
 export const Route = createFileRoute('/affiliate')({
   beforeLoad: ({ context, location }) => {
@@ -45,13 +46,16 @@ function AffiliateLayout() {
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <aside className="flex w-56 flex-col justify-between border-l border-gray-200 bg-white px-3 py-5">
         <div>
-          <div className="mb-5 flex items-center gap-2.5 px-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-white">
-              <TrendingUp size={16} strokeWidth={2.5} />
+          <div className="mb-5 flex items-center justify-between px-2">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-white">
+                <TrendingUp size={16} strokeWidth={2.5} />
+              </div>
+              <span className="text-sm font-semibold text-gray-900">
+                بوابة المسوّق
+              </span>
             </div>
-            <span className="text-sm font-semibold text-gray-900">
-              بوابة المسوّق
-            </span>
+            <NotificationBell />
           </div>
           <div className="mb-4 flex items-center gap-2.5 rounded-lg bg-gray-100 px-3 py-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-violet-100 text-violet-600">

@@ -271,7 +271,7 @@ async function fetchTopAffiliates(from: Date, to: Date): Promise<TopAffiliate[]>
       refusal_rate_pct: sql<number>`
         ROUND(
           COUNT(*) FILTER (WHERE ${orders.status} = 'returned')::numeric
-          / NULLIF(COUNT(*), 0) * 100
+          / NULLIF(COUNT(*) FILTER (WHERE ${orders.status} IN ('delivered', 'returned')), 0) * 100
         , 1)
       `,
     })
@@ -456,11 +456,7 @@ const AnalyticsInput = z.object({
 export const getAnalytics = createServerFn({ method: 'GET' })
   .inputValidator((input: unknown) => AnalyticsInput.parse(input))
   .handler(async ({ data }): Promise<AnalyticsData> => {
-    try {
-      await requireSuperAdmin()
-    } catch (err) {
-      throw err
-    }
+    await requireSuperAdmin()
 
     const { range } = data
     const { from, to, prevFrom, prevTo } = getRangeWindow(range)

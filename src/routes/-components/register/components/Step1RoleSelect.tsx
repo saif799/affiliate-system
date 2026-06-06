@@ -1,4 +1,4 @@
-import type { Role, Step } from '../types/register.types'
+import type { Role, Step } from '../types/-register.types'
 
 interface Step1Props {
   role: Role | null
