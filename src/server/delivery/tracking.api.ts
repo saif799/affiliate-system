@@ -128,6 +128,13 @@ export const requestOrderReturn = createServerFn({ method: 'POST' })
     }
 
     const client = await getEcotrackClient(order.accountId ?? undefined)
-    await client.requestReturn(order.tracking, data.reason)
+    // ECOTRACK لا يقبل سبب الإرجاع في نقطته (ask/for/order/return) — نُرفق السبب
+    // كملاحظة على الشحنة (best-effort) ثم نطلب الإرجاع، ونخزّن السبب محليّاً.
+    await client.addTrackingNote(order.tracking, `سبب الإرجاع: ${data.reason}`).catch(() => {})
+    await client.requestReturn(order.tracking)
+    await db
+      .update(orders)
+      .set({ return_reason: data.reason })
+      .where(eq(orders.id, order.id))
     return { success: true }
   })

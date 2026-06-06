@@ -40,6 +40,7 @@ import { Route as DashboardCommissionsIndexRouteImport } from './routes/_dashboa
 import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard/analytics/index'
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
 import { Route as ApiWebhooksEcotrackRouteImport } from './routes/api/webhooks/ecotrack'
+import { Route as ApiCronSyncTrackingRouteImport } from './routes/api/cron/sync-tracking'
 import { Route as ApiCronReleaseFundsRouteImport } from './routes/api/cron/release-funds'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -200,6 +201,11 @@ const ApiWebhooksEcotrackRoute = ApiWebhooksEcotrackRouteImport.update({
   path: '/api/webhooks/ecotrack',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronSyncTrackingRoute = ApiCronSyncTrackingRouteImport.update({
+  id: '/api/cron/sync-tracking',
+  path: '/api/cron/sync-tracking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronReleaseFundsRoute = ApiCronReleaseFundsRouteImport.update({
   id: '/api/cron/release-funds',
   path: '/api/cron/release-funds',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/analytics/': typeof DashboardAnalyticsIndexRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates': typeof DashboardAffiliatesIndexRoute
   '/analytics': typeof DashboardAnalyticsIndexRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/_dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/api/auth/$'
     | '/api/cron/release-funds'
+    | '/api/cron/sync-tracking'
     | '/api/webhooks/ecotrack'
     | '/affiliates/'
     | '/analytics/'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/api/auth/$'
     | '/api/cron/release-funds'
+    | '/api/cron/sync-tracking'
     | '/api/webhooks/ecotrack'
     | '/affiliates'
     | '/analytics'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/api/auth/$'
     | '/api/cron/release-funds'
+    | '/api/cron/sync-tracking'
     | '/api/webhooks/ecotrack'
     | '/_dashboard/affiliates/'
     | '/_dashboard/analytics/'
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   SetPasswordRoute: typeof SetPasswordRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronReleaseFundsRoute: typeof ApiCronReleaseFundsRoute
+  ApiCronSyncTrackingRoute: typeof ApiCronSyncTrackingRoute
   ApiWebhooksEcotrackRoute: typeof ApiWebhooksEcotrackRoute
 }
 
@@ -650,6 +663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksEcotrackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/sync-tracking': {
+      id: '/api/cron/sync-tracking'
+      path: '/api/cron/sync-tracking'
+      fullPath: '/api/cron/sync-tracking'
+      preLoaderRoute: typeof ApiCronSyncTrackingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/release-funds': {
       id: '/api/cron/release-funds'
       path: '/api/cron/release-funds'
@@ -760,6 +780,7 @@ const rootRouteChildren: RootRouteChildren = {
   SetPasswordRoute: SetPasswordRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronReleaseFundsRoute: ApiCronReleaseFundsRoute,
+  ApiCronSyncTrackingRoute: ApiCronSyncTrackingRoute,
   ApiWebhooksEcotrackRoute: ApiWebhooksEcotrackRoute,
 }
 export const routeTree = rootRouteImport

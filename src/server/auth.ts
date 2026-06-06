@@ -174,15 +174,21 @@ export const auth = betterAuth({
 
   user: {
     additionalFields: {
+      // أمان حرج: role و status يُضبطان من الخادم فقط (input:false) — وإلا
+      // أمكن لأي مستخدم إرسال role:"super_admin"&status:"active" إلى
+      // /sign-up/email ويُصعّد صلاحياته. التسجيل الذاتي يأخذ القيم الافتراضية
+      // (affiliate/pending)، ودعوات الأدمن تُنشئ المستخدم بإدراج مباشر موثّق.
       role: {
         type: 'string',
         required: true,
         defaultValue: 'affiliate',
+        input: false, // ← الحقل دائماً موجود (required) لكنه يُضبط من الخادم فقط
       },
       status: {
         type: 'string',
         required: true,
         defaultValue: 'pending',
+        input: false, // ← يمنع التصعيد عبر /sign-up مع إبقاء النوع غير-null
       },
       phone: {
         type: 'string',

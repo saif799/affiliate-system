@@ -15,6 +15,7 @@ import {
 } from '#/server/db/schema'
 import { eq, desc } from 'drizzle-orm'
 import { flagOrderDisputed, resolveDispute } from '#/server/settlement'
+import { notify } from '#/server/notify'
 
 async function requireSuperAdmin() {
   const session = await getSession()
@@ -84,16 +85,66 @@ export const getAdminOrders = createServerFn({ method: 'GET' }).handler(
   },
 )
 
-// فتح نزاع على طلبية (تجميدها)
+// فتح نزاع على طلبية (تجميدها) + إشعار الطرف/الأطراف المختارة
 export const flagOrderDispute = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) =>
     z
-      .object({ orderId: z.string().uuid(), note: z.string().max(500).optional() })
+      .object({
+        orderId: z.string().uuid(),
+        note: z.string().max(500).optional(),
+        notifyTarget: z.enum(['affiliate', 'merchant', 'both']).default('both'),
+      })
       .parse(input),
   )
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     await requireSuperAdmin()
     await flagOrderDisputed(data.orderId, data.note)
+
+    // مَن نُشعِر؟ (المسوّق / التاجر / كلاهما)
+    const [info] = await db
+      .select({
+        productName: products.name,
+        affiliateUserId: affiliateProfiles.user_id,
+        merchantUserId: merchantProfiles.user_id,
+      })
+      .from(orders)
+      .innerJoin(products, eq(orders.product_id, products.id))
+      .leftJoin(affiliateProfiles, eq(orders.affiliate_id, affiliateProfiles.id))
+      .innerJoin(merchantProfiles, eq(orders.merchant_id, merchantProfiles.id))
+      .where(eq(orders.id, data.orderId))
+      .limit(1)
+
+    if (info) {
+      const body = `تم فتح نزاع على طلبية «${info.productName}»${data.note ? ` — ${data.note}` : ''}`
+      const jobs: Promise<void>[] = []
+      if (
+        (data.notifyTarget === 'affiliate' || data.notifyTarget === 'both') &&
+        info.affiliateUserId
+      ) {
+        jobs.push(
+          notify({
+            userId: info.affiliateUserId,
+            type: 'order_status',
+            title: 'طلبية قيد النزاع ⚠️',
+            body,
+            link: '/affiliate/orders',
+          }),
+        )
+      }
+      if (data.notifyTarget === 'merchant' || data.notifyTarget === 'both') {
+        jobs.push(
+          notify({
+            userId: info.merchantUserId,
+            type: 'order_status',
+            title: 'طلبية قيد النزاع ⚠️',
+            body,
+            link: '/merchant/orders',
+          }),
+        )
+      }
+      await Promise.all(jobs)
+    }
+
     return { success: true }
   })
 

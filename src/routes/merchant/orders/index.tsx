@@ -2,12 +2,13 @@
 
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
-import { getMerchantOrders, updateOrderStatus } from './-server/orders.api'
+import { getMerchantOrders, shipOrder } from './-server/orders.api'
 import { OrdersTabs }       from './-components/OrdersTabs'
 import { OrdersTable }      from './-components/OrdersTable'
+import { OrderDetailsModal } from './-components/OrderDetailsModal'
 import { BulkActionBar }    from './-components/BulkActionBar'
 import { OrdersPagination } from './-components/OrdersPagination'
-import type { TabFilter, DateFilter, DbOrderStatus } from './-orders.types'
+import type { TabFilter, DateFilter, DbOrderStatus, Order } from './-orders.types'
 
 // إجراء التاجر الوحيد: شحن الطلبية المؤكَّدة. ما بعد الشحن مصدره شركة التوصيل.
 function nextStatus(db: DbOrderStatus): 'shipped' | null {
@@ -40,6 +41,7 @@ function MerchantOrdersPage() {
   const [dateFilter,   setDateFilter]   = useState<DateFilter>('all')
   const [currentPage,  setCurrentPage]  = useState(1)
   const [selectedIds,  setSelectedIds]  = useState<Set<string>>(new Set())
+  const [detailsOrder, setDetailsOrder] = useState<Order | null>(null)
 
   const wilayas = useMemo(
     () => ['all', ...new Set(orders.map((o) => o.wilaya))],
@@ -99,60 +101,46 @@ function MerchantOrdersPage() {
     setSelectedIds(new Set(ids))
   }
 
-  // تغيير حالة طلبية واحدة
-  const handleUpdateStatus = async (
-    orderId: string,
-    newStatus: 'shipped',
-  ) => {
+  // شحن طلبية واحدة بضغطة — يُنشئ الشحنة لدى شركة التوصيل ويجلب رقم التتبّع تلقائياً
+  const handleShip = async (orderId: string) => {
     if (isUpdating) return
-    // رقم التتبّع مطلوب عند الشحن لمطابقة تحديثات شركة التوصيل
-    const trackingNumber = window.prompt('أدخل رقم تتبّع الشحنة من شركة التوصيل:')?.trim()
-    if (!trackingNumber) return
     setIsUpdating(true)
     try {
-      await updateOrderStatus({ data: { orderId, newStatus, trackingNumber } })
+      await shipOrder({ data: { orderId } })
       await router.invalidate()
     } catch (err) {
-      console.error(err)
-      alert(err instanceof Error ? err.message : 'فشل تغيير الحالة')
+      alert(err instanceof Error ? err.message : 'فشل إنشاء الشحنة لدى شركة التوصيل')
     } finally {
       setIsUpdating(false)
     }
   }
 
-  // شحن مجموعة طلبيات مؤكَّدة — كل شحنة لها رقم تتبّع فريد من شركة التوصيل،
-  // لذا نطلب رقماً لكل طلبية (بدونه تبقى غير قابلة للتتبّع ولا تُسوّى).
+  // شحن مجموعة طلبيات مؤكَّدة بضغطة واحدة (بلا إدخال يدوي) — تسلسليّاً مع تجميع الأخطاء
   const handleBulkChangeStatus = async () => {
     if (isUpdating) return
     const targets = orders
-      .filter((o) => selectedIds.has(o.id))
-      .map((o) => ({ id: o.id, customer: o.customer.name, next: nextStatus(o.dbStatus) }))
-      .filter((t): t is { id: string; customer: string; next: 'shipped' } => t.next !== null)
+      .filter((o) => selectedIds.has(o.id) && nextStatus(o.dbStatus) === 'shipped')
+      .map((o) => ({ id: o.id, customer: o.customer.name }))
     if (targets.length === 0) {
       alert('لا توجد طلبيات مؤكَّدة قابلة للشحن ضمن المحدد')
       return
     }
 
-    const toShip: { id: string; trackingNumber: string }[] = []
-    for (const t of targets) {
-      const tn = window.prompt(`رقم تتبّع شحنة الزبون «${t.customer}»:`)?.trim()
-      if (tn) toShip.push({ id: t.id, trackingNumber: tn })
-    }
-    if (toShip.length === 0) return
-
     setIsUpdating(true)
+    const failures: string[] = []
     try {
-      await Promise.all(
-        toShip.map((t) =>
-          updateOrderStatus({
-            data: { orderId: t.id, newStatus: 'shipped', trackingNumber: t.trackingNumber },
-          }),
-        ),
-      )
+      for (const t of targets) {
+        try {
+          await shipOrder({ data: { orderId: t.id } })
+        } catch (e) {
+          failures.push(`«${t.customer}»: ${e instanceof Error ? e.message : 'فشل'}`)
+        }
+      }
       setSelectedIds(new Set())
       await router.invalidate()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'فشل تغيير الحالة')
+      if (failures.length > 0) {
+        alert(`تعذّر شحن بعض الطلبيات:\n${failures.join('\n')}`)
+      }
     } finally {
       setIsUpdating(false)
     }
@@ -226,7 +214,8 @@ function MerchantOrdersPage() {
         selectedIds={selectedIds}
         onToggle={handleToggle}
         onToggleAll={handleToggleAll}
-        onUpdateStatus={handleUpdateStatus}
+        onUpdateStatus={handleShip}
+        onViewDetails={setDetailsOrder}
         isUpdating={isUpdating}
       />
 
@@ -238,6 +227,9 @@ function MerchantOrdersPage() {
         pageSize={PAGE_SIZE}
         onPageChange={setCurrentPage}
       />
+
+      {/* ─── Details + tracking ─── */}
+      <OrderDetailsModal order={detailsOrder} onClose={() => setDetailsOrder(null)} />
 
     </div>
   )

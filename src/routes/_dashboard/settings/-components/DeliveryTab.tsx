@@ -14,11 +14,18 @@ import type {DeliveryAccountView} from '../../integration/-server/delivery.api';
 interface FormState {
   name: string
   provider: string
+  baseUrl: string
   apiKey: string
   isDefault: boolean
 }
 
-const EMPTY_FORM: FormState = { name: '', provider: 'ecotrack', apiKey: '', isDefault: false }
+const EMPTY_FORM: FormState = {
+  name: '',
+  provider: 'ecotrack',
+  baseUrl: 'https://platform.dhd-dz.com',
+  apiKey: '',
+  isDefault: false,
+}
 
 export function DeliveryTab() {
   const [accounts, setAccounts] = useState<DeliveryAccountView[]>([])
@@ -53,7 +60,15 @@ export function DeliveryTab() {
     setSaving(true)
     setError('')
     try {
-      await createDeliveryAccount({ data: form })
+      await createDeliveryAccount({
+        data: {
+          name: form.name,
+          provider: form.provider,
+          apiKey: form.apiKey,
+          baseUrl: form.baseUrl.trim() || undefined,
+          isDefault: form.isDefault,
+        },
+      })
       setForm(EMPTY_FORM)
       setShowForm(false)
       await load()
@@ -133,6 +148,21 @@ export function DeliveryTab() {
               >
                 <option value="ecotrack">ecotrack</option>
               </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                نطاق الـ API (Base URL)
+              </label>
+              <input
+                value={form.baseUrl}
+                onChange={(e) => setForm((f) => ({ ...f, baseUrl: e.target.value }))}
+                placeholder="https://platform.dhd-dz.com"
+                dir="ltr"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                نطاق الناقل على منصّة ECOTRACK (white-label). اتركه فارغاً لاستخدام الافتراضي.
+              </p>
             </div>
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs font-medium text-gray-600">مفتاح API</label>

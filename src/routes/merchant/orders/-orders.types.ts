@@ -32,6 +32,10 @@ export interface Order {
     phone: string
   }
   wilaya: string
+  commune?: string // بلدية التوصيل (ECOTRACK)
+  address?: string // عنوان التوصيل
+  note?: string // ملاحظة للتوصيل
+  quantity: number
   totalPrice: number // سعر البيع النهائي
   merchantEarnings: number // حصة التاجر
   status: OrderStatus // UI-collapsed status (4 visible states)

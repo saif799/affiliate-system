@@ -72,16 +72,12 @@ function MarketplacePage() {
     setLeadProduct({ id: p.id, name: p.name, basePrice: p.basePrice })
   }
 
+  // يرمي عند الفشل ليعرضه AddLeadModal داخليّاً ويبقى مفتوحاً؛ المودال يُغلق نفسه عند النجاح
   async function handleAddLead(form: AddLeadForm) {
-    try {
-      await addLeadManual({ data: form })
-      setLeadProduct(null)
-      setLeadDone(true)
-      setTimeout(() => setLeadDone(false), 4000)
-      await router.invalidate()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'فشل إنشاء الطلبية')
-    }
+    await addLeadManual({ data: form })
+    setLeadDone(true)
+    setTimeout(() => setLeadDone(false), 4000)
+    await router.invalidate()
   }
 
   return (

@@ -4,11 +4,15 @@
 // قلب تكامل ECOTRACK: تطبيق أحداث التتبّع على الطلبية.
 // المصدر الوحيد للحالات ما بعد الشحن (at_wilaya/delivered/returned).
 //
+// ECOTRACK سحبيّ (pull): لا يدفع webhooks في توثيقه الرسمي، بل نستعلم عن
+// get/tracking/info دوريّاً (cron) ويدويّاً (زر مزامنة الأدمن). دالة
+// applyEcotrackEvent عامّة وتقبل أيضاً حالة مُرسَلة عبر webhook إن فُعِّل.
+//
 // - يسجّل كل حدث في order_tracking_events (idempotent).
-// - يُحدّث orders.delivery_status (حالة ECOTRACK الخام) دائماً.
+// - يُحدّث orders.delivery_status (حالة/حدث ECOTRACK الخام) دائماً.
 // - يُقدّم حالة المنصّة (status) للأمام فقط، من حالة نشطة.
-// - "livre" → يُرجِع shouldPayout (التسوية تتم عبر processPayout).
-// - "retourne" → يضبط returned_at ويُعيد حساب نسبة الرفض.
+// - "livred" → يُرجِع shouldPayout (التسوية تتم عبر processPayout).
+// - استلام المُرتجَع → يضبط returned_at ويُعيد حساب نسبة الرفض.
 // ============================================================
 
 import { db } from '#/server/db'
@@ -19,34 +23,55 @@ import {
   affiliateProfiles,
   merchantProfiles,
 } from '#/server/db/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull } from 'drizzle-orm'
 import { recomputeRefusalRateTx } from '#/server/settlement'
 import { notify } from '#/server/notify'
-import {
-  ecotrackStatusLabel,
-  getEcotrackClient
-  
-} from '#/server/services/ecotrack.service'
-import type {EcotrackStatus} from '#/server/services/ecotrack.service';
+import { ecotrackStatusLabel, getEcotrackClient } from '#/server/services/ecotrack.service'
 import { processPayout } from '#/server/services/payout.service'
 
 type PlatformTarget = 'shipped' | 'at_wilaya' | 'delivered' | 'returned' | null
 
-// حالة منصّتنا الهدف لكل حالة ECOTRACK (null = سجّل الحدث فقط)
-const ECOTRACK_TO_PLATFORM: Record<EcotrackStatus, PlatformTarget> = {
-  en_attente: null,
-  pris_en_charge: 'shipped',
-  en_transit: 'shipped',
-  en_cours_livraison: 'at_wilaya',
-  livre: 'delivered',
-  retourne: 'returned',
-  retourne_paye: null, // مُرتجَعة مدفوعة → سجّل فقط (الحالة returned سلفاً)
-  echec_livraison: null, // فشل تسليم → ستُعاد المحاولة، لا تغيّر الحالة
-  annule: null, // ملغى → يقرّره الأدمن، لا أثر مالي تلقائي
+// خريطة حالات/أحداث ECOTRACK الحقيقية → حالة منصّتنا الهدف (null = سجّل فقط).
+// تغطّي رموز أحداث التتبّع (activity[].status) وحالات الطلبية (get/orders) معاً،
+// كي تعمل سواءٌ جاء الحدث من المزامنة أو من webhook مُخصَّص.
+const ECOTRACK_TO_PLATFORM: Record<string, PlatformTarget> = {
+  // ── رموز أحداث التتبّع (get/tracking/info) ──
+  order_information_received_by_carrier: null, // سُجِّلت لدى الناقل
+  picked: 'shipped', // استلمها الناقل
+  accepted_by_carrier: 'shipped', // وصلت مركز الفرز
+  dispatched_to_driver: 'at_wilaya', // مع الموزّع
+  attempt_delivery: 'at_wilaya', // محاولة تسليم
+  return_asked: null, // بدأ الإرجاع — لا تغيّر بعد
+  return_in_transit: null, // الإرجاع في الطريق
+  return_received: 'returned', // وصل المُرتجَع للبائع
+  livred: 'delivered', // سُلّمت ✅
+  encaissed: null, // حُصِّلت (مُسلَّمة سلفاً)
+  payed: null, // دُفعت (مُسلَّمة سلفاً)
+  // ── حالات الطلبية (get/orders) ──
+  prete_a_expedier: 'shipped',
+  en_ramassage: 'shipped',
+  en_preparation_stock: 'shipped',
+  en_preparation: 'shipped',
+  vers_hub: 'shipped',
+  en_hub: 'shipped',
+  vers_wilaya: 'at_wilaya',
+  en_livraison: 'at_wilaya',
+  suspendu: null, // موقوفة — يقرّرها الأدمن
+  livre_non_encaisse: 'delivered',
+  encaisse_non_paye: 'delivered',
+  paiements_prets: 'delivered',
+  paye_et_archive: 'delivered',
+  retour_chez_livreur: null, // طريق الإرجاع — لا تغيّر بعد
+  retour_transit_entrepot: null,
+  retour_en_traitement: null,
+  retour_recu: 'returned',
+  retour_archive: 'returned',
+  annule: null, // الإلغاء قرار أدمن — لا أثر مالي تلقائي
 }
 
 export function ecotrackToPlatformStatus(raw: string): PlatformTarget {
-  return ECOTRACK_TO_PLATFORM[raw as EcotrackStatus] ?? null
+  const key = typeof raw === 'string' ? raw.toLowerCase() : raw
+  return ECOTRACK_TO_PLATFORM[key] ?? null
 }
 
 // رتبة الحالة — للتقدّم للأمام فقط (نمنع التراجع عند وصول أحداث خارج الترتيب)
@@ -230,6 +255,12 @@ async function sendStatusNotification(orderId: string, to: string): Promise<void
   }
 }
 
+// تحويل "YYYY-MM-DD" + "HH:MM:SS" من ECOTRACK إلى Date (متّسق للـ idempotency)
+function parseActivityDate(date: string, time?: string): Date {
+  const iso = time ? `${date}T${time}` : `${date}T00:00:00`
+  return new Date(iso)
+}
+
 export interface SyncResult {
   orderId: string
   trackingNumber: string
@@ -259,21 +290,21 @@ export async function syncOrderTracking(orderId: string): Promise<SyncResult> {
   }
 
   const client = await getEcotrackClient(order.accountId ?? undefined)
-  const tracking = await client.getTracking(order.trackingNumber)
-  const activities = tracking.activities ?? []
+  const info = await client.getTrackingInfo(order.trackingNumber)
+  const activities = info.activity ?? []
 
   let applied = 0
   let shouldPayout = false
   for (const act of activities) {
     if (!act.status || !act.date) continue
-    const occurredAt = new Date(act.date)
+    const occurredAt = parseActivityDate(act.date, act.time)
     if (Number.isNaN(occurredAt.getTime())) continue
     const res = await applyEcotrackEvent({
       trackingNumber: order.trackingNumber,
       rawStatus: act.status,
       occurredAt,
-      description: act.comment,
-      wilaya: act.wilaya,
+      description: act.reason || act.content || act.details || undefined,
+      wilaya: act.station || info.currentStation || undefined,
     })
     if (res.ok && res.changed) applied++
     if (res.ok && res.shouldPayout) shouldPayout = true
@@ -299,4 +330,33 @@ export async function syncOrderTracking(orderId: string): Promise<SyncResult> {
     status: fresh?.status ?? 'unknown',
     eventsApplied: applied,
   }
+}
+
+/**
+ * مزامنة دوريّة لكل الطلبيات النشطة (shipped/at_wilaya) التي لها رقم تتبّع.
+ * يُستدعى من cron (api/cron/sync-tracking) ليُحدّث الحالات تلقائياً ويُطلق
+ * التسوية عند التسليم دون انتظار زرّ الأدمن. آمن للتكرار.
+ */
+export async function syncAllActiveOrders(): Promise<{ orders: number; updated: number }> {
+  const active = await db
+    .select({ id: orders.id })
+    .from(orders)
+    .where(
+      and(
+        inArray(orders.status, ['shipped', 'at_wilaya']),
+        isNotNull(orders.tracking_number),
+      ),
+    )
+
+  let updated = 0
+  for (const o of active) {
+    try {
+      const r = await syncOrderTracking(o.id)
+      if (r.eventsApplied > 0) updated++
+    } catch (err) {
+      console.error(`[ecotrack] فشل مزامنة الطلبية ${o.id}:`, err)
+    }
+  }
+
+  return { orders: active.length, updated }
 }

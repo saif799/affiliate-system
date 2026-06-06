@@ -33,6 +33,7 @@ function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [flagTarget, setFlagTarget] = useState<AdminOrder | null>(null)
   const [flagNote, setFlagNote] = useState('')
+  const [notifyTo, setNotifyTo] = useState<'affiliate' | 'merchant' | 'both'>('both')
   const [flagBusy, setFlagBusy] = useState(false)
 
   const filtered =
@@ -42,6 +43,7 @@ function AdminOrdersPage() {
 
   function openFlag(o: AdminOrder) {
     setFlagNote('')
+    setNotifyTo('both')
     setFlagTarget(o)
   }
 
@@ -50,7 +52,11 @@ function AdminOrdersPage() {
     setFlagBusy(true)
     try {
       await flagOrderDispute({
-        data: { orderId: flagTarget.id, note: flagNote.trim() || undefined },
+        data: {
+          orderId: flagTarget.id,
+          note: flagNote.trim() || undefined,
+          notifyTarget: notifyTo,
+        },
       })
       setFlagTarget(null)
       await router.invalidate()
@@ -215,6 +221,30 @@ function AdminOrdersPage() {
               placeholder="مثال: الزبون ينكر استلام الطرد رغم تسجيله مُسلَّماً…"
               className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
             />
+
+            <label className="mb-1.5 mt-4 block text-sm font-medium text-gray-700">
+              إرسال الإشعار إلى
+            </label>
+            <div className="flex gap-2">
+              {([
+                { v: 'both', label: 'كلاهما' },
+                { v: 'affiliate', label: 'المسوّق' },
+                { v: 'merchant', label: 'التاجر' },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => setNotifyTo(opt.v)}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                    notifyTo === opt.v
+                      ? 'border-purple-300 bg-purple-50 text-purple-700'
+                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
 
             <div className="mt-5 flex justify-end gap-2">
               <button

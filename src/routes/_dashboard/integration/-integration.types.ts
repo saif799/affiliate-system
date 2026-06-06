@@ -2,9 +2,9 @@ export type IntegrationStatus = 'connected' | 'disconnected' | 'error'
 
 export type IntegrationCategory =
   | 'ecommerce'      // منصات التجارة الإلكترونية
-  | 'delivery'       // شركات التوصيل
   | 'automation'     // أدوات الأتمتة
   | 'notifications'  // قنوات الإشعارات
+// ملاحظة: التوصيل (delivery) لم يَعُد فئة هنا — يُدار من Settings → التوصيل.
 
 export interface Integration {
   id:           string

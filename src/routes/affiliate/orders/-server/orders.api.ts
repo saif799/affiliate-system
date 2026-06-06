@@ -6,6 +6,7 @@ import { getSession } from '#/lib/session'
 import { affiliateProfiles, merchantProfiles, orders, orderStatusHistory, products, settings } from '#/server/db/schema'
 import { and, eq, sql, desc, notInArray, isNull, inArray } from 'drizzle-orm'
 import { notify } from '#/server/notify'
+import { getEcotrackClient } from '#/server/services/ecotrack.service'
 import { z } from 'zod'
 import type {
   OrdersPageData,
@@ -165,12 +166,15 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
 
 const AddLeadSchema = z.object({
   productId: z.string().uuid(),
-  customerName: z.string().min(1),
-  customerPhone: z.string().min(1),
-  wilaya: z.string().min(1),
-  city: z.string().optional(),
+  customerName: z.string().trim().min(1),
+  customerPhone: z.string().trim().min(9).max(20),
+  // منطقة التوصيل تُختار من قوائم ECOTRACK (ولاية بالرمز + بلدية مطابقة)
+  wilayaCode: z.number().int().min(1).max(58),
+  wilayaName: z.string().trim().min(1),
+  commune: z.string().trim().min(1),
+  address: z.string().trim().min(1),
   salePrice: z.number().int().positive(),
-  notes: z.string().optional(),
+  notes: z.string().trim().max(300).optional(),
 })
 
 export const addLeadManual = createServerFn({ method: 'POST' })
@@ -204,7 +208,11 @@ export const addLeadManual = createServerFn({ method: 'POST' })
       merchant_id: product.merchantId,
       customer_name: data.customerName,
       customer_phone: data.customerPhone,
-      customer_wilaya: data.wilaya,
+      customer_wilaya: data.wilayaName,
+      customer_wilaya_code: data.wilayaCode,
+      customer_commune: data.commune,
+      customer_address: data.address,
+      customer_note: data.notes ?? null,
       quantity: 1,
       unit_affiliate_price_dzd: data.salePrice,
       unit_merchant_price_dzd: product.merchantPrice,
@@ -362,4 +370,30 @@ export const rejectLead = createServerFn({ method: 'POST' })
     })
 
     return { success: true }
+  })
+
+// ============================================================
+// مناطق التوصيل (من ECOTRACK) — لملء نموذج الطلبية اليدوية بقيم صالحة
+// ============================================================
+
+export const getDeliveryZones = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<{ code: number; name: string }[]> => {
+    await requireAffiliate()
+    const client = await getEcotrackClient()
+    const wilayas = await client.getWilayas()
+    return wilayas
+      .map((w) => ({ code: w.wilaya_id, name: w.wilaya_name }))
+      .sort((a, b) => a.code - b.code)
+  },
+)
+
+export const getDeliveryCommunes = createServerFn({ method: 'GET' })
+  .inputValidator((input: unknown) =>
+    z.object({ wilayaCode: z.number().int().min(1).max(58) }).parse(input),
+  )
+  .handler(async ({ data }): Promise<{ name: string; hasStopDesk: boolean }[]> => {
+    await requireAffiliate()
+    const client = await getEcotrackClient()
+    const communes = await client.getCommunes(data.wilayaCode)
+    return communes.map((c) => ({ name: c.nom, hasStopDesk: c.has_stop_desk === 1 }))
   })

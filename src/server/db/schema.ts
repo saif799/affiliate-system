@@ -307,6 +307,12 @@ export const orders = pgTable(
     customer_name: text('customer_name').notNull(),
     customer_phone: text('customer_phone').notNull(),
     customer_wilaya: text('customer_wilaya').notNull(),
+    // بيانات منطقة التوصيل المطلوبة لإنشاء الشحنة في ECOTRACK
+    // (تُختار من قوائم ECOTRACK نفسها لضمان قبول create/order).
+    customer_wilaya_code: integer('customer_wilaya_code'), // 1..58 (IDWilaya لدى ECOTRACK)
+    customer_commune: text('customer_commune'), // اسم البلدية كما لدى ECOTRACK
+    customer_address: text('customer_address'), // العنوان (مطلوب للتوصيل المنزلي)
+    customer_note: text('customer_note'), // ملاحظة للتاجر/شركة التوصيل (remarque)
     quantity: integer('quantity').notNull().default(1),
     unit_affiliate_price_dzd: integer('unit_affiliate_price_dzd').notNull(),
     unit_merchant_price_dzd: integer('unit_merchant_price_dzd').notNull(),
@@ -393,6 +399,9 @@ export const deliveryAccounts = pgTable(
     name: text('name').notNull(),
     provider: text('provider').notNull().default('ecotrack'),
     api_key: text('api_key').notNull(),
+    // قاعدة الـ API الخاصة بحساب المُرسِل (ECOTRACK منصّة white-label؛ لكل
+    // ناقل نطاقه، مثل https://dhd.ecotrack.dz). فارغ ⇒ يُستخدم ECOTRACK_BASE_URL.
+    base_url: text('base_url'),
     is_active: boolean('is_active').notNull().default(true),
     is_default: boolean('is_default').notNull().default(false),
     deleted_at: timestamp('deleted_at'),

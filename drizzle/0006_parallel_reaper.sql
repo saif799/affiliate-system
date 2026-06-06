@@ -1,0 +1,1 @@
+ALTER TABLE "delivery_accounts" ADD COLUMN "base_url" text;

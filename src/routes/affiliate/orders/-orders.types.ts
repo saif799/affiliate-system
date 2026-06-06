@@ -42,8 +42,10 @@ export interface AddLeadForm {
   productId: string
   customerName: string
   customerPhone: string
-  wilaya: string
-  city: string
+  wilayaCode: number // رمز الولاية لدى ECOTRACK (1..58)
+  wilayaName: string // اسم الولاية (للعرض/التخزين)
+  commune: string // بلدية مطابقة لقائمة ECOTRACK
+  address: string // العنوان (مطلوب للتوصيل المنزلي)
   salePrice: number
   notes?: string
 }
@@ -73,5 +75,6 @@ export interface TabCounts {
 export interface OrdersPageData {
   orders: AffiliateOrder[]
   stats: OrdersStats
-  products: LeadProduct[]
 }
+// ملاحظة: إنشاء الطلبيات اليدوية يتم من سوق المنتجات (marketplace) حيث يُمرَّر
+// المنتج المحدّد إلى AddLeadModal — صفحة الطلبيات لا تحتاج قائمة المنتجات.

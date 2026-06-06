@@ -48,43 +48,8 @@ const INTEGRATION_GROUPS: IntegrationGroup[] = [
       },
     ],
   },
-  {
-    category:    'delivery',
-    label:       'شركات التوصيل',
-    description: 'تتبع الطرود وتحديث حالة الطلبات وحساب العمولة تلقائياً',
-    integrations: [
-      {
-        id:          'yalidine',
-        name:        'Yalidine Express',
-        description: 'الأوسع تغطيةً في الجزائر — تحديث حالة الطرد فور تسليمه وحساب عمولة المسوق تلقائياً',
-        icon:        '🚚',
-        iconBg:      '#fff7ed',
-        category:    'delivery',
-        status:      'connected',
-        lastSync:    'منذ 2 دقائق',
-        docsUrl:     'https://api.yalidine.app',
-      },
-      {
-        id:          'zr-express',
-        name:        'ZR Express',
-        description: 'إنشاء بوليصات الشحن وتتبع التوصيل عبر الـ API الرسمي',
-        icon:        '📦',
-        iconBg:      '#fff1f2',
-        category:    'delivery',
-        status:      'error',
-        lastSync:    'منذ 34 دقيقة',
-      },
-      {
-        id:          'maystro',
-        name:        'Maystro Delivery',
-        description: 'تتبع الطرود وإشعارات التوصيل لولايات الجنوب والشرق',
-        icon:        '🗺️',
-        iconBg:      '#f0fdf4',
-        category:    'delivery',
-        status:      'disconnected',
-      },
-    ],
-  },
+  // ملاحظة: شركات التوصيل (ECOTRACK/DHD) تُدار حصراً من Settings → التوصيل،
+  // وليست هنا — مصدر حقيقة واحد لإعداد مزوّد التوصيل.
   {
     category:    'automation',
     label:       'أدوات الأتمتة والبيانات',

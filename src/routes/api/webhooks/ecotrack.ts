@@ -1,17 +1,19 @@
 // src/routes/api/webhooks/ecotrack.ts
 //
-// مُستقبِل تحديثات حالة الشحنة من ECOTRACK.
+// مُستقبِل اختياري لتحديثات حالة الشحنة (push).
 //   POST /api/webhooks/ecotrack
 //   Headers:  x-ecotrack-secret: <ECOTRACK_WEBHOOK_SECRET>
 //   Body (JSON): {
-//     "tracking": "DZ-123456",      // مطلوب — لمطابقة الطلبية
-//     "status": "livre",            // مطلوب — حالة ECOTRACK الخام
+//     "tracking": "DHDQBLI...",     // مطلوب — لمطابقة الطلبية
+//     "status": "livred",           // مطلوب — رمز حدث/حالة ECOTRACK الخام
 //     "occurred_at": "2026-06-06T10:00:00Z", // اختياري
 //     "comment": "...",             // اختياري
 //     "wilaya": "..."               // اختياري
 //   }
 //
-// يتطلّب ECOTRACK_WEBHOOK_SECRET. إن لم يُضبط → معطّل (503).
+// ملاحظة: ECOTRACK سحبيّ (pull) في توثيقه الرسمي — المصدر الأساسي للحالات هو
+// cron المزامنة (api/cron/sync-tracking). هذا الـ webhook احتياطيّ لمن يُفعّل
+// الدفع من لوحة الناقل. يتطلّب ECOTRACK_WEBHOOK_SECRET؛ إن لم يُضبط → معطّل (503).
 
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'

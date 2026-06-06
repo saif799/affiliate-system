@@ -7,13 +7,16 @@ import { ecotrackToPlatformStatus } from '#/server/delivery/ecotrack-sync'
 vi.mock('#/server/db', () => ({ db: {} }))
 
 describe('ecotrackStatusLabel', () => {
-  it('يحوّل الحالات المعروفة إلى العربية', () => {
-    expect(ecotrackStatusLabel('en_attente')).toBe('في الانتظار')
-    expect(ecotrackStatusLabel('pris_en_charge')).toBe('تم الاستلام')
-    expect(ecotrackStatusLabel('en_cours_livraison')).toBe('جاري التسليم')
-    expect(ecotrackStatusLabel('livre')).toBe('تم التسليم')
-    expect(ecotrackStatusLabel('retourne')).toBe('مسترجعة')
-    expect(ecotrackStatusLabel('retourne_paye')).toBe('مسترجعة مدفوعة')
+  it('يحوّل رموز/حالات ECOTRACK الحقيقية إلى العربية', () => {
+    expect(ecotrackStatusLabel('livred')).toBe('تم التسليم')
+    expect(ecotrackStatusLabel('en_livraison')).toBe('قيد التسليم')
+    expect(ecotrackStatusLabel('dispatched_to_driver')).toBe('مع موزّع التسليم')
+    expect(ecotrackStatusLabel('retour_recu')).toBe('تم استلام المُرتجَع')
+    expect(ecotrackStatusLabel('annule')).toBe('ملغاة')
+  })
+
+  it('يطبّع حالة الأحرف (Return_received)', () => {
+    expect(ecotrackStatusLabel('Return_received')).toBe('تم استلام المُرتجَع')
   })
 
   it('يُرجِع النصّ الخام للحالة غير المعروفة', () => {
@@ -22,18 +25,30 @@ describe('ecotrackStatusLabel', () => {
 })
 
 describe('ecotrackToPlatformStatus', () => {
-  it('يربط حالات التوصيل بحالة طلبية المنصّة', () => {
-    expect(ecotrackToPlatformStatus('pris_en_charge')).toBe('shipped')
-    expect(ecotrackToPlatformStatus('en_transit')).toBe('shipped')
-    expect(ecotrackToPlatformStatus('en_cours_livraison')).toBe('at_wilaya')
-    expect(ecotrackToPlatformStatus('livre')).toBe('delivered')
-    expect(ecotrackToPlatformStatus('retourne')).toBe('returned')
+  it('يربط أحداث التتبّع بحالة طلبية المنصّة', () => {
+    expect(ecotrackToPlatformStatus('picked')).toBe('shipped')
+    expect(ecotrackToPlatformStatus('accepted_by_carrier')).toBe('shipped')
+    expect(ecotrackToPlatformStatus('dispatched_to_driver')).toBe('at_wilaya')
+    expect(ecotrackToPlatformStatus('attempt_delivery')).toBe('at_wilaya')
+    expect(ecotrackToPlatformStatus('livred')).toBe('delivered')
+    expect(ecotrackToPlatformStatus('return_received')).toBe('returned')
+    expect(ecotrackToPlatformStatus('Return_received')).toBe('returned') // تطبيع
+  })
+
+  it('يربط حالات الطلبية (get/orders) بحالة المنصّة', () => {
+    expect(ecotrackToPlatformStatus('en_livraison')).toBe('at_wilaya')
+    expect(ecotrackToPlatformStatus('vers_wilaya')).toBe('at_wilaya')
+    expect(ecotrackToPlatformStatus('en_preparation')).toBe('shipped')
+    expect(ecotrackToPlatformStatus('livre_non_encaisse')).toBe('delivered')
+    expect(ecotrackToPlatformStatus('paye_et_archive')).toBe('delivered')
+    expect(ecotrackToPlatformStatus('retour_recu')).toBe('returned')
   })
 
   it('يُرجِع null للحالات التي تُسجَّل فقط دون تغيير الحالة', () => {
-    expect(ecotrackToPlatformStatus('en_attente')).toBeNull()
-    expect(ecotrackToPlatformStatus('retourne_paye')).toBeNull()
-    expect(ecotrackToPlatformStatus('echec_livraison')).toBeNull()
+    expect(ecotrackToPlatformStatus('order_information_received_by_carrier')).toBeNull()
+    expect(ecotrackToPlatformStatus('return_asked')).toBeNull()
+    expect(ecotrackToPlatformStatus('encaissed')).toBeNull()
+    expect(ecotrackToPlatformStatus('suspendu')).toBeNull()
     expect(ecotrackToPlatformStatus('annule')).toBeNull()
     expect(ecotrackToPlatformStatus('unknown')).toBeNull()
   })

@@ -23,10 +23,8 @@ interface OrdersTableProps {
   selectedIds: Set<string>
   onToggle: (id: string) => void
   onToggleAll: (ids: string[]) => void
-  onUpdateStatus: (
-    orderId: string,
-    newStatus: 'shipped',
-  ) => void
+  onUpdateStatus: (orderId: string) => void
+  onViewDetails: (order: Order) => void
   isUpdating: boolean
 }
 
@@ -36,6 +34,7 @@ export function OrdersTable({
   onToggle,
   onToggleAll,
   onUpdateStatus,
+  onViewDetails,
   isUpdating,
 }: OrdersTableProps) {
   const allSelected =
@@ -155,14 +154,17 @@ export function OrdersTable({
                   <div className="flex items-center gap-1.5">
                     {action && (
                       <button
-                        onClick={() => onUpdateStatus(order.id, action.next)}
+                        onClick={() => onUpdateStatus(order.id)}
                         disabled={isUpdating}
-                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-50"
+                        className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100 disabled:opacity-50"
                       >
                         {action.label}
                       </button>
                     )}
-                    <button className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100">
+                    <button
+                      onClick={() => onViewDetails(order)}
+                      className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100"
+                    >
                       تفاصيل
                     </button>
                   </div>
