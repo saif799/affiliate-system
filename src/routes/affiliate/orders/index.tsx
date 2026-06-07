@@ -5,6 +5,7 @@ import { OrdersStats } from './-components/OrdersStats'
 import { OrdersFilters } from './-components/OrdersFilters'
 import { OrdersTable } from './-components/OrdersTable'
 import { OrderDetailsModal } from './-components/OrderDetailsModal'
+import { EditOrderModal } from './-components/EditOrderModal'
 import type { OrderStatus, AffiliateOrder } from './-orders.types'
 
 const PER_PAGE = 8
@@ -29,6 +30,7 @@ function AffiliateOrdersPage() {
   const [page, setPage] = useState(1)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<AffiliateOrder | null>(null)
+  const [editOrderId, setEditOrderId] = useState<string | null>(null)
 
   const counts = useMemo(
     () => ({
@@ -135,6 +137,7 @@ function AffiliateOrdersPage() {
         onConfirm={handleConfirm}
         onReject={handleReject}
         onView={setSelectedOrder}
+        onEdit={setEditOrderId}
         busyId={busyId}
       />
 
@@ -145,6 +148,13 @@ function AffiliateOrdersPage() {
         onConfirm={handleConfirm}
         onReject={handleReject}
         busy={busyId === selectedOrder?.rawId}
+      />
+
+      {/* Edit order */}
+      <EditOrderModal
+        orderId={editOrderId}
+        onClose={() => setEditOrderId(null)}
+        onSaved={() => router.invalidate()}
       />
     </div>
   )

@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react'
-import { X, Package, Loader2 } from 'lucide-react'
+import { X, Package, Loader2, Home, Building2 } from 'lucide-react'
 import type { AddLeadForm, LeadProduct } from '../-orders.types'
-import { getDeliveryZones, getDeliveryCommunes } from '../-server/orders.api'
+import {
+  getWilayasLocal,
+  getOfficesLocal
+  
+  
+} from '../-server/orders.api'
+import type {LocalWilaya, LocalOffice} from '../-server/orders.api';
 
 interface Props {
   open: boolean
   onClose: () => void
   onSubmit: (form: AddLeadForm) => void | Promise<void>
   products: LeadProduct[]
-  initialProductId?: string // لتثبيت منتج محدّد عند الفتح من السوق
+  initialProductId?: string
 }
 
 const EMPTY: AddLeadForm = {
@@ -17,47 +23,44 @@ const EMPTY: AddLeadForm = {
   customerPhone: '',
   wilayaCode: 0,
   wilayaName: '',
-  commune: '',
+  officeId: '',
+  deliveryType: 'home',
   address: '',
   salePrice: 0,
   notes: '',
 }
 
-type Zone = { code: number; name: string }
-type Commune = { name: string; hasStopDesk: boolean }
-
 export function AddLeadModal({ open, onClose, onSubmit, products, initialProductId }: Props) {
   const [form, setForm] = useState<AddLeadForm>(EMPTY)
-  const [wilayas, setWilayas] = useState<Zone[]>([])
-  const [communes, setCommunes] = useState<Commune[]>([])
+  const [wilayas, setWilayas] = useState<LocalWilaya[]>([])
+  const [offices, setOffices] = useState<LocalOffice[]>([])
   const [loadingWilayas, setLoadingWilayas] = useState(false)
-  const [loadingCommunes, setLoadingCommunes] = useState(false)
+  const [loadingOffices, setLoadingOffices] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  // عند الفتح: إعادة التهيئة مع تعبئة المنتج المحدّد مسبقاً إن وُجد
   useEffect(() => {
     if (open) {
       const p = initialProductId
         ? products.find((x) => x.id === initialProductId)
         : undefined
       setForm({ ...EMPTY, productId: p?.id ?? '', salePrice: p?.basePrice ?? 0 })
-      setCommunes([])
+      setOffices([])
       setError('')
     }
   }, [open, initialProductId, products])
 
-  // تحميل الولايات من شركة التوصيل مرّة واحدة عند الفتح
+  // الولايات + الأسعار من الجدول المحلّي (لا اتصال مباشر بـ ECOTRACK)
   useEffect(() => {
     if (!open) return
     let cancelled = false
     setLoadingWilayas(true)
-    getDeliveryZones()
+    getWilayasLocal()
       .then((z) => {
         if (!cancelled) setWilayas(z)
       })
       .catch(() => {
-        if (!cancelled) setError('تعذّر تحميل قائمة الولايات من شركة التوصيل')
+        if (!cancelled) setError('تعذّر تحميل قائمة الولايات — راجع الأدمن لمزامنة الأسعار')
       })
       .finally(() => {
         if (!cancelled) setLoadingWilayas(false)
@@ -70,10 +73,21 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
   if (!open) return null
 
   const selectedProduct = products.find((p) => p.id === form.productId)
-  // الطلبية اليدوية تُنشأ دائماً من السوق على منتج محدّد → اقفل المنتج
+  const selectedWilaya = wilayas.find((w) => w.code === form.wilayaCode)
   const locked = !!initialProductId || products.length <= 1
   const estimatedComm = selectedProduct
     ? Math.max(0, form.salePrice - selectedProduct.basePrice)
+    : null
+
+  // قائمة الخيارات: للمكتب نعرض البلديات ذات stop-desk فقط
+  const officeOptions =
+    form.deliveryType === 'office' ? offices.filter((o) => o.hasStopDesk) : offices
+
+  // سعر التوصيل المعروض (من الجدول المحلّي) حسب نوع التوصيل
+  const deliveryPrice = selectedWilaya
+    ? form.deliveryType === 'office'
+      ? selectedWilaya.officePrice
+      : selectedWilaya.homePrice
     : null
 
   function handleChange<TKey extends keyof AddLeadForm>(key: TKey, value: AddLeadForm[TKey]) {
@@ -82,17 +96,22 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
 
   async function handleWilayaChange(code: number) {
     const w = wilayas.find((x) => x.code === code)
-    setForm((prev) => ({ ...prev, wilayaCode: code, wilayaName: w?.name ?? '', commune: '' }))
-    setCommunes([])
+    setForm((prev) => ({ ...prev, wilayaCode: code, wilayaName: w?.name ?? '', officeId: '' }))
+    setOffices([])
     if (!code) return
-    setLoadingCommunes(true)
+    setLoadingOffices(true)
     try {
-      setCommunes(await getDeliveryCommunes({ data: { wilayaCode: code } }))
+      setOffices(await getOfficesLocal({ data: { wilayaCode: code } }))
     } catch {
       setError('تعذّر تحميل بلديات هذه الولاية')
     } finally {
-      setLoadingCommunes(false)
+      setLoadingOffices(false)
     }
+  }
+
+  function handleDeliveryType(type: 'home' | 'office') {
+    // قد لا يكون المكتب المختار ذا stop-desk عند التحويل لـ office → صفّر الاختيار
+    setForm((prev) => ({ ...prev, deliveryType: type, officeId: '' }))
   }
 
   async function handleSubmit() {
@@ -100,7 +119,8 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
     if (!form.productId) return setError('اختر المنتج')
     if (!form.customerName.trim() || !form.customerPhone.trim())
       return setError('اسم ورقم هاتف الزبون مطلوبان')
-    if (!form.wilayaCode || !form.commune) return setError('اختر الولاية والبلدية')
+    if (!form.wilayaCode) return setError('اختر الولاية')
+    if (!form.officeId) return setError('اختر البلدية / المكتب')
     if (!form.address.trim()) return setError('العنوان مطلوب')
     if (selectedProduct && form.salePrice < selectedProduct.basePrice)
       return setError('سعر البيع لا يمكن أن يكون أقل من سعر الجملة')
@@ -124,8 +144,7 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
         if (e.target === e.currentTarget && !submitting) onClose()
       }}
     >
-      <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-xl">
-        {/* Header */}
+      <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-xl" dir="rtl">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div>
             <h2 className="text-sm font-semibold text-gray-900">إضافة طلبية يدوية</h2>
@@ -141,7 +160,6 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
           </button>
         </div>
 
-        {/* Body */}
         <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto px-5 py-4">
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
@@ -180,7 +198,6 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
             )}
           </div>
 
-          {/* العمولة المتوقعة */}
           {selectedProduct && (
             <div className="flex items-center justify-between rounded-lg border border-violet-100 bg-violet-50 px-3 py-2.5">
               <p className="text-xs text-violet-600">العمولة المتوقعة</p>
@@ -213,48 +230,90 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
             </div>
           </div>
 
-          {/* الولاية والبلدية (من شركة التوصيل لضمان القبول) */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-gray-600">
-                الولاية {loadingWilayas && <Loader2 size={11} className="inline animate-spin" />}
-              </label>
-              <select
-                value={form.wilayaCode || ''}
-                disabled={loadingWilayas}
-                onChange={(e) => handleWilayaChange(Number(e.target.value))}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400 disabled:opacity-60"
-              >
-                <option value="">اختر الولاية...</option>
-                {wilayas.map((w) => (
-                  <option key={w.code} value={w.code}>
-                    {w.code} — {w.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-gray-600">
-                البلدية {loadingCommunes && <Loader2 size={11} className="inline animate-spin" />}
-              </label>
-              <select
-                value={form.commune}
-                disabled={!form.wilayaCode || loadingCommunes}
-                onChange={(e) => handleChange('commune', e.target.value)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400 disabled:opacity-60"
-              >
-                <option value="">
-                  {form.wilayaCode ? 'اختر البلدية...' : 'اختر الولاية أولاً'}
+          {/* الولاية */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-gray-600">
+              الولاية {loadingWilayas && <Loader2 size={11} className="inline animate-spin" />}
+            </label>
+            <select
+              value={form.wilayaCode || ''}
+              disabled={loadingWilayas}
+              onChange={(e) => handleWilayaChange(Number(e.target.value))}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400 disabled:opacity-60"
+            >
+              <option value="">اختر الولاية...</option>
+              {wilayas.map((w) => (
+                <option key={w.code} value={w.code}>
+                  {w.code} — {w.name}
                 </option>
-                {communes.map((c) => (
-                  <option key={c.name} value={c.name}>
-                    {c.name}
-                    {c.hasStopDesk ? ' (مكتب)' : ''}
-                  </option>
-                ))}
-              </select>
+              ))}
+            </select>
+          </div>
+
+          {/* نوع التوصيل */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-gray-600">نوع التوصيل</label>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  { v: 'home', label: 'توصيل منزلي', Icon: Home },
+                  { v: 'office', label: 'استلام من المكتب', Icon: Building2 },
+                ] as const
+              ).map(({ v, label, Icon }) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => handleDeliveryType(v)}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                    form.deliveryType === v
+                      ? 'border-violet-300 bg-violet-50 text-violet-700'
+                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon size={13} /> {label}
+                </button>
+              ))}
             </div>
           </div>
+
+          {/* البلدية / المكتب */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-gray-600">
+              {form.deliveryType === 'office' ? 'مكتب الاستلام' : 'البلدية'}{' '}
+              {loadingOffices && <Loader2 size={11} className="inline animate-spin" />}
+            </label>
+            <select
+              value={form.officeId}
+              disabled={!form.wilayaCode || loadingOffices}
+              onChange={(e) => handleChange('officeId', e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400 disabled:opacity-60"
+            >
+              <option value="">
+                {form.wilayaCode ? 'اختر...' : 'اختر الولاية أولاً'}
+              </option>
+              {officeOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                  {form.deliveryType === 'home' && o.hasStopDesk ? ' (يتوفّر مكتب)' : ''}
+                </option>
+              ))}
+            </select>
+            {form.deliveryType === 'office' && form.wilayaCode > 0 && officeOptions.length === 0 && !loadingOffices && (
+              <p className="text-xs text-amber-600">لا توجد مكاتب استلام في هذه الولاية — اختر توصيلاً منزليّاً</p>
+            )}
+          </div>
+
+          {/* سعر التوصيل (من الجدول المحلّي) */}
+          {deliveryPrice !== null && (
+            <div className="flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5">
+              <p className="text-xs text-blue-600">
+                سعر التوصيل ({form.deliveryType === 'office' ? 'مكتب' : 'منزل'})
+              </p>
+              <p className="text-sm font-bold text-blue-700">
+                {deliveryPrice.toLocaleString('ar-DZ')} د.ج
+              </p>
+            </div>
+          )}
 
           {/* العنوان */}
           <div className="flex flex-col gap-1.5">
@@ -299,7 +358,6 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-3">
           <button
             onClick={onClose}

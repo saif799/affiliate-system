@@ -256,6 +256,12 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// تراجع أُسّي مع تشويش (jitter) — 250ms, 500ms, 1000ms… + 0–99ms
+// يمنع «قطيع» إعادة المحاولات المتزامنة على الخادم نفسه.
+function backoffDelay(attempt: number): number {
+  return 250 * 2 ** attempt + Math.floor(Math.random() * 100)
+}
+
 type Params = Record<string, string | number | boolean | null | undefined>
 
 export interface EcotrackServiceOptions {
@@ -331,7 +337,7 @@ export class EcotrackService {
           // أعِد المحاولة على أخطاء الخادم فقط (5xx)
           if (res.status >= 500 && attempt < this.maxRetries) {
             lastError = err
-            await sleep(200 * (attempt + 1))
+            await sleep(backoffDelay(attempt))
             continue
           }
           throw err

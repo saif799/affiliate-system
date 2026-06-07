@@ -11,7 +11,8 @@ import {
   Zap,
   User,
   Store,
-  ListOrdered
+  ListOrdered,
+  Truck
 } from 'lucide-react'
 import { NotificationBell } from './-components/shared/NotificationBell'
 
@@ -27,18 +28,22 @@ export const Route = createFileRoute('/_dashboard')({
 })
 
 const navItems = [
-  { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Orders', to: '/orders', icon: ListOrdered },
-  { label: 'Affiliates', to: '/affiliates', icon: Users },
-  { label: 'Merchants', to: '/merchants', icon:Store  },
-  { label: 'Products', to: '/products', icon: Megaphone },
-  { label: 'Commissions', to: '/commissions', icon: DollarSign },
-  { label: 'Analytics', to: '/analytics', icon: BarChart2 },
-  { label: 'Integration Hub', to: '/integration', icon: Code2 },
-  { label: 'Settings', to: '/settings', icon: Settings },
+  { label: 'لوحة التحكم', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'الطلبات', to: '/orders', icon: ListOrdered },
+  { label: 'الشحنات', to: '/shipments', icon: Truck },
+  { label: 'المسوّقون', to: '/affiliates', icon: Users },
+  { label: 'التجّار', to: '/merchants', icon: Store },
+  { label: 'المنتجات', to: '/products', icon: Megaphone },
+  { label: 'العمولات', to: '/commissions', icon: DollarSign },
+  { label: 'التحليلات', to: '/analytics', icon: BarChart2 },
+  { label: 'مركز التكامل', to: '/integration', icon: Code2 },
+  { label: 'الإعدادات', to: '/settings', icon: Settings },
 ]
 
 function DashboardLayout() {
+  const { session } = Route.useRouteContext()
+  const userName = session?.user.name ?? 'مدير المنصّة'
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <aside className="flex w-56 flex-col justify-between border-r border-gray-200 bg-white px-3 py-5">
@@ -49,7 +54,7 @@ function DashboardLayout() {
                 <Zap size={16} strokeWidth={2.5} />
               </div>
               <span className="text-sm font-semibold text-gray-900">
-                Tanstack-wakil
+                لوحة الإدارة
               </span>
             </div>
             <NotificationBell />
@@ -59,8 +64,8 @@ function DashboardLayout() {
               <User size={14} />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-800">Abdelouakil</p>
-              <p className="text-xs text-gray-500">test19</p>
+              <p className="text-xs font-medium text-gray-800">{userName}</p>
+              <p className="text-xs text-gray-500">مدير المنصّة</p>
             </div>
           </div>
           <nav className="flex flex-col gap-0.5">

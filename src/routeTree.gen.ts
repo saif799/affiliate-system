@@ -30,6 +30,7 @@ import { Route as AffiliateSettingsIndexRouteImport } from './routes/affiliate/s
 import { Route as AffiliateOrdersIndexRouteImport } from './routes/affiliate/orders/index'
 import { Route as AffiliateMarketplaceIndexRouteImport } from './routes/affiliate/marketplace/index'
 import { Route as AffiliateDashboardIndexRouteImport } from './routes/affiliate/dashboard/index'
+import { Route as DashboardShipmentsIndexRouteImport } from './routes/_dashboard/shipments/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard/settings/index'
 import { Route as DashboardProductsIndexRouteImport } from './routes/_dashboard/products/index'
 import { Route as DashboardOrdersIndexRouteImport } from './routes/_dashboard/orders/index'
@@ -41,6 +42,7 @@ import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
 import { Route as ApiWebhooksEcotrackRouteImport } from './routes/api/webhooks/ecotrack'
 import { Route as ApiCronSyncTrackingRouteImport } from './routes/api/cron/sync-tracking'
+import { Route as ApiCronSyncCatalogRouteImport } from './routes/api/cron/sync-catalog'
 import { Route as ApiCronReleaseFundsRouteImport } from './routes/api/cron/release-funds'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -148,6 +150,11 @@ const AffiliateDashboardIndexRoute = AffiliateDashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => AffiliateRoute,
 } as any)
+const DashboardShipmentsIndexRoute = DashboardShipmentsIndexRouteImport.update({
+  id: '/shipments/',
+  path: '/shipments/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -206,6 +213,11 @@ const ApiCronSyncTrackingRoute = ApiCronSyncTrackingRouteImport.update({
   path: '/api/cron/sync-tracking',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronSyncCatalogRoute = ApiCronSyncCatalogRouteImport.update({
+  id: '/api/cron/sync-catalog',
+  path: '/api/cron/sync-catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronReleaseFundsRoute = ApiCronReleaseFundsRouteImport.update({
   id: '/api/cron/release-funds',
   path: '/api/cron/release-funds',
@@ -228,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
   '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates/': typeof DashboardAffiliatesIndexRoute
@@ -239,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/orders/': typeof DashboardOrdersIndexRoute
   '/products/': typeof DashboardProductsIndexRoute
   '/settings/': typeof DashboardSettingsIndexRoute
+  '/shipments/': typeof DashboardShipmentsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
   '/affiliate/orders/': typeof AffiliateOrdersIndexRoute
@@ -262,6 +276,7 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
   '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates': typeof DashboardAffiliatesIndexRoute
@@ -273,6 +288,7 @@ export interface FileRoutesByTo {
   '/orders': typeof DashboardOrdersIndexRoute
   '/products': typeof DashboardProductsIndexRoute
   '/settings': typeof DashboardSettingsIndexRoute
+  '/shipments': typeof DashboardShipmentsIndexRoute
   '/affiliate/dashboard': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace': typeof AffiliateMarketplaceIndexRoute
   '/affiliate/orders': typeof AffiliateOrdersIndexRoute
@@ -299,6 +315,7 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
+  '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
   '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
@@ -310,6 +327,7 @@ export interface FileRoutesById {
   '/_dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/_dashboard/products/': typeof DashboardProductsIndexRoute
   '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
+  '/_dashboard/shipments/': typeof DashboardShipmentsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
   '/affiliate/orders/': typeof AffiliateOrdersIndexRoute
@@ -335,6 +353,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/api/auth/$'
     | '/api/cron/release-funds'
+    | '/api/cron/sync-catalog'
     | '/api/cron/sync-tracking'
     | '/api/webhooks/ecotrack'
     | '/affiliates/'
@@ -346,6 +365,7 @@ export interface FileRouteTypes {
     | '/orders/'
     | '/products/'
     | '/settings/'
+    | '/shipments/'
     | '/affiliate/dashboard/'
     | '/affiliate/marketplace/'
     | '/affiliate/orders/'
@@ -369,6 +389,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/api/auth/$'
     | '/api/cron/release-funds'
+    | '/api/cron/sync-catalog'
     | '/api/cron/sync-tracking'
     | '/api/webhooks/ecotrack'
     | '/affiliates'
@@ -380,6 +401,7 @@ export interface FileRouteTypes {
     | '/orders'
     | '/products'
     | '/settings'
+    | '/shipments'
     | '/affiliate/dashboard'
     | '/affiliate/marketplace'
     | '/affiliate/orders'
@@ -405,6 +427,7 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/api/auth/$'
     | '/api/cron/release-funds'
+    | '/api/cron/sync-catalog'
     | '/api/cron/sync-tracking'
     | '/api/webhooks/ecotrack'
     | '/_dashboard/affiliates/'
@@ -416,6 +439,7 @@ export interface FileRouteTypes {
     | '/_dashboard/orders/'
     | '/_dashboard/products/'
     | '/_dashboard/settings/'
+    | '/_dashboard/shipments/'
     | '/affiliate/dashboard/'
     | '/affiliate/marketplace/'
     | '/affiliate/orders/'
@@ -440,6 +464,7 @@ export interface RootRouteChildren {
   SetPasswordRoute: typeof SetPasswordRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronReleaseFundsRoute: typeof ApiCronReleaseFundsRoute
+  ApiCronSyncCatalogRoute: typeof ApiCronSyncCatalogRoute
   ApiCronSyncTrackingRoute: typeof ApiCronSyncTrackingRoute
   ApiWebhooksEcotrackRoute: typeof ApiWebhooksEcotrackRoute
 }
@@ -593,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AffiliateDashboardIndexRouteImport
       parentRoute: typeof AffiliateRoute
     }
+    '/_dashboard/shipments/': {
+      id: '/_dashboard/shipments/'
+      path: '/shipments'
+      fullPath: '/shipments/'
+      preLoaderRoute: typeof DashboardShipmentsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/settings/': {
       id: '/_dashboard/settings/'
       path: '/settings'
@@ -670,6 +702,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronSyncTrackingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/sync-catalog': {
+      id: '/api/cron/sync-catalog'
+      path: '/api/cron/sync-catalog'
+      fullPath: '/api/cron/sync-catalog'
+      preLoaderRoute: typeof ApiCronSyncCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/release-funds': {
       id: '/api/cron/release-funds'
       path: '/api/cron/release-funds'
@@ -709,6 +748,7 @@ interface DashboardRouteChildren {
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
   DashboardProductsIndexRoute: typeof DashboardProductsIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+  DashboardShipmentsIndexRoute: typeof DashboardShipmentsIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -721,6 +761,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
   DashboardProductsIndexRoute: DashboardProductsIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+  DashboardShipmentsIndexRoute: DashboardShipmentsIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -780,6 +821,7 @@ const rootRouteChildren: RootRouteChildren = {
   SetPasswordRoute: SetPasswordRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronReleaseFundsRoute: ApiCronReleaseFundsRoute,
+  ApiCronSyncCatalogRoute: ApiCronSyncCatalogRoute,
   ApiCronSyncTrackingRoute: ApiCronSyncTrackingRoute,
   ApiWebhooksEcotrackRoute: ApiWebhooksEcotrackRoute,
 }

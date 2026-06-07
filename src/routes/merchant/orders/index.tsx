@@ -6,6 +6,8 @@ import { getMerchantOrders, shipOrder } from './-server/orders.api'
 import { OrdersTabs }       from './-components/OrdersTabs'
 import { OrdersTable }      from './-components/OrdersTable'
 import { OrderDetailsModal } from './-components/OrderDetailsModal'
+import { ShipConfirmModal } from './-components/ShipConfirmModal'
+import { InternalLabel }    from './-components/InternalLabel'
 import { BulkActionBar }    from './-components/BulkActionBar'
 import { OrdersPagination } from './-components/OrdersPagination'
 import type { TabFilter, DateFilter, DbOrderStatus, Order } from './-orders.types'
@@ -42,6 +44,8 @@ function MerchantOrdersPage() {
   const [currentPage,  setCurrentPage]  = useState(1)
   const [selectedIds,  setSelectedIds]  = useState<Set<string>>(new Set())
   const [detailsOrder, setDetailsOrder] = useState<Order | null>(null)
+  const [shipTarget,   setShipTarget]   = useState<Order | null>(null)
+  const [labelOrderId, setLabelOrderId] = useState<string | null>(null)
 
   const wilayas = useMemo(
     () => ['all', ...new Set(orders.map((o) => o.wilaya))],
@@ -55,7 +59,7 @@ function MerchantOrdersPage() {
       const matchTab    = activeTab === 'all' || order.status === activeTab
       const matchSearch = search === '' ||
         order.id.includes(search) ||
-        order.customer.name.includes(search) ||
+        (order.internalShipmentId?.includes(search) ?? false) ||
         order.product.name.includes(search)
       const matchWilaya = wilayaFilter === 'all' || order.wilaya === wilayaFilter
       const matchDate   = (() => {
@@ -107,6 +111,7 @@ function MerchantOrdersPage() {
     setIsUpdating(true)
     try {
       await shipOrder({ data: { orderId } })
+      setShipTarget(null) // أغلق نافذة التأكيد عند النجاح فقط
       await router.invalidate()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'فشل إنشاء الشحنة لدى شركة التوصيل')
@@ -120,7 +125,7 @@ function MerchantOrdersPage() {
     if (isUpdating) return
     const targets = orders
       .filter((o) => selectedIds.has(o.id) && nextStatus(o.dbStatus) === 'shipped')
-      .map((o) => ({ id: o.id, customer: o.customer.name }))
+      .map((o) => ({ id: o.id, ref: o.internalShipmentId ?? o.id }))
     if (targets.length === 0) {
       alert('لا توجد طلبيات مؤكَّدة قابلة للشحن ضمن المحدد')
       return
@@ -133,7 +138,7 @@ function MerchantOrdersPage() {
         try {
           await shipOrder({ data: { orderId: t.id } })
         } catch (e) {
-          failures.push(`«${t.customer}»: ${e instanceof Error ? e.message : 'فشل'}`)
+          failures.push(`«${t.ref}»: ${e instanceof Error ? e.message : 'فشل'}`)
         }
       }
       setSelectedIds(new Set())
@@ -178,7 +183,7 @@ function MerchantOrdersPage() {
           type="text"
           value={search}
           onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
-          placeholder="بحث برقم الطلب أو اسم الزبون..."
+          placeholder="بحث برقم الطلب أو المنتج..."
           className="w-64 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 placeholder:text-gray-400 outline-none focus:border-gray-400"
         />
         <select
@@ -214,8 +219,12 @@ function MerchantOrdersPage() {
         selectedIds={selectedIds}
         onToggle={handleToggle}
         onToggleAll={handleToggleAll}
-        onUpdateStatus={handleShip}
+        onUpdateStatus={(id) => {
+          const target = orders.find((o) => o.id === id)
+          if (target) setShipTarget(target)
+        }}
         onViewDetails={setDetailsOrder}
+        onPrintLabel={setLabelOrderId}
         isUpdating={isUpdating}
       />
 
@@ -230,6 +239,17 @@ function MerchantOrdersPage() {
 
       {/* ─── Details + tracking ─── */}
       <OrderDetailsModal order={detailsOrder} onClose={() => setDetailsOrder(null)} />
+
+      {/* ─── تأكيد الشحن ─── */}
+      <ShipConfirmModal
+        order={shipTarget}
+        busy={isUpdating}
+        onConfirm={() => shipTarget && handleShip(shipTarget.id)}
+        onCancel={() => setShipTarget(null)}
+      />
+
+      {/* ─── الملصق الداخلي ─── */}
+      <InternalLabel orderId={labelOrderId} onClose={() => setLabelOrderId(null)} />
 
     </div>
   )

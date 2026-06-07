@@ -42,11 +42,26 @@ export interface AddLeadForm {
   productId: string
   customerName: string
   customerPhone: string
-  wilayaCode: number // رمز الولاية لدى ECOTRACK (1..58)
+  wilayaCode: number // رمز الولاية (1..58) — من delivery_pricing المحلّي
   wilayaName: string // اسم الولاية (للعرض/التخزين)
-  commune: string // بلدية مطابقة لقائمة ECOTRACK
+  officeId: string // صفّ delivery_offices المختار (البلدية/المكتب)
+  deliveryType: 'home' | 'office' // نوع التوصيل
   address: string // العنوان (مطلوب للتوصيل المنزلي)
   salePrice: number
+  notes?: string
+}
+
+export interface EditOrderForm {
+  orderId: string
+  customerName: string
+  customerPhone: string
+  wilayaCode: number
+  wilayaName: string
+  officeId: string
+  deliveryType: 'home' | 'office'
+  address: string
+  salePrice: number
+  quantity: number
   notes?: string
 }
 

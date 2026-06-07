@@ -23,7 +23,7 @@ import {
   affiliateProfiles,
   merchantProfiles,
 } from '#/server/db/schema'
-import { and, eq, inArray, isNotNull } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, isNull, lte, or } from 'drizzle-orm'
 import { recomputeRefusalRateTx } from '#/server/settlement'
 import { notify } from '#/server/notify'
 import { ecotrackStatusLabel, getEcotrackClient } from '#/server/services/ecotrack.service'
@@ -34,7 +34,7 @@ type PlatformTarget = 'shipped' | 'at_wilaya' | 'delivered' | 'returned' | null
 // خريطة حالات/أحداث ECOTRACK الحقيقية → حالة منصّتنا الهدف (null = سجّل فقط).
 // تغطّي رموز أحداث التتبّع (activity[].status) وحالات الطلبية (get/orders) معاً،
 // كي تعمل سواءٌ جاء الحدث من المزامنة أو من webhook مُخصَّص.
-const ECOTRACK_TO_PLATFORM: Record<string, PlatformTarget> = {
+export const ECOTRACK_TO_PLATFORM: Record<string, PlatformTarget> = {
   // ── رموز أحداث التتبّع (get/tracking/info) ──
   order_information_received_by_carrier: null, // سُجِّلت لدى الناقل
   picked: 'shipped', // استلمها الناقل
@@ -87,6 +87,10 @@ const RANK: Record<string, number> = {
 }
 
 const ACTIVE_STATUSES = new Set(['confirmed', 'shipped', 'at_wilaya'])
+
+// فترة الاستطلاع الأساسية (TTL) والحدّ الأقصى للتراجع لكل طلبية (Phase 3)
+const POLL_TTL_MS = 15 * 60 * 1000 // 15 دقيقة بين استطلاعَين ناجحَين
+const MAX_BACKOFF_MS = 24 * 60 * 60 * 1000 // سقف التراجع الأُسّي = 24 ساعة
 
 export interface EcotrackEventInput {
   trackingNumber: string
@@ -338,13 +342,20 @@ export async function syncOrderTracking(orderId: string): Promise<SyncResult> {
  * التسوية عند التسليم دون انتظار زرّ الأدمن. آمن للتكرار.
  */
 export async function syncAllActiveOrders(): Promise<{ orders: number; updated: number }> {
+  const now = new Date()
+
+  // اختناق (TTL): استطلِع فقط الطلبيات المستحقّة (لم يحن وقتها بعد ⇒ تُتخطّى).
   const active = await db
-    .select({ id: orders.id })
+    .select({ id: orders.id, failures: orders.delivery_poll_failures })
     .from(orders)
     .where(
       and(
         inArray(orders.status, ['shipped', 'at_wilaya']),
         isNotNull(orders.tracking_number),
+        or(
+          isNull(orders.delivery_next_poll_at),
+          lte(orders.delivery_next_poll_at, now),
+        ),
       ),
     )
 
@@ -353,8 +364,27 @@ export async function syncAllActiveOrders(): Promise<{ orders: number; updated: 
     try {
       const r = await syncOrderTracking(o.id)
       if (r.eventsApplied > 0) updated++
+      // نجاح: صفّر العدّاد وحدّد الاستطلاع التالي بعد TTL
+      await db
+        .update(orders)
+        .set({
+          delivery_polled_at: new Date(),
+          delivery_poll_failures: 0,
+          delivery_next_poll_at: new Date(Date.now() + POLL_TTL_MS),
+        })
+        .where(eq(orders.id, o.id))
     } catch (err) {
       console.error(`[ecotrack] فشل مزامنة الطلبية ${o.id}:`, err)
+      // فشل: تراجع أُسّي لكل طلبية (cap 24h) — يمنع استنزاف API على تتبّع ميّت
+      const failures = (o.failures ?? 0) + 1
+      const backoff = Math.min(POLL_TTL_MS * 2 ** failures, MAX_BACKOFF_MS)
+      await db
+        .update(orders)
+        .set({
+          delivery_poll_failures: failures,
+          delivery_next_poll_at: new Date(Date.now() + backoff),
+        })
+        .where(eq(orders.id, o.id))
     }
   }
 

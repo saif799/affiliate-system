@@ -6,7 +6,6 @@ import {
   ShoppingBag,
   CreditCard,
   User,
-  ChevronDown,
   ListOrdered,
   Wallet,
   TrendingUp,
@@ -30,11 +29,11 @@ export const Route = createFileRoute('/affiliate')({
 })
 
 const navItems = [
-  { label: 'Dashboard', to: '/affiliate/dashboard', icon: LayoutDashboard },
-  { label: 'Orders', to: '/affiliate/orders', icon: ListOrdered },
-  { label: 'Marketplace', to: '/affiliate/marketplace', icon: ShoppingBag },
-  { label: 'Wallet', to: '/affiliate/wallet', icon: Wallet },
-  { label: 'Settings', to: '/affiliate/settings', icon: Settings },
+  { label: 'لوحة القيادة', to: '/affiliate/dashboard', icon: LayoutDashboard },
+  { label: 'طلبياتي', to: '/affiliate/orders', icon: ListOrdered },
+  { label: 'سوق المنتجات', to: '/affiliate/marketplace', icon: ShoppingBag },
+  { label: 'المحفظة', to: '/affiliate/wallet', icon: Wallet },
+  { label: 'الإعدادات', to: '/affiliate/settings', icon: Settings },
 ]
 
 function AffiliateLayout() {
@@ -93,10 +92,9 @@ function AffiliateLayout() {
               </p>
             </div>
           </div>
-          <button className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50">
+          <div className="flex w-full items-center rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600">
             <span>🇩🇿 دينار جزائري</span>
-            <ChevronDown size={13} className="text-gray-400" />
-          </button>
+          </div>
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto">

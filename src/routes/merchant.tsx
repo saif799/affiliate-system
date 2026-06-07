@@ -7,7 +7,6 @@ import {
   Store,
   CreditCard,
   User,
-  ChevronDown,
   ListOrdered,
   Package,
   Wallet,
@@ -31,21 +30,19 @@ export const Route = createFileRoute('/merchant')({
 })
 
 const navItems = [
-  { label: 'Dashboard', to: '/merchant/dashboard', icon: LayoutDashboard },
-  { label: 'Orders', to: '/merchant/orders', icon: ListOrdered },
-  { label: 'Products', to: '/merchant/products', icon: Package },
-  { label: 'Affiliates', to: '/merchant/affiliates', icon: Users },
-  { label: 'Wallet', to: '/merchant/wallet', icon: Wallet },
-  { label: 'Settings', to: '/merchant/settings', icon: Settings },
+  { label: 'لوحة التحكم', to: '/merchant/dashboard', icon: LayoutDashboard },
+  { label: 'الطلبات', to: '/merchant/orders', icon: ListOrdered },
+  { label: 'المنتجات', to: '/merchant/products', icon: Package },
+  { label: 'المسوّقون', to: '/merchant/affiliates', icon: Users },
+  { label: 'المحفظة', to: '/merchant/wallet', icon: Wallet },
+  { label: 'الإعدادات', to: '/merchant/settings', icon: Settings },
 ]
 
 function MerchantLayout() {
   const { session } = Route.useRouteContext()
   const { availableBalance } = Route.useLoaderData()
-  const userName = session?.user.name ?? 'Merchant'
-  const userRole = session?.user.role
-    ? session.user.role.charAt(0).toUpperCase() + session.user.role.slice(1)
-    : 'Merchant'
+  const userName = session?.user.name ?? 'التاجر'
+  const userRole = 'تاجر'
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -57,7 +54,7 @@ function MerchantLayout() {
                 <Store size={16} strokeWidth={2.5} />
               </div>
               <span className="text-sm font-semibold text-gray-900">
-                Merchant Portal
+                بوابة التاجر
               </span>
             </div>
             <NotificationBell />
@@ -92,16 +89,15 @@ function MerchantLayout() {
           <div className="rounded-lg border border-gray-200 px-3 py-2.5 flex items-center gap-2.5">
             <CreditCard size={15} className="text-gray-400 shrink-0" />
             <div>
-              <p className="text-xs font-medium text-gray-700">Wallet</p>
+              <p className="text-xs font-medium text-gray-700">المحفظة</p>
               <p className="mt-0.5 text-xs font-semibold text-gray-900">
                 {availableBalance.toLocaleString('ar-DZ')} DZD
               </p>
             </div>
           </div>
-          <button className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50">
+          <div className="flex w-full items-center rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600">
             <span>🇩🇿 DZD</span>
-            <ChevronDown size={13} className="text-gray-400" />
-          </button>
+          </div>
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto">

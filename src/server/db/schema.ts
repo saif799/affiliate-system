@@ -64,6 +64,9 @@ export const withdrawalStatusEnum = pgEnum('withdrawal_status', [
 
 export const payoutMethodEnum = pgEnum('payout_method', ['CCP', 'BaridiMob'])
 
+// نوع التوصيل: منزلي أو مكتب (stop-desk) — Phase 1
+export const deliveryTypeEnum = pgEnum('delivery_type', ['home', 'office'])
+
 // ============================================================
 // USERS
 // ============================================================
@@ -340,6 +343,25 @@ export const orders = pgTable(
     delivery_status: text('delivery_status').default('pending'),
     returned_at: timestamp('returned_at'),
 
+    // ── نوع التوصيل + المكتب + سعر التوصيل (Phase 1/6) ──
+    // المكتب مرجع داخلي فقط (ECOTRACK لا يقبل office_id؛ يُرسَل commune+stop_desk).
+    // سعر التوصيل المُختار يُخزَّن في shipping_fee_dzd الموجود (لقطة للعرض/التقارير).
+    delivery_type: deliveryTypeEnum('delivery_type').notNull().default('home'),
+    delivery_office_id: uuid('delivery_office_id').references(
+      () => deliveryOffices.id,
+      { onDelete: 'set null' },
+    ),
+
+    // ── الملصق الداخلي + طباعة الملصق الرسمي (Phase 5) ──
+    internal_shipment_id: text('internal_shipment_id'), // مرجع بشريّ مقروء (SHP-…)
+    qr_token: text('qr_token'), // توكن HMAC المُرمَّز في رمز QR (ليس معرّف الطلب الخام)
+    label_printed_at: timestamp('label_printed_at'), // وقت طباعة الأدمن للملصق الرسمي
+    label_token_used_at: timestamp('label_token_used_at'), // منع إعادة الاستخدام (ذرّي)
+
+    // ── اختناق الاستطلاع + التراجع الأُسّي لكل طلبية (Phase 3) ──
+    delivery_polled_at: timestamp('delivery_polled_at'),
+    delivery_poll_failures: integer('delivery_poll_failures').notNull().default(0),
+    delivery_next_poll_at: timestamp('delivery_next_poll_at'),
   },
   (table) => [
     index('idx_orders_merchant_id').on(table.merchant_id),
@@ -351,6 +373,14 @@ export const orders = pgTable(
     uniqueIndex('idx_orders_external_unique')
       .on(table.external_source, table.external_order_id)
       .where(sql`${table.external_order_id} IS NOT NULL`),
+    // مرجع الشحنة الداخلي فريد (Phase 5) — جزئي لأنّه يُملأ عند الشحن فقط
+    uniqueIndex('idx_orders_internal_shipment')
+      .on(table.internal_shipment_id)
+      .where(sql`${table.internal_shipment_id} IS NOT NULL`),
+    // لوحة شحنات الأدمن: الشحنات التي تنتظر طباعة الملصق (Phase 5)
+    index('idx_orders_label_pending').on(table.status, table.label_printed_at),
+    // اختيار الطلبيات المستحقّة للاستطلاع (Phase 3)
+    index('idx_orders_poll').on(table.status, table.delivery_next_poll_at),
     sql`CONSTRAINT chk_quantity_positive
         CHECK (${table.quantity} > 0)`,
     sql`CONSTRAINT chk_prices_positive CHECK (
@@ -416,6 +446,84 @@ export const deliveryAccounts = pgTable(
     uniqueIndex('idx_delivery_accounts_default')
       .on(table.provider)
       .where(sql`${table.is_default} = true AND ${table.deleted_at} IS NULL`),
+  ],
+)
+
+// ============================================================
+// DELIVERY_PRICING — تعرفة التوصيل لكل ولاية (تُزامَن من ECOTRACK get/fees،
+// قابلة لتجاوز الأدمن). المصدر الوحيد للسعر المعروض في نموذج الطلبية (Phase 6).
+// ============================================================
+
+export const deliveryPricing = pgTable(
+  'delivery_pricing',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    wilaya_id: integer('wilaya_id').notNull(), // IDWilaya لدى ECOTRACK (1..58)
+    wilaya_name: text('wilaya_name').notNull(), // من get/wilayas
+    home_price_dzd: integer('home_price_dzd').notNull(), // get/fees .tarif
+    office_price_dzd: integer('office_price_dzd').notNull(), // get/fees .tarif_stopdesk
+    admin_override: boolean('admin_override').notNull().default(false),
+    last_synced_at: timestamp('last_synced_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex('idx_delivery_pricing_wilaya').on(table.wilaya_id),
+    sql`CONSTRAINT chk_delivery_prices_positive CHECK (
+      ${table.home_price_dzd} >= 0 AND ${table.office_price_dzd} >= 0
+    )`,
+  ],
+)
+
+// ============================================================
+// DELIVERY_OFFICES — البلديات (ومكاتب stop-desk) لكل ولاية (تُزامَن من get/communes).
+// مهم: ECOTRACK لا يوفّر سجلّ مكاتب ولا office_id؛ "المكتب" = بلدية has_stop_desk=1.
+// نُخزّن كل البلديات مع علم has_stop_desk فيخدم الجدول مُنتقي المنزل والمكتب معاً،
+// ولا يحتاج نموذج الطلبية لاستدعاء ECOTRACK مباشرةً أبداً (Phase 6).
+// ============================================================
+
+export const deliveryOffices = pgTable(
+  'delivery_offices',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    wilaya_id: integer('wilaya_id').notNull(),
+    office_code: text('office_code').notNull(), // مفتاح ثابت: `${wilaya_id}:${commune}`
+    name: text('name').notNull(), // اسم البلدية (موقع stop-desk عند توفّره)
+    address: text('address'), // code_postal أو فارغ (ECOTRACK لا يوفّر عنوان شارع)
+    has_stop_desk: boolean('has_stop_desk').notNull().default(false),
+    last_synced_at: timestamp('last_synced_at').notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('idx_delivery_offices_code').on(table.wilaya_id, table.office_code),
+    index('idx_delivery_offices_wilaya').on(table.wilaya_id),
+  ],
+)
+
+// ============================================================
+// LABEL_PRINT_AUDIT — سجلّ كل محاولة طباعة ملصق رسمي (Phase 5، مكافحة الاحتيال).
+// نُسجّل النجاح والفشل معاً (توقيع غير صالح / منتهٍ / مُستخدَم / خطأ ECOTRACK).
+// ============================================================
+
+export const labelPrintAudit = pgTable(
+  'label_print_audit',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    order_id: uuid('order_id')
+      .notNull()
+      .references(() => orders.id, { onDelete: 'cascade' }),
+    actor_user_id: text('actor_user_id')
+      .notNull()
+      .references(() => users.id),
+    action: text('action').notNull(), // 'print_attempt'
+    result: text('result').notNull(), // success | invalid_signature | expired | already_used | ecotrack_error
+    detail: text('detail'),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_label_audit_order').on(table.order_id),
+    index('idx_label_audit_created').on(table.created_at),
   ],
 )
 

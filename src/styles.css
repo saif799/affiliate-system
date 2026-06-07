@@ -82,6 +82,12 @@ select {
   --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* السلاسل الطويلة بلا فواصل (معرّفات UUID/أرقام التتبّع) تُكسر داخل حاوياتها فقط،
+   كي لا تفيض الخلايا — بينما يبقى النصّ العربي/الأرقام/تسميات الأزرار بلا كسر منتصف الكلمة. */
+.font-mono {
+  overflow-wrap: anywhere;
+}
+
 /* Modal entrance */
 @keyframes qv-overlay-in {
   from { opacity: 0; }

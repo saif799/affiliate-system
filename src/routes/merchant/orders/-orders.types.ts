@@ -20,6 +20,9 @@ export type DbOrderStatus =
 
 export type TabFilter = 'all' | 'pending' | 'shipped' | 'delivered' | 'returned'
 
+// ⚠️ التاجر لا يرى أيّ بيانات شخصية للزبون (اسم/هاتف/عنوان/بلدية منزلية/ملاحظة).
+// يرى فقط: المرجع، المنتج، الكمية، الولاية، نوع التوصيل، اسم المكتب (إن وُجد)،
+// الحالة، رقم التتبّع. التعقيم يتمّ في #/server/privacy/order-views.
 export interface Order {
   id: string
   createdAt: string
@@ -27,20 +30,16 @@ export interface Order {
     name: string
     variant: string // مقاس، لون...
   }
-  customer: {
-    name: string
-    phone: string
-  }
   wilaya: string
-  commune?: string // بلدية التوصيل (ECOTRACK)
-  address?: string // عنوان التوصيل
-  note?: string // ملاحظة للتوصيل
+  deliveryType: 'home' | 'office' // نوع التوصيل
+  officeName?: string // اسم بلدية/مكتب الاستلام (ليس PII) — للتوصيل المكتبي فقط
   quantity: number
   totalPrice: number // سعر البيع النهائي
   merchantEarnings: number // حصة التاجر
   status: OrderStatus // UI-collapsed status (4 visible states)
   dbStatus: DbOrderStatus // real DB status — drives valid transitions
   trackingNumber?: string
+  internalShipmentId?: string // مرجع الشحنة الداخلي (Phase 5)
 }
 
 export interface OrdersTabCount {

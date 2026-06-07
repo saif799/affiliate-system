@@ -5,7 +5,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
 import {
   orders,
   products,
@@ -16,13 +15,7 @@ import {
 import { eq, desc } from 'drizzle-orm'
 import { flagOrderDisputed, resolveDispute } from '#/server/settlement'
 import { notify } from '#/server/notify'
-
-async function requireSuperAdmin() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'super_admin')
-    throw new Error('Unauthorized')
-  return session
-}
+import { requireSuperAdmin } from '#/server/auth/guards'
 
 export type AdminOrder = {
   id: string

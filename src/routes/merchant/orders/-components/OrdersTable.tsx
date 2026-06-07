@@ -25,6 +25,7 @@ interface OrdersTableProps {
   onToggleAll: (ids: string[]) => void
   onUpdateStatus: (orderId: string) => void
   onViewDetails: (order: Order) => void
+  onPrintLabel: (orderId: string) => void
   isUpdating: boolean
 }
 
@@ -35,6 +36,7 @@ export function OrdersTable({
   onToggleAll,
   onUpdateStatus,
   onViewDetails,
+  onPrintLabel,
   isUpdating,
 }: OrdersTableProps) {
   const allSelected =
@@ -70,7 +72,7 @@ export function OrdersTable({
             </th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">رقم الطلب</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">المنتج</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500">الزبون</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500">التوصيل</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">الولاية</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">سعر البيع</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500">حصتك</th>
@@ -115,10 +117,14 @@ export function OrdersTable({
                   <p className="text-xs text-gray-400">{order.product.variant}</p>
                 </td>
 
-                {/* الزبون */}
+                {/* التوصيل (لا بيانات شخصية للزبون) */}
                 <td className="px-4 py-3">
-                  <p className="text-xs font-medium text-gray-800">{order.customer.name}</p>
-                  <p className="font-mono text-xs text-gray-400">{order.customer.phone}</p>
+                  <p className="text-xs font-medium text-gray-800">
+                    {order.deliveryType === 'office' ? 'مكتب' : 'منزل'}
+                  </p>
+                  {order.deliveryType === 'office' && order.officeName && (
+                    <p className="text-xs text-gray-400">{order.officeName}</p>
+                  )}
                 </td>
 
                 {/* الولاية */}
@@ -167,6 +173,14 @@ export function OrdersTable({
                     >
                       تفاصيل
                     </button>
+                    {order.trackingNumber && (
+                      <button
+                        onClick={() => onPrintLabel(order.id)}
+                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100"
+                      >
+                        ملصق
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

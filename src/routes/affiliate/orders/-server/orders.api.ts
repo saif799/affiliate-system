@@ -2,11 +2,18 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
-import { affiliateProfiles, merchantProfiles, orders, orderStatusHistory, products, settings } from '#/server/db/schema'
-import { and, eq, sql, desc, notInArray, isNull, inArray } from 'drizzle-orm'
+import {
+  merchantProfiles,
+  orders,
+  orderStatusHistory,
+  products,
+  settings,
+  deliveryPricing,
+  deliveryOffices,
+} from '#/server/db/schema'
+import { and, eq, sql, desc, asc, notInArray, isNull, inArray } from 'drizzle-orm'
 import { notify } from '#/server/notify'
-import { getEcotrackClient } from '#/server/services/ecotrack.service'
+import { requireAffiliate } from '#/server/auth/guards'
 import { z } from 'zod'
 import type {
   OrdersPageData,
@@ -18,19 +25,47 @@ import type {
 // HELPERS
 // ============================================================
 
-async function requireAffiliate() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'affiliate')
-    throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: affiliateProfiles.id })
-    .from(affiliateProfiles)
-    .where(eq(affiliateProfiles.user_id, session.user.id))
+// يتحقّق من البلدية/المكتب المختار محلّياً ويحسب سعر التوصيل من delivery_pricing
+// (المصدر الوحيد — لا اتصال مباشر بـ ECOTRACK من نموذج الطلبية).
+async function resolveDelivery(
+  wilayaCode: number,
+  officeId: string,
+  deliveryType: 'home' | 'office',
+): Promise<{ communeName: string; deliveryOfficeId: string | null; deliveryPrice: number }> {
+  const [office] = await db
+    .select({
+      id: deliveryOffices.id,
+      name: deliveryOffices.name,
+      wilayaId: deliveryOffices.wilaya_id,
+      hasStopDesk: deliveryOffices.has_stop_desk,
+    })
+    .from(deliveryOffices)
+    .where(eq(deliveryOffices.id, officeId))
     .limit(1)
 
-  if (!profile) throw new Error('Affiliate profile not found')
-  return { session, profileId: profile.id }
+  if (!office || office.wilayaId !== wilayaCode) {
+    throw new Error('البلدية/المكتب غير مطابق للولاية المختارة')
+  }
+  if (deliveryType === 'office' && !office.hasStopDesk) {
+    throw new Error('هذه البلدية لا تملك مكتب استلام (stop-desk)')
+  }
+
+  const [pricing] = await db
+    .select({
+      home: deliveryPricing.home_price_dzd,
+      office: deliveryPricing.office_price_dzd,
+    })
+    .from(deliveryPricing)
+    .where(eq(deliveryPricing.wilaya_id, wilayaCode))
+    .limit(1)
+
+  if (!pricing) throw new Error('لا توجد تعرفة توصيل لهذه الولاية — اطلب من الأدمن مزامنتها')
+
+  return {
+    communeName: office.name,
+    deliveryOfficeId: deliveryType === 'office' ? office.id : null,
+    deliveryPrice: deliveryType === 'office' ? pricing.office : pricing.home,
+  }
 }
 
 const n = (v: unknown) => Number(v ?? 0)
@@ -168,10 +203,11 @@ const AddLeadSchema = z.object({
   productId: z.string().uuid(),
   customerName: z.string().trim().min(1),
   customerPhone: z.string().trim().min(9).max(20),
-  // منطقة التوصيل تُختار من قوائم ECOTRACK (ولاية بالرمز + بلدية مطابقة)
+  // منطقة التوصيل تُقرأ من الجداول المحلّية (المُزامَنة من ECOTRACK) — لا اتصال مباشر
   wilayaCode: z.number().int().min(1).max(58),
   wilayaName: z.string().trim().min(1),
-  commune: z.string().trim().min(1),
+  officeId: z.string().uuid(), // صفّ delivery_offices المختار (البلدية/المكتب)
+  deliveryType: z.enum(['home', 'office']),
   address: z.string().trim().min(1),
   salePrice: z.number().int().positive(),
   notes: z.string().trim().max(300).optional(),
@@ -201,6 +237,9 @@ export const addLeadManual = createServerFn({ method: 'POST' })
       throw new Error('سعر البيع لا يمكن أن يكون أقل من سعر الجملة')
 
     const fees = await getPlatformFees()
+    // البلدية + سعر التوصيل من الجداول المحلّية (السعر يُعاد حسابه على الخادم —
+    // لا نثق بأيّ سعر من العميل).
+    const loc = await resolveDelivery(data.wilayaCode, data.officeId, data.deliveryType)
 
     await db.insert(orders).values({
       product_id: product.id,
@@ -210,7 +249,7 @@ export const addLeadManual = createServerFn({ method: 'POST' })
       customer_phone: data.customerPhone,
       customer_wilaya: data.wilayaName,
       customer_wilaya_code: data.wilayaCode,
-      customer_commune: data.commune,
+      customer_commune: loc.communeName,
       customer_address: data.address,
       customer_note: data.notes ?? null,
       quantity: 1,
@@ -219,6 +258,9 @@ export const addLeadManual = createServerFn({ method: 'POST' })
       platform_fee_merchant_dzd: fees.merchant,
       platform_fee_affiliate_dzd: fees.affiliate,
       platform_fee_dzd: fees.merchant + fees.affiliate,
+      shipping_fee_dzd: loc.deliveryPrice,
+      delivery_type: data.deliveryType,
+      delivery_office_id: loc.deliveryOfficeId,
       status: 'pending',
     })
 
@@ -237,6 +279,8 @@ export const confirmLead = createServerFn({ method: 'POST' })
     const { session, profileId } = await requireAffiliate()
 
     const info = await db.transaction(async (tx) => {
+      // قفل صفّ الطلبية أولاً → نداء متزامن ثانٍ (نقر مزدوج) ينتظر ثم يجد
+      // الحالة != pending فيُرفَض، فلا يُخصَم المخزون مرّتين لطلب واحد.
       const [order] = await tx
         .select({
           id: orders.id,
@@ -246,6 +290,7 @@ export const confirmLead = createServerFn({ method: 'POST' })
         })
         .from(orders)
         .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+        .for('update')
         .limit(1)
 
       if (!order) throw new Error('الطلبية غير موجودة')
@@ -346,54 +391,235 @@ export const rejectLead = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { profileId } = await requireAffiliate()
 
-    const [order] = await db
-      .select({ id: orders.id, status: orders.status })
-      .from(orders)
-      .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
-      .limit(1)
+    // معاملة + قفل صفّ الطلبية: يمنع سباق تأكيد/رفض متزامن (لا يُلغى طلب
+    // جرى تأكيده وخُصِم مخزونه)، وذرّية تحديث الحالة مع سجلّ التاريخ.
+    await db.transaction(async (tx) => {
+      const [order] = await tx
+        .select({ id: orders.id, status: orders.status })
+        .from(orders)
+        .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+        .for('update')
+        .limit(1)
 
-    if (!order) throw new Error('الطلبية غير موجودة')
-    if (order.status !== 'pending')
-      throw new Error('لا يمكن رفض هذه الطلبية في حالتها الحالية')
+      if (!order) throw new Error('الطلبية غير موجودة')
+      if (order.status !== 'pending')
+        throw new Error('لا يمكن رفض هذه الطلبية في حالتها الحالية')
 
-    const now = new Date()
+      const now = new Date()
 
-    // المخزون لم يُنقَص بعد (يُنقَص عند التأكيد فقط) → لا حاجة لإرجاعه
-    await db.update(orders).set({ status: 'cancelled' }).where(eq(orders.id, order.id))
+      // المخزون لم يُنقَص بعد (يُنقَص عند التأكيد فقط) → لا حاجة لإرجاعه
+      await tx.update(orders).set({ status: 'cancelled' }).where(eq(orders.id, order.id))
 
-    await db.insert(orderStatusHistory).values({
-      order_id: order.id,
-      from_status: 'pending',
-      to_status: 'cancelled',
-      occurred_at: now,
-      source: 'affiliate',
+      await tx.insert(orderStatusHistory).values({
+        order_id: order.id,
+        from_status: 'pending',
+        to_status: 'cancelled',
+        occurred_at: now,
+        source: 'affiliate',
+      })
     })
 
     return { success: true }
   })
 
 // ============================================================
-// مناطق التوصيل (من ECOTRACK) — لملء نموذج الطلبية اليدوية بقيم صالحة
+// مناطق التوصيل (من الجداول المحلّية فقط — لا اتصال مباشر بـ ECOTRACK من النموذج)
+// تُملأ هذه الجداول عبر مزامنة الكاتالوج (api/cron/sync-catalog + زر الأدمن).
 // ============================================================
 
-export const getDeliveryZones = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<{ code: number; name: string }[]> => {
+export interface LocalWilaya {
+  code: number
+  name: string
+  homePrice: number
+  officePrice: number
+}
+
+export const getWilayasLocal = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<LocalWilaya[]> => {
     await requireAffiliate()
-    const client = await getEcotrackClient()
-    const wilayas = await client.getWilayas()
-    return wilayas
-      .map((w) => ({ code: w.wilaya_id, name: w.wilaya_name }))
-      .sort((a, b) => a.code - b.code)
+    const rows = await db
+      .select({
+        code: deliveryPricing.wilaya_id,
+        name: deliveryPricing.wilaya_name,
+        home: deliveryPricing.home_price_dzd,
+        office: deliveryPricing.office_price_dzd,
+      })
+      .from(deliveryPricing)
+      .orderBy(asc(deliveryPricing.wilaya_id))
+    return rows.map((r) => ({
+      code: r.code,
+      name: r.name,
+      homePrice: r.home,
+      officePrice: r.office,
+    }))
   },
 )
 
-export const getDeliveryCommunes = createServerFn({ method: 'GET' })
+export interface LocalOffice {
+  id: string
+  name: string
+  hasStopDesk: boolean
+}
+
+export const getOfficesLocal = createServerFn({ method: 'GET' })
   .inputValidator((input: unknown) =>
     z.object({ wilayaCode: z.number().int().min(1).max(58) }).parse(input),
   )
-  .handler(async ({ data }): Promise<{ name: string; hasStopDesk: boolean }[]> => {
+  .handler(async ({ data }): Promise<LocalOffice[]> => {
     await requireAffiliate()
-    const client = await getEcotrackClient()
-    const communes = await client.getCommunes(data.wilayaCode)
-    return communes.map((c) => ({ name: c.nom, hasStopDesk: c.has_stop_desk === 1 }))
+    const rows = await db
+      .select({
+        id: deliveryOffices.id,
+        name: deliveryOffices.name,
+        hasStopDesk: deliveryOffices.has_stop_desk,
+      })
+      .from(deliveryOffices)
+      .where(eq(deliveryOffices.wilaya_id, data.wilayaCode))
+      .orderBy(asc(deliveryOffices.name))
+    return rows.map((r) => ({ id: r.id, name: r.name, hasStopDesk: r.hasStopDesk }))
+  })
+
+// ============================================================
+// تعديل الطلبية (Phase 6) — قبل الشحن فقط (pending/confirmed)
+// ============================================================
+
+export interface EditableOrder {
+  orderId: string
+  customerName: string
+  customerPhone: string
+  wilayaCode: number
+  wilayaName: string
+  officeId: string | null
+  commune: string | null
+  deliveryType: 'home' | 'office'
+  address: string
+  salePrice: number
+  quantity: number
+  notes: string
+  status: string
+  canEditQuantity: boolean
+}
+
+export const getEditableOrder = createServerFn({ method: 'GET' })
+  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }): Promise<EditableOrder> => {
+    const { profileId } = await requireAffiliate()
+    const [o] = await db
+      .select({
+        id: orders.id,
+        customerName: orders.customer_name,
+        customerPhone: orders.customer_phone,
+        wilayaCode: orders.customer_wilaya_code,
+        wilayaName: orders.customer_wilaya,
+        commune: orders.customer_commune,
+        officeId: orders.delivery_office_id,
+        deliveryType: orders.delivery_type,
+        address: orders.customer_address,
+        salePrice: orders.unit_affiliate_price_dzd,
+        quantity: orders.quantity,
+        notes: orders.customer_note,
+        status: orders.status,
+      })
+      .from(orders)
+      .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+      .limit(1)
+
+    if (!o) throw new Error('الطلبية غير موجودة')
+    if (o.status !== 'pending' && o.status !== 'confirmed') {
+      throw new Error('لا يمكن تعديل الطلبية بعد شحنها')
+    }
+
+    return {
+      orderId: o.id,
+      customerName: o.customerName,
+      customerPhone: o.customerPhone,
+      wilayaCode: o.wilayaCode ?? 0,
+      wilayaName: o.wilayaName,
+      officeId: o.officeId,
+      commune: o.commune,
+      deliveryType: o.deliveryType,
+      address: o.address ?? '',
+      salePrice: o.salePrice,
+      quantity: o.quantity,
+      notes: o.notes ?? '',
+      status: o.status,
+      canEditQuantity: o.status === 'pending',
+    }
+  })
+
+const UpdateOrderSchema = z.object({
+  orderId: z.string().uuid(),
+  customerName: z.string().trim().min(1),
+  customerPhone: z.string().trim().min(9).max(20),
+  wilayaCode: z.number().int().min(1).max(58),
+  wilayaName: z.string().trim().min(1),
+  officeId: z.string().uuid(),
+  deliveryType: z.enum(['home', 'office']),
+  address: z.string().trim().min(1),
+  salePrice: z.number().int().positive(),
+  quantity: z.number().int().positive(),
+  notes: z.string().trim().max(300).optional(),
+})
+
+export const updateOrderManual = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) => UpdateOrderSchema.parse(input))
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const { profileId } = await requireAffiliate()
+    // البلدية + السعر من الجداول المحلّية (لا نثق بسعر العميل)
+    const loc = await resolveDelivery(data.wilayaCode, data.officeId, data.deliveryType)
+
+    await db.transaction(async (tx) => {
+      const [order] = await tx
+        .select({
+          id: orders.id,
+          status: orders.status,
+          quantity: orders.quantity,
+          merchantPrice: orders.unit_merchant_price_dzd,
+        })
+        .from(orders)
+        .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+        .for('update')
+        .limit(1)
+
+      if (!order) throw new Error('الطلبية غير موجودة')
+      if (order.status !== 'pending' && order.status !== 'confirmed') {
+        throw new Error('لا يمكن تعديل الطلبية بعد شحنها')
+      }
+      if (data.salePrice < order.merchantPrice) {
+        throw new Error('سعر البيع لا يمكن أن يكون أقل من سعر الجملة')
+      }
+      // الكمية قابلة للتعديل قبل التأكيد فقط (بعده خُصم المخزون)
+      if (order.status === 'confirmed' && data.quantity !== order.quantity) {
+        throw new Error('لا يمكن تغيير الكمية بعد تأكيد الطلبية')
+      }
+
+      await tx
+        .update(orders)
+        .set({
+          customer_name: data.customerName,
+          customer_phone: data.customerPhone,
+          customer_wilaya: data.wilayaName,
+          customer_wilaya_code: data.wilayaCode,
+          customer_commune: loc.communeName,
+          customer_address: data.address,
+          customer_note: data.notes ?? null,
+          delivery_type: data.deliveryType,
+          delivery_office_id: loc.deliveryOfficeId,
+          shipping_fee_dzd: loc.deliveryPrice,
+          unit_affiliate_price_dzd: data.salePrice,
+          quantity: order.status === 'pending' ? data.quantity : order.quantity,
+        })
+        .where(eq(orders.id, order.id))
+
+      await tx.insert(orderStatusHistory).values({
+        order_id: order.id,
+        from_status: order.status,
+        to_status: order.status,
+        occurred_at: new Date(),
+        source: 'affiliate',
+        note: 'تعديل بيانات الطلبية',
+      })
+    })
+
+    return { success: true }
   })

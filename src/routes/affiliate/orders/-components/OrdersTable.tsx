@@ -15,6 +15,7 @@ interface Props {
   onConfirm: (rawId: string) => void
   onReject: (rawId: string) => void
   onView: (order: AffiliateOrder) => void
+  onEdit: (rawId: string) => void
   busyId: string | null
 }
 
@@ -26,6 +27,7 @@ export function OrdersTable({
   onConfirm,
   onReject,
   onView,
+  onEdit,
   busyId,
 }: Props) {
   if (orders.length === 0) {
@@ -137,6 +139,14 @@ export function OrdersTable({
                     >
                       تفاصيل
                     </button>
+                    {(order.dbStatus === 'pending' || order.dbStatus === 'confirmed') && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onEdit(order.rawId) }}
+                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100"
+                      >
+                        تعديل
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

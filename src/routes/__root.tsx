@@ -46,12 +46,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 // ── Shell ──────────────────────────────────────────────────
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ar" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
+      <body className="font-sans antialiased break-words selection:bg-[rgba(79,184,178,0.24)]">
         {children}
         <TanStackDevtools
           config={{ position: 'bottom-right' }}

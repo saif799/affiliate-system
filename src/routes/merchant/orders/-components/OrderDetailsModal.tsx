@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Loader2, Package, MapPin, Phone, Truck } from 'lucide-react'
+import { X, Loader2, Package, MapPin, Truck } from 'lucide-react'
 import { getOrderTracking } from '#/server/delivery/tracking.api'
 import type { TrackingEventView } from '#/server/delivery/tracking.api'
 import type { Order } from '../-orders.types'
@@ -79,22 +79,22 @@ export function OrderDetailsModal({ order, onClose }: Props) {
             <Row label="حصتك" value={`${order.merchantEarnings.toLocaleString('ar-DZ')} د.ج`} />
           </div>
 
-          {/* الزبون + التوصيل */}
+          {/* التوصيل (بيانات الزبون الشخصية مخفيّة عن التاجر) */}
           <div className="rounded-xl border border-gray-100 px-4 py-3">
             <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-800">
-              <MapPin size={14} className="text-gray-400" /> بيانات التوصيل
-            </div>
-            <Row label="الزبون" value={order.customer.name} />
-            <div className="flex items-center justify-between gap-3 py-1.5">
-              <span className="text-xs text-gray-400">الهاتف</span>
-              <span className="flex items-center gap-1 font-mono text-xs font-medium text-gray-800" dir="ltr">
-                <Phone size={11} className="text-gray-400" /> {order.customer.phone}
-              </span>
+              <MapPin size={14} className="text-gray-400" /> التوصيل
             </div>
             <Row label="الولاية" value={order.wilaya} />
-            {order.commune && <Row label="البلدية" value={order.commune} />}
-            {order.address && <Row label="العنوان" value={order.address} />}
-            {order.note && <Row label="ملاحظة" value={order.note} />}
+            <Row
+              label="نوع التوصيل"
+              value={order.deliveryType === 'office' ? 'مكتب (Stop Desk)' : 'منزل'}
+            />
+            {order.deliveryType === 'office' && order.officeName && (
+              <Row label="المكتب" value={order.officeName} />
+            )}
+            <p className="mt-2 text-[11px] text-gray-400">
+              بيانات الزبون الشخصية (الاسم/الهاتف/العنوان) محميّة ولا تظهر للتاجر.
+            </p>
           </div>
 
           {/* التتبّع */}

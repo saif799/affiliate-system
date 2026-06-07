@@ -2,17 +2,21 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
 import {
-  merchantProfiles,
   orders,
   orderStatusHistory,
   products,
   deliveryAccounts,
+  deliveryOffices,
 } from '#/server/db/schema'
 import { and, eq, sql, desc, notInArray, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 import { getEcotrackClient } from '#/server/services/ecotrack.service'
+import { requireMerchant } from '#/server/auth/guards'
+import { toMerchantOrderView } from '#/server/privacy/order-views'
+import { notifySuperAdmins } from '#/server/notify'
+import { generateInternalShipmentId, issueLabelToken } from '#/server/delivery/label'
+import QRCode from 'qrcode'
 import type {
   MerchantOrdersData,
   Order,
@@ -23,20 +27,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireMerchant() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'merchant') throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: merchantProfiles.id })
-    .from(merchantProfiles)
-    .where(eq(merchantProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Merchant profile not found')
-  return { session, profileId: profile.id }
-}
 
 const STATUS_MAP: Record<DbOrderStatus, OrderStatus | null> = {
   pending: 'pending',
@@ -66,45 +56,49 @@ export const getMerchantOrders = createServerFn({ method: 'GET' }).handler(
       notInArray(orders.status, ['pending', 'cancelled', 'disputed']),
     )
 
+    // ⚠️ لا نسحب أيّ PII للزبون (الاسم/الهاتف/العنوان/البلدية/الملاحظة).
+    // اسم المكتب يأتي من delivery_offices (ليس PII) ويظهر للتوصيل المكتبي فقط.
     const rows = await db
       .select({
         id: orders.id,
         createdAt: orders.created_at,
         productName: products.name,
-        customerName: orders.customer_name,
-        customerPhone: orders.customer_phone,
         wilaya: orders.customer_wilaya,
-        commune: orders.customer_commune,
-        address: orders.customer_address,
-        note: orders.customer_note,
+        deliveryType: orders.delivery_type,
+        officeName: deliveryOffices.name,
         quantity: orders.quantity,
         unitAffiliate: orders.unit_affiliate_price_dzd,
         unitMerchant: orders.unit_merchant_price_dzd,
         feeMerchant: orders.platform_fee_merchant_dzd,
         status: orders.status,
         trackingNumber: orders.tracking_number,
+        internalShipmentId: orders.internal_shipment_id,
       })
       .from(orders)
       .innerJoin(products, eq(orders.product_id, products.id))
+      .leftJoin(deliveryOffices, eq(orders.delivery_office_id, deliveryOffices.id))
       .where(visible)
       .orderBy(desc(orders.created_at))
 
-    const ordersList: Order[] = rows.map((r) => ({
-      id: r.id,
-      createdAt: r.createdAt.toISOString().slice(0, 10),
-      product: { name: r.productName, variant: '' },
-      customer: { name: r.customerName, phone: r.customerPhone },
-      wilaya: r.wilaya,
-      commune: r.commune ?? undefined,
-      address: r.address ?? undefined,
-      note: r.note ?? undefined,
-      quantity: r.quantity,
-      totalPrice: r.unitAffiliate * r.quantity,
-      merchantEarnings: Math.max(0, r.unitMerchant * r.quantity - r.feeMerchant),
-      status: (STATUS_MAP[r.status as DbOrderStatus] ?? 'pending'),
-      dbStatus: r.status as DbOrderStatus,
-      trackingNumber: r.trackingNumber ?? undefined,
-    }))
+    // التعقيم عبر طبقة الخصوصية (دفاع عميق — لا تخرج PII للتاجر أبداً)
+    const ordersList: Order[] = rows.map((r) =>
+      toMerchantOrderView({
+        id: r.id,
+        createdAt: r.createdAt,
+        productName: r.productName,
+        productVariant: '',
+        wilaya: r.wilaya,
+        deliveryType: r.deliveryType,
+        officeName: r.officeName,
+        quantity: r.quantity,
+        totalPrice: r.unitAffiliate * r.quantity,
+        merchantEarnings: Math.max(0, r.unitMerchant * r.quantity - r.feeMerchant),
+        status: STATUS_MAP[r.status as DbOrderStatus] ?? 'pending',
+        dbStatus: r.status as DbOrderStatus,
+        trackingNumber: r.trackingNumber,
+        internalShipmentId: r.internalShipmentId,
+      }),
+    )
 
     const [counts] = await db
       .select({
@@ -158,87 +152,218 @@ async function getDefaultDeliveryAccountId(): Promise<string | undefined> {
 
 const ShipSchema = z.object({ orderId: z.string().uuid() })
 
+// يحرّر «المطالبة» (claim) عند فشل الإنشاء لدى ECOTRACK كي يُعاد المحاولة لاحقاً.
+async function releaseShipClaim(orderId: string): Promise<void> {
+  await db
+    .update(orders)
+    .set({ internal_shipment_id: null, qr_token: null })
+    .where(eq(orders.id, orderId))
+}
+
+// ============================================================
+// SHIP ORDER — آمن للتزامن وقابل للتكرار (Phase 4)
+//
+// منع التكرار بثلاث طبقات:
+//  1) قفل صفّ + شرط (status='confirmed' و internal_shipment_id IS NULL):
+//     «مطالبة» ذرّية — نداء متزامن ثانٍ لا يمرّ.
+//  2) إن وُجد رقم تتبّع سلفاً ⇒ نعيده دون إنشاء جديد (idempotent عند التحديث/النقر المزدوج).
+//  3) reference=order.id لدى ECOTRACK (إزالة تكرار من جهة الناقل أيضاً).
+// نداء ECOTRACK يتمّ خارج القفل؛ عند الفشل نحرّر المطالبة وتبقى الطلبية confirmed.
+// ============================================================
+
 export const shipOrder = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) => ShipSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean; tracking: string }> => {
     const { profileId } = await requireMerchant()
+    const accountId = await getDefaultDeliveryAccountId()
 
-    const [order] = await db
-      .select({
-        id: orders.id,
-        status: orders.status,
-        customerName: orders.customer_name,
-        customerPhone: orders.customer_phone,
-        wilaya: orders.customer_wilaya,
-        wilayaCode: orders.customer_wilaya_code,
-        commune: orders.customer_commune,
-        address: orders.customer_address,
-        note: orders.customer_note,
-        qty: orders.quantity,
-        affiliatePrice: orders.unit_affiliate_price_dzd,
-        productName: products.name,
-        existingTracking: orders.tracking_number,
-      })
-      .from(orders)
-      .innerJoin(products, eq(orders.product_id, products.id))
-      .where(and(eq(orders.id, data.orderId), eq(orders.merchant_id, profileId)))
-      .limit(1)
+    // 1) المطالبة الذرّية: اقفل الصفّ، تحقّق، واحجز عبر internal_shipment_id + qr_token.
+    const claim = await db.transaction(async (tx) => {
+      const [order] = await tx
+        .select({
+          id: orders.id,
+          status: orders.status,
+          existingTracking: orders.tracking_number,
+          internalShipmentId: orders.internal_shipment_id,
+          customerName: orders.customer_name,
+          customerPhone: orders.customer_phone,
+          wilaya: orders.customer_wilaya,
+          wilayaCode: orders.customer_wilaya_code,
+          commune: orders.customer_commune,
+          address: orders.customer_address,
+          note: orders.customer_note,
+          qty: orders.quantity,
+          affiliatePrice: orders.unit_affiliate_price_dzd,
+          deliveryType: orders.delivery_type,
+          productName: products.name,
+        })
+        .from(orders)
+        .innerJoin(products, eq(orders.product_id, products.id))
+        .where(and(eq(orders.id, data.orderId), eq(orders.merchant_id, profileId)))
+        .for('update')
+        .limit(1)
 
-    if (!order) throw new Error('الطلبية غير موجودة')
-    if (order.status !== 'confirmed') throw new Error('لا يمكن شحن إلا طلبية مؤكَّدة')
-    if (!order.wilayaCode || !order.commune) {
-      throw new Error(
-        'بيانات التوصيل ناقصة (الولاية/البلدية) — هذه طلبية قديمة؛ أعد إنشاءها باختيار منطقة صالحة',
-      )
+      if (!order) throw new Error('الطلبية غير موجودة')
+      // مشحونة سلفاً ⇒ idempotent: أعِد رقم التتبّع دون إنشاء شحنة جديدة
+      if (order.existingTracking) {
+        return { kind: 'already' as const, tracking: order.existingTracking }
+      }
+      if (order.status !== 'confirmed') throw new Error('لا يمكن شحن إلا طلبية مؤكَّدة')
+      if (order.internalShipmentId) {
+        throw new Error('جارٍ إنشاء الشحنة بالفعل — حدّث الصفحة بعد لحظات')
+      }
+      if (!order.wilayaCode || !order.commune) {
+        throw new Error(
+          'بيانات التوصيل ناقصة (الولاية/البلدية) — هذه طلبية قديمة؛ أعد إنشاءها باختيار منطقة صالحة',
+        )
+      }
+
+      const issuedAt = Date.now()
+      const internalShipmentId = generateInternalShipmentId()
+      const qrToken = issueLabelToken(internalShipmentId, issuedAt)
+
+      // احجز: بعد هذا التحديث لا يمرّ نداء متزامن آخر (internal_shipment_id لم يعد NULL)
+      await tx
+        .update(orders)
+        .set({ internal_shipment_id: internalShipmentId, qr_token: qrToken })
+        .where(eq(orders.id, order.id))
+
+      return { kind: 'claimed' as const, order, internalShipmentId }
+    })
+
+    if (claim.kind === 'already') {
+      return { success: true, tracking: claim.tracking }
     }
 
-    const accountId = await getDefaultDeliveryAccountId()
+    const { order } = claim
+    // تضييق الأنواع بعد حدود المعاملة (مضمونة داخل tx، ودفاع إضافي هنا)
+    if (!order.commune || !order.wilayaCode) {
+      await releaseShipClaim(order.id)
+      throw new Error('بيانات التوصيل ناقصة (الولاية/البلدية)')
+    }
+
+    // 2) إنشاء الشحنة لدى ECOTRACK (خارج القفل) — stop_desk حسب نوع التوصيل
     let client
     try {
       client = await getEcotrackClient(accountId)
     } catch {
+      await releaseShipClaim(order.id)
       throw new Error('لا يوجد حساب توصيل مُفعَّل — أضِف مفتاح ECOTRACK من الإعدادات')
     }
 
-    // مبلغ COD الذي يدفعه الزبون = سعر بيع المسوّق × الكمية
-    const montant = order.affiliatePrice * order.qty
+    const montant = order.affiliatePrice * order.qty // COD = سعر البيع × الكمية
 
-    const res = await client.createOrder({
-      nom_client: order.customerName,
-      telephone: order.customerPhone,
-      adresse: order.address?.trim() || `${order.commune}، ${order.wilaya}`,
-      commune: order.commune,
-      code_wilaya: order.wilayaCode,
-      montant,
-      produit: order.productName,
-      remarque: order.note ?? undefined,
-      quantite: order.qty,
-      type: 1, // توصيل
-      stop_desk: 0, // منزلي
+    let tracking: string | undefined
+    try {
+      const res = await client.createOrder({
+        reference: order.id, // مفتاح إزالة التكرار لدى ECOTRACK
+        nom_client: order.customerName,
+        telephone: order.customerPhone,
+        adresse: order.address?.trim() || `${order.commune}، ${order.wilaya}`,
+        commune: order.commune,
+        code_wilaya: order.wilayaCode,
+        montant,
+        produit: order.productName,
+        remarque: order.note ?? undefined,
+        quantite: order.qty,
+        type: 1, // توصيل
+        stop_desk: order.deliveryType === 'office' ? 1 : 0, // مكتب/منزل
+      })
+      tracking = res.tracking
+    } catch (err) {
+      await releaseShipClaim(order.id) // حرّر المطالبة ⇒ تبقى confirmed وقابلة لإعادة الشحن
+      throw err
+    }
+
+    if (!tracking) {
+      await releaseShipClaim(order.id)
+      throw new Error('لم تُرجِع شركة التوصيل رقم تتبّع — حاول مجدداً')
+    }
+
+    // 3) الإنهاء الذرّي: shipped + رقم التتبّع + سجلّ الحالة
+    const now = new Date()
+    await db.transaction(async (tx) => {
+      await tx
+        .update(orders)
+        .set({
+          status: 'shipped',
+          shipped_at: now,
+          tracking_number: tracking,
+          ecotrack_account_id: accountId ?? null,
+          delivery_status: 'pending',
+        })
+        .where(eq(orders.id, order.id))
+
+      await tx.insert(orderStatusHistory).values({
+        order_id: order.id,
+        from_status: 'confirmed',
+        to_status: 'shipped',
+        occurred_at: now,
+        source: 'merchant',
+      })
     })
 
-    const tracking = res.tracking
-    if (!tracking) throw new Error('لم تُرجِع شركة التوصيل رقم تتبّع — حاول مجدداً')
-
-    const now = new Date()
-    await db
-      .update(orders)
-      .set({
-        status: 'shipped',
-        shipped_at: now,
-        tracking_number: tracking,
-        ecotrack_account_id: accountId ?? null,
-        delivery_status: 'pending',
-      })
-      .where(eq(orders.id, order.id))
-
-    await db.insert(orderStatusHistory).values({
-      order_id: order.id,
-      from_status: 'confirmed',
-      to_status: 'shipped',
-      occurred_at: now,
-      source: 'merchant',
+    // 4) أشعِر الأدمن: الشحنة مُسجَّلة وجاهزة لطباعة الملصق الرسمي (Phase 5)
+    await notifySuperAdmins({
+      type: 'system',
+      title: 'شحنة جديدة جاهزة للطباعة 🏷️',
+      body: `الشحنة ${claim.internalShipmentId} (${order.wilaya}) — اطبع الملصق الرسمي`,
+      link: '/shipments',
     })
 
     return { success: true, tracking }
+  })
+
+// ============================================================
+// INTERNAL LABEL — الملصق الداخلي للتاجر (Phase 5)
+//
+// يحوي: المرجع الداخلي + رمز QR للتوكن الموقّع + نوع التوصيل + المكتب +
+// الولاية + وقت الإنشاء. بلا أيّ PII للزبون وبلا أيّ بيانات ECOTRACK.
+// رمز QR يُولَّد على الخادم (data URL) فلا يحتاج العميل أيّ مكتبة.
+// ============================================================
+
+export interface InternalLabelData {
+  internalShipmentId: string
+  qrDataUrl: string
+  deliveryType: 'home' | 'office'
+  officeName: string | null
+  wilaya: string
+  createdAt: string
+}
+
+export const getInternalLabel = createServerFn({ method: 'GET' })
+  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }): Promise<InternalLabelData> => {
+    const { profileId } = await requireMerchant()
+
+    const [order] = await db
+      .select({
+        internalShipmentId: orders.internal_shipment_id,
+        qrToken: orders.qr_token,
+        deliveryType: orders.delivery_type,
+        officeName: deliveryOffices.name,
+        wilaya: orders.customer_wilaya,
+        createdAt: orders.created_at,
+      })
+      .from(orders)
+      .leftJoin(deliveryOffices, eq(orders.delivery_office_id, deliveryOffices.id))
+      .where(and(eq(orders.id, data.orderId), eq(orders.merchant_id, profileId)))
+      .limit(1)
+
+    if (!order) throw new Error('الطلبية غير موجودة')
+    if (!order.internalShipmentId || !order.qrToken) {
+      throw new Error('هذه الطلبية لم تُشحَن بعد — لا يوجد ملصق داخلي')
+    }
+
+    // رمز QR يُرمّز التوكن الموقّع (ليس معرّف الطلب الخام)
+    const qrDataUrl = await QRCode.toDataURL(order.qrToken, { margin: 1, width: 240 })
+
+    return {
+      internalShipmentId: order.internalShipmentId,
+      qrDataUrl,
+      deliveryType: order.deliveryType,
+      officeName: order.deliveryType === 'office' ? (order.officeName ?? null) : null,
+      wilaya: order.wilaya,
+      createdAt: order.createdAt.toISOString(),
+    }
   })
