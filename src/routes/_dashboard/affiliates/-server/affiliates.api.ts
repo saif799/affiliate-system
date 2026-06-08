@@ -2,11 +2,11 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
 import { auth, setInviteType } from '#/server/auth'
-import { getSession } from '#/lib/session'
+import { requireSuperAdmin } from '#/server/auth/guards'
 import { z } from 'zod'
 import {
   users,
-  affiliateProfiles, 
+  affiliateProfiles,
   orders,
   wallets,
   verifications,
@@ -38,13 +38,6 @@ function getMonthRanges() {
     t1: new Date(Date.UTC(year, month, 1)).toISOString(),
     t2: new Date(Date.UTC(year, month + 1, 1)).toISOString(),
   }
-}
-
-async function requireSuperAdmin() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'super_admin')
-    throw new Error('Unauthorized')
-  return session
 }
 
 // ============================================================
@@ -284,7 +277,9 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
 // ============================================================
 
 export const acceptAffiliateRequest = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ userId: z.string().min(1) }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ userId: z.string().min(1) }).parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
 
@@ -329,7 +324,9 @@ export const acceptAffiliateRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const rejectAffiliateRequest = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ userId: z.string().min(1) }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ userId: z.string().min(1) }).parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     await db
@@ -346,7 +343,10 @@ export const rejectAffiliateRequest = createServerFn({ method: 'POST' })
 export const updateAffiliateStatus = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) =>
     z
-      .object({ affiliateId: z.string().uuid(), status: z.enum(['active', 'suspended']) })
+      .object({
+        affiliateId: z.string().uuid(),
+        status: z.enum(['active', 'suspended']),
+      })
       .parse(input),
   )
   .handler(async ({ data }) => {
@@ -371,7 +371,10 @@ export const updateAffiliateStatus = createServerFn({ method: 'POST' })
 export const sendAffiliateWarning = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) =>
     z
-      .object({ affiliateId: z.string().uuid(), message: z.string().trim().min(1) })
+      .object({
+        affiliateId: z.string().uuid(),
+        message: z.string().trim().min(1),
+      })
       .parse(input),
   )
   .handler(async ({ data }) => {
@@ -412,7 +415,9 @@ export const sendAffiliateWarning = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const deleteAffiliate = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ affiliateId: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ affiliateId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     const [profile] = await db

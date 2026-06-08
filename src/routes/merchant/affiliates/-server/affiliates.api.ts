@@ -2,9 +2,8 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
+import { requireMerchant } from '#/server/auth/guards'
 import {
-  merchantProfiles,
   affiliateProfiles,
   trackingLinks,
   products,
@@ -24,20 +23,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireMerchant() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'merchant') throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: merchantProfiles.id })
-    .from(merchantProfiles)
-    .where(eq(merchantProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Merchant profile not found')
-  return { session, profileId: profile.id }
-}
 
 const n = (v: unknown) => Number(v ?? 0)
 
@@ -106,7 +91,10 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
         userStatus: users.status,
       })
       .from(trackingLinks)
-      .innerJoin(affiliateProfiles, eq(trackingLinks.affiliate_id, affiliateProfiles.id))
+      .innerJoin(
+        affiliateProfiles,
+        eq(trackingLinks.affiliate_id, affiliateProfiles.id),
+      )
       .innerJoin(products, eq(trackingLinks.product_id, products.id))
       .innerJoin(users, eq(affiliateProfiles.user_id, users.id))
       .where(
@@ -138,7 +126,10 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
       })
       .from(orders)
       .where(
-        and(eq(orders.merchant_id, profileId), inArray(orders.affiliate_id, affiliateIds)),
+        and(
+          eq(orders.merchant_id, profileId),
+          inArray(orders.affiliate_id, affiliateIds),
+        ),
       )
       .groupBy(orders.affiliate_id)
 
@@ -156,7 +147,10 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
       .from(orders)
       .innerJoin(products, eq(orders.product_id, products.id))
       .where(
-        and(eq(orders.merchant_id, profileId), inArray(orders.affiliate_id, affiliateIds)),
+        and(
+          eq(orders.merchant_id, profileId),
+          inArray(orders.affiliate_id, affiliateIds),
+        ),
       )
       .groupBy(orders.affiliate_id, products.id, products.name)
 
@@ -188,7 +182,10 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
           sql`${orders.created_at} >= ${window30Start.toISOString()}::timestamptz`,
         ),
       )
-      .groupBy(orders.affiliate_id, sql`date_trunc('day', ${orders.created_at})`)
+      .groupBy(
+        orders.affiliate_id,
+        sql`date_trunc('day', ${orders.created_at})`,
+      )
 
     const dailyByAffiliate = new Map<string, AffiliateMonthlySale[]>()
     const windowStartMs = window30Start.getTime()
@@ -210,7 +207,9 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
       const top = (topByAffiliate.get(r.id) ?? [])
         .sort((a, b) => b.unitsSold - a.unitsSold)
         .slice(0, 3)
-      const daily = (dailyByAffiliate.get(r.id) ?? []).sort((a, b) => a.day - b.day)
+      const daily = (dailyByAffiliate.get(r.id) ?? []).sort(
+        (a, b) => a.day - b.day,
+      )
 
       return {
         id: r.id,
@@ -223,7 +222,8 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
         tier: tierOf(totalOrders),
         totalOrders,
         deliveredOrders,
-        returnRate: totalOrders > 0 ? round1((returnedOrders / totalOrders) * 100) : 0,
+        returnRate:
+          totalOrders > 0 ? round1((returnedOrders / totalOrders) * 100) : 0,
         totalSales: n(agg?.totalSales),
         totalCommissions: n(agg?.totalCommissions),
         status: r.userStatus === 'suspended' ? 'blocked' : 'active',
@@ -232,7 +232,11 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
       }
     })
 
-    const stats = await fetchAffiliateStats(profileId, monthStart, affiliateIds.length)
+    const stats = await fetchAffiliateStats(
+      profileId,
+      monthStart,
+      affiliateIds.length,
+    )
 
     return { stats, affiliates }
   },
@@ -266,7 +270,7 @@ async function fetchAffiliateStats(
 
 export const blockAffiliate = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) =>
-    z.object({ affiliateProfileId: z.string() }).parse(input)
+    z.object({ affiliateProfileId: z.string() }).parse(input),
   )
   .handler(async ({ data }) => {
     const { profileId } = await requireMerchant()
@@ -281,7 +285,7 @@ export const blockAffiliate = createServerFn({ method: 'POST' })
           eq(trackingLinks.affiliate_id, data.affiliateProfileId),
           eq(products.merchant_id, profileId),
           isNull(products.deleted_at),
-        )
+        ),
       )
       .limit(1)
 
@@ -306,7 +310,7 @@ export const blockAffiliate = createServerFn({ method: 'POST' })
 
 export const unblockAffiliate = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) =>
-    z.object({ affiliateProfileId: z.string() }).parse(input)
+    z.object({ affiliateProfileId: z.string() }).parse(input),
   )
   .handler(async ({ data }) => {
     const { profileId } = await requireMerchant()
@@ -320,7 +324,7 @@ export const unblockAffiliate = createServerFn({ method: 'POST' })
           eq(trackingLinks.affiliate_id, data.affiliateProfileId),
           eq(products.merchant_id, profileId),
           isNull(products.deleted_at),
-        )
+        ),
       )
       .limit(1)
 

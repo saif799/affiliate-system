@@ -2,9 +2,8 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
+import { requireMerchant } from '#/server/auth/guards'
 import {
-  merchantProfiles,
   wallets,
   transactions,
   withdrawalRequests,
@@ -27,20 +26,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireMerchant() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'merchant') throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: merchantProfiles.id })
-    .from(merchantProfiles)
-    .where(eq(merchantProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Merchant profile not found')
-  return { session, profileId: profile.id }
-}
 
 const n = (v: unknown) => Number(v ?? 0)
 const ref = (id: string, prefix: string) =>
@@ -114,7 +99,10 @@ export const getWalletData = createServerFn({ method: 'GET' }).handler(
       })
       .from(withdrawalRequests)
       .where(
-        and(eq(withdrawalRequests.user_id, userId), eq(withdrawalRequests.status, 'paid')),
+        and(
+          eq(withdrawalRequests.user_id, userId),
+          eq(withdrawalRequests.status, 'paid'),
+        ),
       )
 
     const minimumPayout = await getMinimumPayout()
@@ -230,7 +218,9 @@ export const requestWithdrawal = createServerFn({ method: 'POST' })
       )
       .limit(1)
     if (openReq)
-      throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+      throw new Error(
+        'لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته',
+      )
 
     // حرّر المستحقّ المنتهية مدّته أولاً، ثم نفّذ السحب على الرصيد المُحدَّث
     await releaseMaturedFunds(userId)
@@ -259,7 +249,9 @@ export const requestWithdrawal = createServerFn({ method: 'POST' })
         )
         .limit(1)
       if (openInTx)
-        throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+        throw new Error(
+          'لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته',
+        )
 
       if (wallet.available < data.amount) throw new Error('الرصيد غير كافٍ')
 

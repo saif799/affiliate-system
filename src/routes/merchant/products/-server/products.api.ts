@@ -2,8 +2,8 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
-import { merchantProfiles, products } from '#/server/db/schema'
+import { requireMerchant } from '#/server/auth/guards'
+import { products } from '#/server/db/schema'
 import { and, eq, isNull, sql, desc } from 'drizzle-orm'
 import { z } from 'zod'
 import { saveImage } from '#/server/storage'
@@ -16,20 +16,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireMerchant() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'merchant') throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: merchantProfiles.id })
-    .from(merchantProfiles)
-    .where(eq(merchantProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Merchant profile not found')
-  return { session, profileId: profile.id }
-}
 
 const KNOWN_CATEGORIES: ProductCategory[] = [
   'أحذية',
@@ -58,7 +44,9 @@ export const uploadProductImages = createServerFn({ method: 'POST' })
   })
   .handler(async ({ data }): Promise<{ urls: string[] }> => {
     await requireMerchant()
-    const files = data.getAll('images').filter((f): f is File => f instanceof File)
+    const files = data
+      .getAll('images')
+      .filter((f): f is File => f instanceof File)
 
     if (files.length > 5) throw new Error('الحد الأقصى 5 صور')
 
@@ -94,7 +82,9 @@ export const getMerchantProducts = createServerFn({ method: 'GET' }).handler(
         createdAt: products.created_at,
       })
       .from(products)
-      .where(and(eq(products.merchant_id, profileId), isNull(products.deleted_at)))
+      .where(
+        and(eq(products.merchant_id, profileId), isNull(products.deleted_at)),
+      )
       .orderBy(desc(products.created_at))
 
     const productsList: Product[] = rows.map((r) => {
@@ -129,7 +119,9 @@ export const getMerchantProducts = createServerFn({ method: 'GET' }).handler(
         inventoryValue: sql<number>`COALESCE(SUM(${products.merchant_price_dzd} * ${products.stock_qty}), 0)`,
       })
       .from(products)
-      .where(and(eq(products.merchant_id, profileId), isNull(products.deleted_at)))
+      .where(
+        and(eq(products.merchant_id, profileId), isNull(products.deleted_at)),
+      )
 
     return {
       products: productsList,
@@ -247,7 +239,9 @@ export const updateProduct = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const deleteProduct = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ productId: z.string() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ productId: z.string() }).parse(input),
+  )
   .handler(async ({ data }) => {
     const { profileId } = await requireMerchant()
 
@@ -278,7 +272,9 @@ export const deleteProduct = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const toggleProductActive = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ productId: z.string() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ productId: z.string() }).parse(input),
+  )
   .handler(async ({ data }) => {
     const { profileId } = await requireMerchant()
 

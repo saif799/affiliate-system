@@ -11,18 +11,14 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 import { releaseAllMaturedFunds } from '#/server/settlement'
+import { checkCronSecret } from '#/server/cron'
 
 export const Route = createFileRoute('/api/cron/release-funds')({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
-        const secret = process.env.CRON_SECRET
-        if (!secret) {
-          return new Response('Cron disabled: CRON_SECRET not set', { status: 503 })
-        }
-        if (request.headers.get('x-cron-secret') !== secret) {
-          return new Response('Unauthorized', { status: 401 })
-        }
+        const denied = checkCronSecret(request)
+        if (denied) return denied
 
         const result = await releaseAllMaturedFunds()
         return Response.json({ ok: true, ...result })

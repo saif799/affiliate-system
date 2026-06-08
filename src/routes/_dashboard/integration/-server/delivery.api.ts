@@ -10,7 +10,7 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
+import { requireSuperAdmin } from '#/server/auth/guards'
 import { deliveryAccounts } from '#/server/db/schema'
 import { and, eq, isNull, ne, desc } from 'drizzle-orm'
 import { z } from 'zod'
@@ -20,14 +20,10 @@ import {
   EcotrackService,
 } from '#/server/services/ecotrack.service'
 
-async function requireSuperAdmin() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'super_admin') throw new Error('Unauthorized')
-  return session
-}
-
 export const syncOrderWithEcotrack = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ orderId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     return syncOrderTracking(data.orderId)
@@ -128,7 +124,12 @@ export const updateDeliveryAccount = createServerFn({ method: 'POST' })
       const [acct] = await tx
         .select({ provider: deliveryAccounts.provider })
         .from(deliveryAccounts)
-        .where(and(eq(deliveryAccounts.id, data.id), isNull(deliveryAccounts.deleted_at)))
+        .where(
+          and(
+            eq(deliveryAccounts.id, data.id),
+            isNull(deliveryAccounts.deleted_at),
+          ),
+        )
         .limit(1)
       if (!acct) throw new Error('حساب التوصيل غير موجود')
 
@@ -153,7 +154,10 @@ export const updateDeliveryAccount = createServerFn({ method: 'POST' })
       if (data.isActive !== undefined) patch.is_active = data.isActive
       if (data.isDefault !== undefined) patch.is_default = data.isDefault
       if (Object.keys(patch).length > 0) {
-        await tx.update(deliveryAccounts).set(patch).where(eq(deliveryAccounts.id, data.id))
+        await tx
+          .update(deliveryAccounts)
+          .set(patch)
+          .where(eq(deliveryAccounts.id, data.id))
       }
     })
     invalidateEcotrackClient(data.id)
@@ -161,13 +165,20 @@ export const updateDeliveryAccount = createServerFn({ method: 'POST' })
   })
 
 export const toggleDeliveryAccountStatus = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ id: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     const [acct] = await db
       .select({ isActive: deliveryAccounts.is_active })
       .from(deliveryAccounts)
-      .where(and(eq(deliveryAccounts.id, data.id), isNull(deliveryAccounts.deleted_at)))
+      .where(
+        and(
+          eq(deliveryAccounts.id, data.id),
+          isNull(deliveryAccounts.deleted_at),
+        ),
+      )
       .limit(1)
     if (!acct) throw new Error('حساب التوصيل غير موجود')
 
@@ -181,7 +192,9 @@ export const toggleDeliveryAccountStatus = createServerFn({ method: 'POST' })
   })
 
 export const deleteDeliveryAccount = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ id: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     await db
@@ -193,27 +206,43 @@ export const deleteDeliveryAccount = createServerFn({ method: 'POST' })
   })
 
 export const testDeliveryAccountConnection = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ id: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {
     await requireSuperAdmin()
     const [acct] = await db
-      .select({ apiKey: deliveryAccounts.api_key, baseUrl: deliveryAccounts.base_url })
+      .select({
+        apiKey: deliveryAccounts.api_key,
+        baseUrl: deliveryAccounts.base_url,
+      })
       .from(deliveryAccounts)
-      .where(and(eq(deliveryAccounts.id, data.id), isNull(deliveryAccounts.deleted_at)))
+      .where(
+        and(
+          eq(deliveryAccounts.id, data.id),
+          isNull(deliveryAccounts.deleted_at),
+        ),
+      )
       .limit(1)
     if (!acct) return { success: false, message: 'الحساب غير موجود' }
 
     // عميل جديد بالمفتاح المخزَّن (يتجاوز الكاش وفحص التفعيل)
     try {
-      const client = new EcotrackService(acct.apiKey, { baseUrl: acct.baseUrl ?? undefined })
+      const client = new EcotrackService(acct.apiKey, {
+        baseUrl: acct.baseUrl ?? undefined,
+      })
       const ok = await client.validateToken()
-      if (!ok) return { success: false, message: 'التوكن غير صالح لدى ECOTRACK' }
+      if (!ok)
+        return { success: false, message: 'التوكن غير صالح لدى ECOTRACK' }
       const fees = await client.getFees()
       return {
         success: true,
         message: `الاتصال ناجح — ${fees.length} تعرفة ولاية`,
       }
     } catch (err) {
-      return { success: false, message: err instanceof Error ? err.message : 'فشل الاتصال' }
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'فشل الاتصال',
+      }
     }
   })

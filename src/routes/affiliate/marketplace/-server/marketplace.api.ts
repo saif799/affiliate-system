@@ -2,9 +2,8 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
+import { requireAffiliate } from '#/server/auth/guards'
 import {
-  affiliateProfiles,
   products,
   merchantProfiles,
   orders,
@@ -23,21 +22,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireAffiliate() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'affiliate')
-    throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: affiliateProfiles.id })
-    .from(affiliateProfiles)
-    .where(eq(affiliateProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Affiliate profile not found')
-  return { session, profileId: profile.id }
-}
 
 const n = (v: unknown) => Number(v ?? 0)
 const round1 = (v: number) => Math.round(v * 10) / 10
@@ -69,7 +53,10 @@ export const getMarketplaceData = createServerFn({ method: 'GET' }).handler(
         description: products.description,
       })
       .from(products)
-      .innerJoin(merchantProfiles, eq(products.merchant_id, merchantProfiles.id))
+      .innerJoin(
+        merchantProfiles,
+        eq(products.merchant_id, merchantProfiles.id),
+      )
       .where(
         and(
           eq(products.is_active, true),
@@ -116,7 +103,8 @@ export const getMarketplaceData = createServerFn({ method: 'GET' }).handler(
         videoUrl: r.videoUrl,
         basePrice: r.basePrice,
         stockQty: r.stockQty,
-        deliveredRate: nonPending > 0 ? round1((delivered / nonPending) * 100) : 0,
+        deliveredRate:
+          nonPending > 0 ? round1((delivered / nonPending) * 100) : 0,
         retourRate: total > 0 ? round1((returned / total) * 100) : 0,
         totalSales: delivered,
         description: r.description ?? '',

@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
+import { requireSuperAdmin } from '#/server/auth/guards'
 import { notify } from '#/server/notify'
 import {
   users,
@@ -12,16 +12,7 @@ import {
   orders,
   products,
 } from '#/server/db/schema'
-import {
-  eq,
-  sql,
-  sum,
-  count,
-  and,
-  desc,
-  lt,
-  gte,
-} from 'drizzle-orm'
+import { eq, sql, sum, count, and, desc, lt, gte } from 'drizzle-orm'
 import type {
   CommissionsPageData,
   CommissionStats,
@@ -36,18 +27,20 @@ import type {
 // HELPERS
 // ============================================================
 
-async function requireSuperAdmin() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'super_admin') throw new Error('Unauthorized')
-  return session
-}
-
 const ARABIC_MONTHS = [
-  'يناير','فبراير','مارس','أبريل','مايو','يونيو',
-  'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر',
+  'يناير',
+  'فبراير',
+  'مارس',
+  'أبريل',
+  'مايو',
+  'يونيو',
+  'يوليو',
+  'أغسطس',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
 ]
-
-
 
 async function fetchStats(): Promise<CommissionStats> {
   const now = new Date()
@@ -64,10 +57,7 @@ async function fetchStats(): Promise<CommissionStats> {
     .select({ total: sum(orders.platform_fee_dzd) })
     .from(orders)
     .where(
-      and(
-        eq(orders.status, 'delivered'),
-        gte(orders.created_at, startOfMonth),
-      ),
+      and(eq(orders.status, 'delivered'), gte(orders.created_at, startOfMonth)),
     )
 
   const [prevMonthResult] = await db
@@ -103,7 +93,6 @@ async function fetchStats(): Promise<CommissionStats> {
     affiliatesPendingBalance: Number(affiliatePendingResult?.total ?? 0),
   }
 }
-
 
 async function fetchBreakdown(): Promise<PaymentBreakdown> {
   const [merchantPaidResult] = await db
@@ -141,9 +130,7 @@ async function fetchBreakdown(): Promise<PaymentBreakdown> {
       cnt: count(withdrawalRequests.id),
     })
     .from(withdrawalRequests)
-    .where(
-      sql`${withdrawalRequests.status} IN ('pending', 'approved')`,
-    )
+    .where(sql`${withdrawalRequests.status} IN ('pending', 'approved')`)
     .groupBy(withdrawalRequests.method)
 
   const ccp = methodBreakdown.find((r) => r.method === 'CCP')
@@ -167,7 +154,6 @@ async function fetchBreakdown(): Promise<PaymentBreakdown> {
     pendingBaridiMobCount: Number(baridimob?.cnt ?? 0),
   }
 }
-
 
 async function fetchMonthlyPayouts(): Promise<MonthlyPayoutPoint[]> {
   const twelveMonthsAgo = new Date()
@@ -221,7 +207,6 @@ async function fetchMonthlyPayouts(): Promise<MonthlyPayoutPoint[]> {
   })
 }
 
-
 async function fetchWithdrawalRequests(): Promise<WithdrawalRequest[]> {
   const rows = await db
     .select({
@@ -262,7 +247,6 @@ async function fetchWithdrawalRequests(): Promise<WithdrawalRequest[]> {
   }))
 }
 
-
 async function fetchTransactionHistory(): Promise<TransactionRecord[]> {
   const rows = await db
     .select({
@@ -296,7 +280,6 @@ async function fetchTransactionHistory(): Promise<TransactionRecord[]> {
   })
 }
 
-
 export const getCommissionsPageData = createServerFn({ method: 'GET' }).handler(
   async (): Promise<CommissionsPageData> => {
     await requireSuperAdmin()
@@ -310,10 +293,15 @@ export const getCommissionsPageData = createServerFn({ method: 'GET' }).handler(
         fetchTransactionHistory(),
       ])
 
-    return { stats, breakdown, monthlyPayouts, withdrawalRequests: withdrawalReqs, transactionHistory: history }
+    return {
+      stats,
+      breakdown,
+      monthlyPayouts,
+      withdrawalRequests: withdrawalReqs,
+      transactionHistory: history,
+    }
   },
 )
-
 
 export const confirmWithdrawal = createServerFn({ method: 'POST' })
   .inputValidator(
@@ -384,7 +372,6 @@ export const confirmWithdrawal = createServerFn({ method: 'POST' })
     return { success: true }
   })
 
-
 export const rejectWithdrawal = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ withdrawalId: z.string().uuid() }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
@@ -404,7 +391,8 @@ export const rejectWithdrawal = createServerFn({ method: 'POST' })
 
       if (!request) throw new Error('الطلب غير موجود')
       if (request.status === 'paid') throw new Error('لا يمكن رفض طلب مدفوع')
-      if (request.status === 'rejected') throw new Error('هذا الطلب مرفوض مسبقاً')
+      if (request.status === 'rejected')
+        throw new Error('هذا الطلب مرفوض مسبقاً')
 
       await tx
         .update(withdrawalRequests)
@@ -434,7 +422,6 @@ export const rejectWithdrawal = createServerFn({ method: 'POST' })
     return { success: true }
   })
 
-
 // ============================================================
 // APPROVE WITHDRAWAL  (pending → approved)
 // خطوة مراجعة Super Admin قبل الدفع الفعلي
@@ -447,7 +434,10 @@ export const approveWithdrawal = createServerFn({ method: 'POST' })
 
     await db.transaction(async (tx) => {
       const [request] = await tx
-        .select({ id: withdrawalRequests.id, status: withdrawalRequests.status })
+        .select({
+          id: withdrawalRequests.id,
+          status: withdrawalRequests.status,
+        })
         .from(withdrawalRequests)
         .where(eq(withdrawalRequests.id, data.withdrawalId))
         .for('update')
@@ -465,7 +455,6 @@ export const approveWithdrawal = createServerFn({ method: 'POST' })
 
     return { success: true }
   })
-
 
 // ============================================================
 // GET WITHDRAWAL SOURCE  (كيف ربح المستخدم هذا الرصيد)

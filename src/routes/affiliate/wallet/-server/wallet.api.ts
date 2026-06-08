@@ -4,9 +4,8 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
+import { requireAffiliate } from '#/server/auth/guards'
 import {
-  affiliateProfiles,
   wallets,
   transactions,
   withdrawalRequests,
@@ -28,21 +27,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireAffiliate() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'affiliate')
-    throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: affiliateProfiles.id })
-    .from(affiliateProfiles)
-    .where(eq(affiliateProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Affiliate profile not found')
-  return { session, profileId: profile.id }
-}
 
 const n = (v: unknown) => Number(v ?? 0)
 const ref = (id: string, prefix: string) =>
@@ -209,7 +193,9 @@ export const createWithdrawalRequest = createServerFn({ method: 'POST' })
       )
       .limit(1)
     if (openReq)
-      throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+      throw new Error(
+        'لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته',
+      )
 
     // حرّر المستحقّ المنتهية مدّته أولاً، ثم نفّذ السحب على الرصيد المُحدَّث
     await releaseMaturedFunds(userId)
@@ -238,7 +224,9 @@ export const createWithdrawalRequest = createServerFn({ method: 'POST' })
         )
         .limit(1)
       if (openInTx)
-        throw new Error('لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته')
+        throw new Error(
+          'لديك طلب سحب قيد المعالجة بالفعل — انتظر حتى تتم معالجته',
+        )
 
       if (wallet.available < data.amount) throw new Error('الرصيد غير كافٍ')
 
@@ -251,7 +239,10 @@ export const createWithdrawalRequest = createServerFn({ method: 'POST' })
           account_number: data.accountNumber,
           status: 'pending',
         })
-        .returning({ id: withdrawalRequests.id, requestedAt: withdrawalRequests.requested_at })
+        .returning({
+          id: withdrawalRequests.id,
+          requestedAt: withdrawalRequests.requested_at,
+        })
 
       // المبلغ يُخصم من available ويُتتبَّع عبر جدول طلبات السحب
       await tx
