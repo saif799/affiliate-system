@@ -14,7 +14,10 @@ import { eq } from 'drizzle-orm'
 const resend = new Resend(process.env.RESEND_API_KEY)
 const pendingInviteTypes = new Map<string, 'admin' | 'merchant' | 'affiliate'>()
 
-export function setInviteType(email: string, type: 'admin' | 'merchant' | 'affiliate') {
+export function setInviteType(
+  email: string,
+  type: 'admin' | 'merchant' | 'affiliate',
+) {
   pendingInviteTypes.set(email.toLowerCase().trim(), type)
 }
 
@@ -31,16 +34,21 @@ const gmailTransporter = nodemailer.createTransport({
 function adminInviteHtml(url: string): string {
   return `
     <div dir="rtl" style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
-      <h2 style="color:#1d4ed8">مرحباً بك في DzDrop</h2>
-      <p>من عبدالوكيل بن عبدالمالك والي العراق والبصرة والكوفة واراضي الشام أما بعد فإذا قرأت كتابي هذا فانضم إلينا صاغرا والسلام على من اتبع الهدى وامن بالله ورسوله</p>
+      <h2 style="color:#1d4ed8">مرحباً بك في DzDrop 🎉</h2>
+      <p style="color:#374151;line-height:1.7">
+        تمت دعوتك للانضمام كمدير على منصة <strong>DzDrop</strong>.<br/>
+        انقر على الزر أدناه لقبول الدعوة وتعيين كلمة المرور الخاصة بك والوصول إلى لوحة الإدارة.
+      </p>
       <a href="${url}"
-         style="display:inline-block;margin-top:16px;padding:12px 24px;
+         style="display:inline-block;margin-top:20px;padding:12px 28px;
                 background:#1d4ed8;color:#fff;border-radius:8px;
-                text-decoration:none;font-weight:bold">
-        قبول الدعوة والدخول
+                text-decoration:none;font-weight:bold;font-size:15px">
+        قبول الدعوة وتعيين كلمة المرور
       </a>
-      <p style="margin-top:16px;color:#6b7280;font-size:13px">
-        الرابط صالح لمدة 24 ساعة فقط.
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
+      <p style="color:#6b7280;font-size:12px;line-height:1.6">
+        الرابط صالح لمدة 24 ساعة فقط.<br/>
+        إذا لم تطلب هذه الدعوة يمكنك تجاهل هذا البريد بأمان.
       </p>
     </div>
   `
@@ -103,15 +111,15 @@ async function sendInviteEmail(
     type === 'merchant'
       ? 'دعوتك للانضمام كتاجر في DzDrop'
       : type === 'affiliate'
-      ? 'دعوتك للانضمام كمسوق في DzDrop'
-      : 'دعوتك للانضمام إلى DzDrop'
+        ? 'دعوتك للانضمام كمسوق في DzDrop'
+        : 'دعوتك للانضمام إلى DzDrop'
 
   const html =
     type === 'merchant'
       ? merchantInviteHtml(url)
       : type === 'affiliate'
-      ? affiliateInviteHtml(url)
-      : adminInviteHtml(url)
+        ? affiliateInviteHtml(url)
+        : adminInviteHtml(url)
 
   if (process.env.NODE_ENV === 'development') {
     await gmailTransporter.sendMail({
@@ -165,7 +173,8 @@ export const auth = betterAuth({
     tanstackStartCookies(),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        const type = pendingInviteTypes.get(email.toLowerCase().trim()) ?? 'admin'
+        const type =
+          pendingInviteTypes.get(email.toLowerCase().trim()) ?? 'admin'
         pendingInviteTypes.delete(email.toLowerCase().trim())
         await sendInviteEmail(email, url, type)
       },
@@ -227,7 +236,7 @@ export const auth = betterAuth({
             if (existing.length === 0) {
               const referralCode = `AFF-${user.id.slice(0, 8).toUpperCase()}`
               await db.insert(affiliateProfiles).values({
-                user_id:       user.id,
+                user_id: user.id,
                 referral_code: referralCode,
               })
             }
@@ -243,7 +252,7 @@ export const auth = betterAuth({
 
             if (existing.length === 0) {
               await db.insert(merchantProfiles).values({
-                user_id:       user.id,
+                user_id: user.id,
                 business_name: user.name,
               })
             }
