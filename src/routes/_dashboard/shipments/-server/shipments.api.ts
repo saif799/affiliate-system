@@ -18,7 +18,8 @@ import { orders, merchantProfiles, deliveryOffices, labelPrintAudit } from '#/se
 import { and, eq, isNull, inArray, desc } from 'drizzle-orm'
 import { requireSuperAdmin } from '#/server/auth/guards'
 import { verifyLabelToken } from '#/server/delivery/label'
-import { getEcotrackClient } from '#/server/services/ecotrack.service'
+import { getEcotrackClient, ecotrackStatusLabel } from '#/server/services/ecotrack.service'
+import { syncOrderTracking } from '#/server/delivery/ecotrack-sync'
 
 export interface ShipmentView {
   id: string
@@ -177,4 +178,160 @@ export const printOfficialLabel = createServerFn({ method: 'POST' })
     // 4) نجاح
     await audit(order.id, actorId, 'success', null)
     return { pdfBase64, internalShipmentId: order.internalShipmentId }
+  })
+
+// ============================================================
+// SCAN QR → MATCH SHIPMENT → VERIFY AT PROVIDER (Phase 5)
+//
+// الأدمن يمسح رمز QR على الملصق الداخلي للتاجر. محتوى الرمز = توكن HMAC الموقّع
+// (ليس معرّف الطلب الخام). نتحقّق من التوقيع، نطابقه بالشحنة عبر internal_shipment_id،
+// ثم نؤكّد وجود الشحنة فعليّاً لدى شركة التوصيل عبر get/tracking/info — لا بيانات
+// وهميّة ولا أرقام تتبّع مُختلَقة. قراءة فقط (لا تُغيّر الحالة).
+// ============================================================
+
+export interface ScanMatchResult {
+  matched: boolean
+  reason?: 'malformed' | 'invalid_signature' | 'expired' | 'not_found'
+  order?: {
+    id: string
+    internalShipmentId: string | null
+    merchantName: string
+    wilaya: string
+    deliveryType: 'home' | 'office'
+    officeName: string | null
+    status: string
+    trackingNumber: string | null
+    labelPrintedAt: string | null
+  }
+  provider?: {
+    exists: boolean
+    rawStatus: string | null
+    statusLabel: string | null
+    currentStation: string | null
+  }
+}
+
+export const verifyShipmentByQr = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) => z.object({ token: z.string().min(1) }).parse(input))
+  .handler(async ({ data }): Promise<ScanMatchResult> => {
+    await requireSuperAdmin()
+
+    // 1) تحقّق التوقيع + الصلاحية (نفس آلية الملصق الرسمي)
+    const v = verifyLabelToken(data.token, Date.now())
+    if (!v.ok) return { matched: false, reason: v.reason }
+
+    // 2) طابق الشحنة عبر المرجع الداخلي الموقّع
+    const [order] = await db
+      .select({
+        id: orders.id,
+        internalShipmentId: orders.internal_shipment_id,
+        merchantName: merchantProfiles.business_name,
+        wilaya: orders.customer_wilaya,
+        deliveryType: orders.delivery_type,
+        officeName: deliveryOffices.name,
+        status: orders.status,
+        tracking: orders.tracking_number,
+        accountId: orders.ecotrack_account_id,
+        labelPrintedAt: orders.label_printed_at,
+      })
+      .from(orders)
+      .innerJoin(merchantProfiles, eq(orders.merchant_id, merchantProfiles.id))
+      .leftJoin(deliveryOffices, eq(orders.delivery_office_id, deliveryOffices.id))
+      .where(eq(orders.internal_shipment_id, v.internalShipmentId))
+      .limit(1)
+
+    if (!order) return { matched: false, reason: 'not_found' }
+
+    // 3) أكّد وجود الشحنة فعليّاً لدى شركة التوصيل (قراءة فقط — لا اختلاق)
+    let provider: ScanMatchResult['provider'] = {
+      exists: false,
+      rawStatus: null,
+      statusLabel: null,
+      currentStation: null,
+    }
+    if (order.tracking) {
+      try {
+        const client = await getEcotrackClient(order.accountId ?? undefined)
+        const info = await client.getTrackingInfo(order.tracking)
+        const acts = (info.activity ?? [])
+          .filter((a) => a.status && a.date)
+          .sort((a, b) => `${b.date}T${b.time ?? ''}`.localeCompare(`${a.date}T${a.time ?? ''}`))
+        const latest = acts[0]
+        provider = {
+          exists: true,
+          rawStatus: latest?.status ?? null,
+          statusLabel: latest?.status ? ecotrackStatusLabel(latest.status) : null,
+          currentStation: info.currentStation ?? null,
+        }
+      } catch {
+        provider = { exists: false, rawStatus: null, statusLabel: null, currentStation: null }
+      }
+    }
+
+    return {
+      matched: true,
+      order: {
+        id: order.id,
+        internalShipmentId: order.internalShipmentId,
+        merchantName: order.merchantName,
+        wilaya: order.wilaya,
+        deliveryType: order.deliveryType,
+        officeName: order.deliveryType === 'office' ? order.officeName : null,
+        status: order.status,
+        trackingNumber: order.tracking,
+        labelPrintedAt: order.labelPrintedAt?.toISOString() ?? null,
+      },
+      provider,
+    }
+  })
+
+// ============================================================
+// CONFIRM RECEPTION BY DELIVERY COMPANY (Phase 5)
+//
+// «تأكيد استلام شركة التوصيل» = سحب الحالة الحقيقية من ECOTRACK وتطبيقها
+// (syncOrderTracking). لا نختلق حالة: المنصّة تتقدّم فقط بحالة حقيقية من المزوّد.
+// نُسجّل المحاولة في label_print_audit للتدقيق.
+// ============================================================
+
+export interface ConfirmReceptionResult {
+  orderId: string
+  trackingNumber: string
+  deliveryStatus: string | null
+  deliveryStatusLabel: string | null
+  status: string
+  eventsApplied: number
+}
+
+export const confirmShipmentReceived = createServerFn({ method: 'POST' })
+  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }): Promise<ConfirmReceptionResult> => {
+    const session = await requireSuperAdmin()
+
+    const [order] = await db
+      .select({ id: orders.id, tracking: orders.tracking_number })
+      .from(orders)
+      .where(eq(orders.id, data.orderId))
+      .limit(1)
+    if (!order) throw new Error('الشحنة غير موجودة')
+    if (!order.tracking) throw new Error('لا يوجد رقم تتبّع — لم تُسجَّل الشحنة لدى شركة التوصيل بعد')
+
+    // اسحب وطبّق الحالة الحقيقية من المزوّد (لا اختلاق حالة)
+    const result = await syncOrderTracking(data.orderId)
+
+    await db.insert(labelPrintAudit).values({
+      order_id: data.orderId,
+      actor_user_id: session.user.id,
+      action: 'reception_check',
+      result: 'success',
+      detail: `delivery_status=${result.deliveryStatus ?? '∅'} platform_status=${result.status} events=${result.eventsApplied}`,
+    })
+
+    return {
+      orderId: result.orderId,
+      trackingNumber: result.trackingNumber,
+      deliveryStatus: result.deliveryStatus,
+      deliveryStatusLabel: result.deliveryStatus ? ecotrackStatusLabel(result.deliveryStatus) : null,
+      status: result.status,
+      eventsApplied: result.eventsApplied,
+    }
   })

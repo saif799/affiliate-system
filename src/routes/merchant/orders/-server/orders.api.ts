@@ -15,7 +15,7 @@ import { getEcotrackClient } from '#/server/services/ecotrack.service'
 import { requireMerchant } from '#/server/auth/guards'
 import { toMerchantOrderView } from '#/server/privacy/order-views'
 import { notifySuperAdmins } from '#/server/notify'
-import { generateInternalShipmentId, issueLabelToken } from '#/server/delivery/label'
+import { generateInternalShipmentId, issueLabelToken, decideShipClaim } from '#/server/delivery/label'
 import QRCode from 'qrcode'
 import type {
   MerchantOrdersData,
@@ -185,6 +185,7 @@ export const shipOrder = createServerFn({ method: 'POST' })
           status: orders.status,
           existingTracking: orders.tracking_number,
           internalShipmentId: orders.internal_shipment_id,
+          qrToken: orders.qr_token,
           customerName: orders.customer_name,
           customerPhone: orders.customer_phone,
           wilaya: orders.customer_wilaya,
@@ -204,12 +205,24 @@ export const shipOrder = createServerFn({ method: 'POST' })
         .limit(1)
 
       if (!order) throw new Error('الطلبية غير موجودة')
+
+      const decision = decideShipClaim({
+        status: order.status,
+        trackingNumber: order.existingTracking,
+        internalShipmentId: order.internalShipmentId,
+        qrToken: order.qrToken,
+        nowMs: Date.now(),
+      })
+
       // مشحونة سلفاً ⇒ idempotent: أعِد رقم التتبّع دون إنشاء شحنة جديدة
-      if (order.existingTracking) {
-        return { kind: 'already' as const, tracking: order.existingTracking }
+      if (decision.action === 'already') {
+        return { kind: 'already' as const, tracking: decision.tracking }
       }
-      if (order.status !== 'confirmed') throw new Error('لا يمكن شحن إلا طلبية مؤكَّدة')
-      if (order.internalShipmentId) {
+      if (decision.action === 'bad_status') {
+        throw new Error('لا يمكن شحن إلا طلبية مؤكَّدة')
+      }
+      // نداء متزامن يُنشئ الشحنة الآن ⇒ احجبه (يمنع شحنتين لنفس الطلب)
+      if (decision.action === 'in_flight') {
         throw new Error('جارٍ إنشاء الشحنة بالفعل — حدّث الصفحة بعد لحظات')
       }
       if (!order.wilayaCode || !order.commune) {
@@ -218,11 +231,23 @@ export const shipOrder = createServerFn({ method: 'POST' })
         )
       }
 
+      // إصلاح H1 — استئناف مطالبة عالقة بعد تعطّل (بين إنشاء الشحنة لدى ECOTRACK
+      // وحفظ رقم التتبّع): أعِد استخدام نفس المرجع الداخلي وجدّد التوكن (يُعيد
+      // تسليح حارس in_flight ذرّيّاً داخل القفل). إعادة createOrder آمنة لأن
+      // ECOTRACK يُزيل التكرار عبر reference=order.id.
+      if (decision.action === 'resume') {
+        const internalShipmentId = order.internalShipmentId!
+        const renewed = issueLabelToken(internalShipmentId, Date.now())
+        await tx.update(orders).set({ qr_token: renewed }).where(eq(orders.id, order.id))
+        return { kind: 'claimed' as const, order, internalShipmentId }
+      }
+
+      // fresh: احجز مطالبة جديدة. بعد هذا التحديث لا يمرّ نداء متزامن آخر
+      // (internal_shipment_id لم يعد NULL ومطالبته حديثة ⇒ in_flight).
       const issuedAt = Date.now()
       const internalShipmentId = generateInternalShipmentId()
       const qrToken = issueLabelToken(internalShipmentId, issuedAt)
 
-      // احجز: بعد هذا التحديث لا يمرّ نداء متزامن آخر (internal_shipment_id لم يعد NULL)
       await tx
         .update(orders)
         .set({ internal_shipment_id: internalShipmentId, qr_token: qrToken })

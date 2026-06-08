@@ -174,15 +174,18 @@ export const auth = betterAuth({
 
   user: {
     additionalFields: {
-      // أمان حرج: role و status يُضبطان من الخادم فقط (input:false) — وإلا
-      // أمكن لأي مستخدم إرسال role:"super_admin"&status:"active" إلى
-      // /sign-up/email ويُصعّد صلاحياته. التسجيل الذاتي يأخذ القيم الافتراضية
-      // (affiliate/pending)، ودعوات الأدمن تُنشئ المستخدم بإدراج مباشر موثّق.
+      // أمان حرج: التسجيل الذاتي يختار دوره (تاجر/مسوّق) من النموذج، لكن القيمة
+      // غير موثوقة (نقطة /sign-up/email عامّة). لذا role يقبل الإدخال (input:true)
+      // ثم يُقصّ في hook الإنشاء (create.before) إلى ['merchant','affiliate'] فقط —
+      // فأيّ محاولة لإرسال role:"super_admin"/"system" تُحوَّل قسراً إلى "affiliate".
+      // status يبقى مضبوطاً من الخادم فقط (input:false ⇒ pending) فلا يُفعِّل أحدٌ
+      // حسابه ذاتيّاً. دعوات الأدمن/التاجر/المسوّق تُنشئ المستخدم بإدراج مباشر
+      // موثّق (تتجاوز هذا الـ hook)، فلا تتأثّر بالقصّ.
       role: {
         type: 'string',
         required: true,
         defaultValue: 'affiliate',
-        input: false, // ← الحقل دائماً موجود (required) لكنه يُضبط من الخادم فقط
+        input: true, // ← يُقبَل من النموذج ثم يُقصّ بأمان في create.before
       },
       status: {
         type: 'string',
@@ -200,6 +203,16 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        // ── قصّ الدور (أمان حرج) ──────────────────────────────────
+        // يعمل فقط على إنشاء المستخدمين عبر better-auth (التسجيل الذاتي على
+        // /sign-up/email). دعوات الأدمن/التاجر/المسوّق تُدرِج الصفّ بـ Drizzle
+        // مباشرةً فلا تمرّ من هنا. نقصّ الدور إلى تاجر/مسوّق فقط ونفرض pending
+        // كي يستحيل التصعيد إلى super_admin أو تفعيل الحساب ذاتيّاً.
+        before: async (user) => {
+          const requested = (user as { role?: unknown }).role
+          const safeRole = requested === 'merchant' ? 'merchant' : 'affiliate'
+          return { data: { ...user, role: safeRole, status: 'pending' } }
+        },
         after: async (user) => {
           const role = (user as any).role ?? 'affiliate'
 

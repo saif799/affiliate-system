@@ -3,6 +3,8 @@ import {
   issueLabelToken,
   verifyLabelToken,
   generateInternalShipmentId,
+  decideShipClaim,
+  STALE_SHIP_CLAIM_MS,
   LABEL_TOKEN_TTL_MS,
 } from './label'
 
@@ -62,5 +64,42 @@ describe('label token (HMAC-SHA256)', () => {
     const b = generateInternalShipmentId()
     expect(a).toMatch(/^SHP-[0-9A-F]{8}$/)
     expect(a).not.toBe(b)
+  })
+})
+
+describe('decideShipClaim (H1 — crash-safe ship claim)', () => {
+  const base = { status: 'confirmed', trackingNumber: null, internalShipmentId: null, qrToken: null, nowMs: NOW }
+
+  it('already shipped → idempotent, returns existing tracking', () => {
+    const d = decideShipClaim({ ...base, trackingNumber: 'DHDQBLI123' })
+    expect(d).toEqual({ action: 'already', tracking: 'DHDQBLI123' })
+  })
+
+  it('non-confirmed status → bad_status', () => {
+    expect(decideShipClaim({ ...base, status: 'pending' }).action).toBe('bad_status')
+    expect(decideShipClaim({ ...base, status: 'shipped' }).action).toBe('bad_status')
+  })
+
+  it('no prior claim → fresh', () => {
+    expect(decideShipClaim(base).action).toBe('fresh')
+  })
+
+  it('recent claim, no tracking → in_flight (concurrent call blocked)', () => {
+    const id = 'SHP-AAAA1111'
+    const token = issueLabelToken(id, NOW - 1000) // 1s old
+    const d = decideShipClaim({ ...base, internalShipmentId: id, qrToken: token, nowMs: NOW })
+    expect(d.action).toBe('in_flight')
+  })
+
+  it('stale claim (crash window), no tracking → resume', () => {
+    const id = 'SHP-BBBB2222'
+    const token = issueLabelToken(id, NOW - STALE_SHIP_CLAIM_MS - 1) // older than threshold
+    const d = decideShipClaim({ ...base, internalShipmentId: id, qrToken: token, nowMs: NOW })
+    expect(d.action).toBe('resume')
+  })
+
+  it('claim with missing/invalid token → resume (recoverable, never stuck)', () => {
+    const d = decideShipClaim({ ...base, internalShipmentId: 'SHP-CCCC3333', qrToken: null, nowMs: NOW })
+    expect(d.action).toBe('resume')
   })
 })

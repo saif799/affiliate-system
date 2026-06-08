@@ -4,6 +4,7 @@ import { Loader2, Printer } from 'lucide-react'
 import { getShipments, printOfficialLabel } from './-server/shipments.api'
 import { ShipmentsTable } from './-components/ShipmentsTable'
 import { LabelPrintView  } from './-components/LabelPrintView'
+import { ScanVerifyPanel } from './-components/ScanVerifyPanel'
 import type {PrintedLabel} from './-components/LabelPrintView';
 
 export const Route = createFileRoute('/_dashboard/shipments/')({
@@ -88,6 +89,8 @@ function ShipmentsPage() {
           طباعة المحدد ({selectedIds.size})
         </button>
       </div>
+
+      <ScanVerifyPanel />
 
       <div className="flex gap-2">
         {(
