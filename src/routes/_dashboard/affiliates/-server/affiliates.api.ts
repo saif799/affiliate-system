@@ -284,7 +284,7 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
 // ============================================================
 
 export const acceptAffiliateRequest = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { userId: string })
+  .inputValidator((input: unknown) => z.object({ userId: z.string().min(1) }).parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
 
@@ -329,7 +329,7 @@ export const acceptAffiliateRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const rejectAffiliateRequest = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { userId: string })
+  .inputValidator((input: unknown) => z.object({ userId: z.string().min(1) }).parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     await db
@@ -344,9 +344,10 @@ export const rejectAffiliateRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const updateAffiliateStatus = createServerFn({ method: 'POST' })
-  .inputValidator(
-    (data: unknown) =>
-      data as { affiliateId: string; status: 'active' | 'suspended' },
+  .inputValidator((input: unknown) =>
+    z
+      .object({ affiliateId: z.string().uuid(), status: z.enum(['active', 'suspended']) })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
@@ -368,8 +369,10 @@ export const updateAffiliateStatus = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const sendAffiliateWarning = createServerFn({ method: 'POST' })
-  .inputValidator(
-    (data: unknown) => data as { affiliateId: string; message: string },
+  .inputValidator((input: unknown) =>
+    z
+      .object({ affiliateId: z.string().uuid(), message: z.string().trim().min(1) })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
@@ -409,7 +412,7 @@ export const sendAffiliateWarning = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const deleteAffiliate = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { affiliateId: string })
+  .inputValidator((input: unknown) => z.object({ affiliateId: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     const [profile] = await db

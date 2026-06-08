@@ -272,7 +272,11 @@ export const getMerchantsData = createServerFn({ method: 'GET' }).handler(
 // ============================================================
 
 export const acceptJoinRequest = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { userId: string; businessName: string })
+  .inputValidator((input: unknown) =>
+    z
+      .object({ userId: z.string().min(1), businessName: z.string().trim().min(1) })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     await db
@@ -298,7 +302,7 @@ export const acceptJoinRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const rejectJoinRequest = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { userId: string })
+  .inputValidator((input: unknown) => z.object({ userId: z.string().min(1) }).parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     await db
@@ -313,7 +317,11 @@ export const rejectJoinRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const updateMerchantStatus = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { merchantId: string; status: 'active' | 'suspended' })
+  .inputValidator((input: unknown) =>
+    z
+      .object({ merchantId: z.string().uuid(), status: z.enum(['active', 'suspended']) })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     const [profile] = await db
@@ -334,7 +342,11 @@ export const updateMerchantStatus = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const sendMerchantWarning = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { merchantId: string; message: string })
+  .inputValidator((input: unknown) =>
+    z
+      .object({ merchantId: z.string().uuid(), message: z.string().trim().min(1) })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     if (!data.message.trim()) throw new Error('Warning message is required')
@@ -370,7 +382,7 @@ export const sendMerchantWarning = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const deleteMerchant = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data as { merchantId: string })
+  .inputValidator((input: unknown) => z.object({ merchantId: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     const [profile] = await db
