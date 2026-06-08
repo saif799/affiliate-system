@@ -3,12 +3,15 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Loader2, Printer } from 'lucide-react'
 import { getShipments, printOfficialLabel } from './-server/shipments.api'
 import { ShipmentsTable } from './-components/ShipmentsTable'
-import { LabelPrintView  } from './-components/LabelPrintView'
+import { LabelPrintView } from './-components/LabelPrintView'
 import { ScanVerifyPanel } from './-components/ScanVerifyPanel'
-import type {PrintedLabel} from './-components/LabelPrintView';
+import type { PrintedLabel } from './-components/LabelPrintView'
+import { PageSpinner, PageError } from '#/routes/-components/shared/RouteStates'
 
 export const Route = createFileRoute('/_dashboard/shipments/')({
   loader: () => getShipments(),
+  pendingComponent: PageSpinner,
+  errorComponent: PageError,
   component: ShipmentsPage,
 })
 
@@ -22,7 +25,10 @@ function ShipmentsPage() {
   const [labels, setLabels] = useState<PrintedLabel[]>([])
 
   const visible = useMemo(
-    () => (filter === 'pending' ? shipments.filter((s) => !s.labelPrintedAt) : shipments),
+    () =>
+      filter === 'pending'
+        ? shipments.filter((s) => !s.labelPrintedAt)
+        : shipments,
     [shipments, filter],
   )
   const pendingCount = useMemo(
@@ -68,7 +74,8 @@ function ShipmentsPage() {
     setBulkBusy(false)
     if (ok.length) setLabels(ok)
     await router.invalidate()
-    if (failures.length) alert(`تعذّر طباعة بعض الملصقات:\n${failures.join('\n')}`)
+    if (failures.length)
+      alert(`تعذّر طباعة بعض الملصقات:\n${failures.join('\n')}`)
   }
 
   return (
@@ -85,7 +92,11 @@ function ShipmentsPage() {
           disabled={bulkBusy || selectedIds.size === 0}
           className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-40"
         >
-          {bulkBusy ? <Loader2 size={15} className="animate-spin" /> : <Printer size={15} />}
+          {bulkBusy ? (
+            <Loader2 size={15} className="animate-spin" />
+          ) : (
+            <Printer size={15} />
+          )}
           طباعة المحدد ({selectedIds.size})
         </button>
       </div>
@@ -103,7 +114,9 @@ function ShipmentsPage() {
             key={id}
             onClick={() => setFilter(id)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-              filter === id ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              filter === id
+                ? 'bg-gray-900 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             {label}

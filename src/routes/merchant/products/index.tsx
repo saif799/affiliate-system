@@ -9,18 +9,21 @@ import {
   deleteProduct,
   toggleProductActive,
 } from './-server/products.api'
-import { ProductStatsBar }          from './-components/ProductStatsBar'
-import { ProductsTable }            from './-components/ProductsTable'
-import { AddProductDrawer }         from './-components/AddProductDrawer'
-import { AffiliatePreviewModal }    from './-components/AffiliatePreviewModal'
+import { ProductStatsBar } from './-components/ProductStatsBar'
+import { ProductsTable } from './-components/ProductsTable'
+import { AddProductDrawer } from './-components/AddProductDrawer'
+import { AffiliatePreviewModal } from './-components/AffiliatePreviewModal'
 import type {
   Product,
   ProductStatusFilter,
   ProductFormData,
 } from './-products.types'
+import { PageSpinner, PageError } from '#/routes/-components/shared/RouteStates'
 
 export const Route = createFileRoute('/merchant/products/')({
   loader: () => getMerchantProducts(),
+  pendingComponent: PageSpinner,
+  errorComponent: PageError,
   component: MerchantProductsPage,
 })
 
@@ -28,11 +31,11 @@ function MerchantProductsPage() {
   const { products, stats } = Route.useLoaderData()
   const router = useRouter()
 
-  const [search,         setSearch]         = useState('')
+  const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
-  const [statusFilter,   setStatusFilter]   = useState<ProductStatusFilter>('all')
-  const [drawerOpen,     setDrawerOpen]     = useState(false)
-  const [editProduct,    setEditProduct]    = useState<Product | null>(null)
+  const [statusFilter, setStatusFilter] = useState<ProductStatusFilter>('all')
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [previewProduct, setPreviewProduct] = useState<Product | null>(null)
 
   // قائمة الفئات الفريدة
@@ -44,9 +47,10 @@ function MerchantProductsPage() {
   // فلترة مجمّعة
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const matchSearch   = search === '' || p.name.includes(search)
-      const matchCategory = categoryFilter === 'all' || p.category === categoryFilter
-      const matchStatus   = statusFilter   === 'all' || p.status   === statusFilter
+      const matchSearch = search === '' || p.name.includes(search)
+      const matchCategory =
+        categoryFilter === 'all' || p.category === categoryFilter
+      const matchStatus = statusFilter === 'all' || p.status === statusFilter
       return matchSearch && matchCategory && matchStatus
     })
   }, [products, search, categoryFilter, statusFilter])
@@ -103,7 +107,6 @@ function MerchantProductsPage() {
 
   return (
     <div className="p-6 space-y-5" dir="rtl">
-
       {/* ─── Header ─── */}
       <div className="flex items-center justify-between">
         <div>
@@ -139,13 +142,19 @@ function MerchantProductsPage() {
           className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 outline-none"
         >
           <option value="all">كل الفئات</option>
-          {categories.filter((c) => c !== 'all').map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
+          {categories
+            .filter((c) => c !== 'all')
+            .map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
         </select>
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as ProductStatusFilter)}
+          onChange={(e) =>
+            setStatusFilter(e.target.value as ProductStatusFilter)
+          }
           className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 outline-none"
         >
           <option value="all">كل الحالات</option>
@@ -180,7 +189,6 @@ function MerchantProductsPage() {
         product={previewProduct}
         onClose={() => setPreviewProduct(null)}
       />
-
     </div>
   )
 }

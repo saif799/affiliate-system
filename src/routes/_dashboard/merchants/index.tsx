@@ -23,9 +23,12 @@ import { MerchantRowActions } from './-components/MerchantRowActions'
 import { WarnModal } from './-components/WarnModal'
 import { InviteMerchantModal } from './-components/InviteMerchantModal'
 import { merchantColumns } from './-components/merchantColumns'
+import { PageSpinner, PageError } from '#/routes/-components/shared/RouteStates'
 
 export const Route = createFileRoute('/_dashboard/merchants/')({
   loader: () => getMerchantsData(),
+  pendingComponent: PageSpinner,
+  errorComponent: PageError,
   component: MerchantsPage,
 })
 

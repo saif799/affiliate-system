@@ -3,25 +3,27 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import {
   getAdminOrders,
   flagOrderDispute,
-  resolveOrderDispute
-  
+  resolveOrderDispute,
 } from './-server/orders.api'
-import type {AdminOrder} from './-server/orders.api';
+import type { AdminOrder } from './-server/orders.api'
+import { PageSpinner, PageError } from '#/routes/-components/shared/RouteStates'
 
 export const Route = createFileRoute('/_dashboard/orders/')({
   loader: () => getAdminOrders(),
+  pendingComponent: PageSpinner,
+  errorComponent: PageError,
   component: AdminOrdersPage,
 })
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  pending:   { label: 'بانتظار المسوّق', cls: 'bg-gray-100 text-gray-600' },
-  confirmed: { label: 'مؤكَّدة',          cls: 'bg-amber-100 text-amber-700' },
-  shipped:   { label: 'مشحونة',          cls: 'bg-blue-100 text-blue-700' },
-  at_wilaya: { label: 'في الولاية',      cls: 'bg-blue-100 text-blue-700' },
-  delivered: { label: 'مُسلَّمة',         cls: 'bg-green-100 text-green-700' },
-  returned:  { label: 'مرتجعة',          cls: 'bg-red-100 text-red-700' },
-  cancelled: { label: 'ملغاة',           cls: 'bg-gray-100 text-gray-500' },
-  disputed:  { label: 'نزاع',            cls: 'bg-purple-100 text-purple-700' },
+  pending: { label: 'بانتظار المسوّق', cls: 'bg-gray-100 text-gray-600' },
+  confirmed: { label: 'مؤكَّدة', cls: 'bg-amber-100 text-amber-700' },
+  shipped: { label: 'مشحونة', cls: 'bg-blue-100 text-blue-700' },
+  at_wilaya: { label: 'في الولاية', cls: 'bg-blue-100 text-blue-700' },
+  delivered: { label: 'مُسلَّمة', cls: 'bg-green-100 text-green-700' },
+  returned: { label: 'مرتجعة', cls: 'bg-red-100 text-red-700' },
+  cancelled: { label: 'ملغاة', cls: 'bg-gray-100 text-gray-500' },
+  disputed: { label: 'نزاع', cls: 'bg-purple-100 text-purple-700' },
 }
 
 const TERMINAL = new Set(['delivered', 'cancelled', 'disputed'])
@@ -33,7 +35,9 @@ function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [flagTarget, setFlagTarget] = useState<AdminOrder | null>(null)
   const [flagNote, setFlagNote] = useState('')
-  const [notifyTo, setNotifyTo] = useState<'affiliate' | 'merchant' | 'both'>('both')
+  const [notifyTo, setNotifyTo] = useState<'affiliate' | 'merchant' | 'both'>(
+    'both',
+  )
   const [flagBusy, setFlagBusy] = useState(false)
 
   const filtered =
@@ -90,59 +94,95 @@ function AdminOrdersPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {['all', 'disputed', 'shipped', 'at_wilaya', 'delivered', 'returned'].map(
-          (s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                statusFilter === s
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {s === 'all' ? 'الكل' : (STATUS_LABEL[s]?.label ?? s)}
-            </button>
-          ),
-        )}
+        {[
+          'all',
+          'disputed',
+          'shipped',
+          'at_wilaya',
+          'delivered',
+          'returned',
+        ].map((s) => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter(s)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              statusFilter === s
+                ? 'bg-gray-900 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {s === 'all' ? 'الكل' : (STATUS_LABEL[s]?.label ?? s)}
+          </button>
+        ))}
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50 text-right">
-              {['المنتج', 'التاجر', 'المسوّق', 'الزبون', 'الولاية', 'المبلغ', 'الحالة', 'إجراء'].map(
-                (h) => (
-                  <th key={h} className="px-4 py-3 text-xs font-medium text-gray-500">
-                    {h}
-                  </th>
-                ),
-              )}
+              {[
+                'المنتج',
+                'التاجر',
+                'المسوّق',
+                'الزبون',
+                'الولاية',
+                'المبلغ',
+                'الحالة',
+                'إجراء',
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="px-4 py-3 text-xs font-medium text-gray-500"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-sm text-gray-400">
+                <td
+                  colSpan={8}
+                  className="px-4 py-12 text-center text-sm text-gray-400"
+                >
                   لا توجد طلبيات
                 </td>
               </tr>
             ) : (
               filtered.map((o) => {
-                const st = STATUS_LABEL[o.status] ?? { label: o.status, cls: 'bg-gray-100 text-gray-600' }
+                const st = STATUS_LABEL[o.status] ?? {
+                  label: o.status,
+                  cls: 'bg-gray-100 text-gray-600',
+                }
                 const busy = busyId === o.id
                 return (
-                  <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-xs text-gray-900">{o.productName}</td>
-                    <td className="px-4 py-3 text-xs text-gray-700">{o.merchantName}</td>
-                    <td className="px-4 py-3 text-xs text-gray-700">{o.affiliateName ?? '—'}</td>
-                    <td className="px-4 py-3 text-xs text-gray-700">{o.customerName}</td>
-                    <td className="px-4 py-3 text-xs text-gray-500">{o.wilaya}</td>
+                  <tr
+                    key={o.id}
+                    className="border-b border-gray-50 hover:bg-gray-50"
+                  >
+                    <td className="px-4 py-3 text-xs text-gray-900">
+                      {o.productName}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-700">
+                      {o.merchantName}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-700">
+                      {o.affiliateName ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-700">
+                      {o.customerName}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">
+                      {o.wilaya}
+                    </td>
                     <td className="px-4 py-3 text-xs font-semibold text-gray-900">
                       {o.total.toLocaleString('ar-DZ')} د.ج
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${st.cls}`}>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${st.cls}`}
+                      >
                         {st.label}
                       </span>
                     </td>
@@ -196,18 +236,25 @@ function AdminOrdersPage() {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.4)' }}
-          onClick={(e) => e.target === e.currentTarget && !flagBusy && setFlagTarget(null)}
+          onClick={(e) =>
+            e.target === e.currentTarget && !flagBusy && setFlagTarget(null)
+          }
         >
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" dir="rtl">
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            dir="rtl"
+          >
             <div className="mb-1 flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-purple-100 text-lg">
                 ⚠️
               </span>
-              <h2 className="text-base font-bold text-gray-900">فتح نزاع على الطلبية</h2>
+              <h2 className="text-base font-bold text-gray-900">
+                فتح نزاع على الطلبية
+              </h2>
             </div>
             <p className="mb-4 text-sm text-gray-500">
-              ستُجمَّد الطلبية «{flagTarget.productName}» للزبون {flagTarget.customerName} وتُستبعَد
-              من التدفّق العادي حتى تحلّها.
+              ستُجمَّد الطلبية «{flagTarget.productName}» للزبون{' '}
+              {flagTarget.customerName} وتُستبعَد من التدفّق العادي حتى تحلّها.
             </p>
 
             <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -226,11 +273,13 @@ function AdminOrdersPage() {
               إرسال الإشعار إلى
             </label>
             <div className="flex gap-2">
-              {([
-                { v: 'both', label: 'كلاهما' },
-                { v: 'affiliate', label: 'المسوّق' },
-                { v: 'merchant', label: 'التاجر' },
-              ] as const).map((opt) => (
+              {(
+                [
+                  { v: 'both', label: 'كلاهما' },
+                  { v: 'affiliate', label: 'المسوّق' },
+                  { v: 'merchant', label: 'التاجر' },
+                ] as const
+              ).map((opt) => (
                 <button
                   key={opt.v}
                   type="button"

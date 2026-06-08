@@ -8,6 +8,7 @@ import { RecentOrders } from './-components/RecentOrders'
 import { LowStockAlerts } from './-components/LowStockAlerts'
 import { TopProducts } from './-components/TopProducts'
 import type { DateRange } from './-dashboard.types'
+import { PageSpinner, PageError } from '#/routes/-components/shared/RouteStates'
 
 export const Route = createFileRoute('/merchant/dashboard/')({
   validateSearch: (search: Record<string, unknown>): { range: DateRange } => {
@@ -21,6 +22,8 @@ export const Route = createFileRoute('/merchant/dashboard/')({
   },
   loaderDeps: ({ search }) => ({ range: search.range }),
   loader: ({ deps }) => getMerchantDashboard({ data: { range: deps.range } }),
+  pendingComponent: PageSpinner,
+  errorComponent: PageError,
   component: MerchantDashboardPage,
 })
 
@@ -52,7 +55,10 @@ function MerchantDashboardPage() {
             <button
               key={option.value}
               onClick={() =>
-                navigate({ to: '/merchant/dashboard', search: { range: option.value } })
+                navigate({
+                  to: '/merchant/dashboard',
+                  search: { range: option.value },
+                })
               }
               className={`rounded-md px-3 py-1.5 text-xs transition-colors ${
                 dateRange === option.value

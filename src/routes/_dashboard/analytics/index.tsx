@@ -1,12 +1,13 @@
 import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { getAnalytics } from './-server/analytics.api'
 import type { DateRange } from './-analytics.types'
-import { KpiCard }         from './-components/KpiCard'
-import { GmvChart }        from './-components/GmvChart'
-import { TimingCard }      from './-components/TimingCard'
+import { KpiCard } from './-components/KpiCard'
+import { GmvChart } from './-components/GmvChart'
+import { TimingCard } from './-components/TimingCard'
 import { AffiliatesTable } from './-components/AffiliatesTable'
-import { MerchantsTable }  from './-components/MerchantsTable'
-import { WilayaList }      from './-components/WilayaList'
+import { MerchantsTable } from './-components/MerchantsTable'
+import { WilayaList } from './-components/WilayaList'
+import { PageSpinner, PageError } from '#/routes/-components/shared/RouteStates'
 
 // ─────────────────────────────────────────────────────────────
 // Route
@@ -16,8 +17,9 @@ export const Route = createFileRoute('/_dashboard/analytics/')({
   loaderDeps: ({ search }: { search: { range?: DateRange } }) => ({
     range: search.range ?? 'this_week',
   }),
-  loader: async ({ deps }) =>
-    getAnalytics({ data: { range: deps.range } }),
+  loader: async ({ deps }) => getAnalytics({ data: { range: deps.range } }),
+  pendingComponent: PageSpinner,
+  errorComponent: PageError,
   component: AnalyticsPage,
 })
 
@@ -27,7 +29,7 @@ export const Route = createFileRoute('/_dashboard/analytics/')({
 
 function fmt(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
   return n.toLocaleString('fr-DZ')
 }
 
@@ -36,16 +38,22 @@ function fmtDzd(n: number) {
 }
 
 const RANGE_LABELS: Record<DateRange, string> = {
-  this_week:  'هذا الأسبوع',
+  this_week: 'هذا الأسبوع',
   this_month: 'هذا الشهر',
-  this_year:  'هذا العام',
+  this_year: 'هذا العام',
 }
 
 // ─────────────────────────────────────────────────────────────
 // Section wrapper
 // ─────────────────────────────────────────────────────────────
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-base font-semibold text-gray-700 text-right border-b border-gray-100 pb-2">
@@ -78,7 +86,7 @@ function WithdrawalsAlert({ amount }: { amount: number }) {
 // ─────────────────────────────────────────────────────────────
 
 function AnalyticsPage() {
-  const data     = useLoaderData({ from: '/_dashboard/analytics/' })
+  const data = useLoaderData({ from: '/_dashboard/analytics/' })
   const navigate = Route.useNavigate()
   const { range } = Route.useLoaderDeps()
 
@@ -97,23 +105,24 @@ function AnalyticsPage() {
 
   return (
     <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto" dir="rtl">
-
       {/* ── Header ── */}
       <div className="flex justify-between items-start">
         <div className="flex gap-2">
-          {(['this_week', 'this_month', 'this_year'] as DateRange[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                range === r
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          ))}
+          {(['this_week', 'this_month', 'this_year'] as DateRange[]).map(
+            (r) => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  range === r
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {RANGE_LABELS[r]}
+              </button>
+            ),
+          )}
         </div>
         <div className="text-right">
           <h1 className="text-2xl font-bold text-gray-900">التحليلات</h1>
@@ -181,7 +190,6 @@ function AnalyticsPage() {
       <Section title="الجغرافيا والتوصيل">
         <WilayaList stats={wilaya_stats} />
       </Section>
-
     </div>
   )
 }
