@@ -223,7 +223,7 @@ export const products = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     merchant_id: uuid('merchant_id')
       .notNull()
-      .references(() => merchantProfiles.id),
+      .references(() => merchantProfiles.id, { onDelete: 'restrict' }),
     name: text('name').notNull(),
     description: text('description'),
     category: text('category'),
@@ -267,10 +267,10 @@ export const trackingLinks = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     product_id: uuid('product_id')
       .notNull()
-      .references(() => products.id),
+      .references(() => products.id, { onDelete: 'restrict' }),
     affiliate_id: uuid('affiliate_id')
       .notNull()
-      .references(() => affiliateProfiles.id),
+      .references(() => affiliateProfiles.id, { onDelete: 'restrict' }),
     slug: text('slug').notNull(),
     sub_id: text('sub_id'),
     click_count: integer('click_count').notNull().default(0),
@@ -299,13 +299,16 @@ export const orders = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     product_id: uuid('product_id')
       .notNull()
-      .references(() => products.id),
-    affiliate_id: uuid('affiliate_id').references(() => affiliateProfiles.id),
+      .references(() => products.id, { onDelete: 'restrict' }),
+    affiliate_id: uuid('affiliate_id').references(() => affiliateProfiles.id, {
+      onDelete: 'restrict',
+    }),
     merchant_id: uuid('merchant_id')
       .notNull()
-      .references(() => merchantProfiles.id),
+      .references(() => merchantProfiles.id, { onDelete: 'restrict' }),
     tracking_link_id: uuid('tracking_link_id').references(
       () => trackingLinks.id,
+      { onDelete: 'set null' },
     ),
     customer_name: text('customer_name').notNull(),
     customer_phone: text('customer_phone').notNull(),
@@ -339,7 +342,10 @@ export const orders = pgTable(
     settled_at: timestamp('settled_at'),
     // ── تكامل ECOTRACK للتوصيل ──
     // رقم التتبّع يُخزَّن في tracking_number الموجود (لا عمود مكرّر).
-    ecotrack_account_id: uuid('ecotrack_account_id').references(() => deliveryAccounts.id),
+    ecotrack_account_id: uuid('ecotrack_account_id').references(
+      () => deliveryAccounts.id,
+      { onDelete: 'set null' },
+    ),
     delivery_status: text('delivery_status').default('pending'),
     returned_at: timestamp('returned_at'),
 
@@ -515,7 +521,7 @@ export const labelPrintAudit = pgTable(
       .references(() => orders.id, { onDelete: 'cascade' }),
     actor_user_id: text('actor_user_id')
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: 'restrict' }),
     action: text('action').notNull(), // 'print_attempt'
     result: text('result').notNull(), // success | invalid_signature | expired | already_used | ecotrack_error
     detail: text('detail'),
@@ -567,7 +573,7 @@ export const wallets = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     user_id: text('user_id')
       .notNull()
-      .references(() => users.id)
+      .references(() => users.id, { onDelete: 'restrict' })
       .unique(),
     available_balance_dzd: integer('available_balance_dzd')
       .notNull()
@@ -596,10 +602,13 @@ export const transactions = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     wallet_id: uuid('wallet_id')
       .notNull()
-      .references(() => wallets.id),
-    order_id: uuid('order_id').references(() => orders.id),
+      .references(() => wallets.id, { onDelete: 'restrict' }),
+    order_id: uuid('order_id').references(() => orders.id, {
+      onDelete: 'restrict',
+    }),
     related_txn_id: uuid('related_txn_id').references(
       (): AnyPgColumn => transactions.id,
+      { onDelete: 'set null' },
     ),
     type: transactionTypeEnum('type').notNull(),
     status: txnStatusEnum('status').notNull().default('pending'),
@@ -612,6 +621,8 @@ export const transactions = pgTable(
     index('idx_transactions_order_id').on(table.order_id),
     index('idx_transactions_type').on(table.type),
     index('idx_transactions_created_at').on(table.created_at),
+    // اختيار المعاملات المستحقّة للتحرير (releaseAllMaturedFunds): status='pending' + created_at<=cutoff
+    index('idx_transactions_status_created').on(table.status, table.created_at),
     sql`CONSTRAINT chk_amount_not_zero
         CHECK (${table.amount_dzd} != 0)`,
   ],
@@ -627,7 +638,7 @@ export const withdrawalRequests = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     user_id: text('user_id')
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: 'restrict' }),
     amount_dzd: integer('amount_dzd').notNull(),
     method: payoutMethodEnum('method').notNull(),
     account_number: text('account_number').notNull(),
