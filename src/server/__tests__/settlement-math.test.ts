@@ -10,6 +10,7 @@ describe('computeSettlement — محرّك العمولة', () => {
       merchantPrice: 2000,
       feeAffiliate: 100,
       feeMerchant: 100,
+      shippingFee: 0,
       quantity: 3,
     })
     // per-order الصحيح:  (3000−2000)×3 − 100 = 2900
@@ -30,6 +31,7 @@ describe('computeSettlement — محرّك العمولة', () => {
       merchantPrice: 2000,
       feeAffiliate: 100,
       feeMerchant: 100,
+      shippingFee: 0,
       quantity: 1,
     })
     expect(r.commission).toBe(0)
@@ -45,6 +47,7 @@ describe('computeSettlement — محرّك العمولة', () => {
       merchantPrice: 2000,
       feeAffiliate: 500, // أكبر من الهامش 50
       feeMerchant: 5000, // أكبر من 2000
+      shippingFee: 0,
       quantity: 1,
     })
     expect(r.commission).toBe(0)
@@ -60,10 +63,45 @@ describe('computeSettlement — محرّك العمولة', () => {
       merchantPrice: 3000,
       feeAffiliate: 50,
       feeMerchant: 50,
+      shippingFee: 0,
       quantity: 1,
     })
     expect(r.commission).toBe(1450) // 1500 − 50
     expect(r.merchantEarning).toBe(2950) // 3000 − 50
     expect(r.platformFee).toBe(100)
+  })
+
+  // TC-05 — التوصيل يُخصم من عمولة المسوّق فقط (لا من أرباح التاجر)
+  it('يطرح سعر التوصيل من عمولة المسوّق دون المساس بأرباح التاجر', () => {
+    const r = computeSettlement({
+      hasAffiliate: true,
+      affiliatePrice: 4500,
+      merchantPrice: 3000,
+      feeAffiliate: 50,
+      feeMerchant: 50,
+      shippingFee: 800,
+      quantity: 1,
+    })
+    // العمولة = (4500−3000)×1 − 50 − 800 = 650
+    expect(r.commission).toBe(650)
+    // أرباح التاجر لا تتأثّر بالتوصيل = 3000 − 50 = 2950
+    expect(r.merchantEarning).toBe(2950)
+    // التوصيل ليس إيراد منصة (يذهب للناقل) فلا يدخل platformFee
+    expect(r.platformFee).toBe(100)
+  })
+
+  // TC-06 — التوصيل يحجز العمولة عند الصفر إن تجاوز الهامش (حماية)
+  it('يحجز العمولة عند الصفر إذا ابتلع التوصيلُ الهامشَ', () => {
+    const r = computeSettlement({
+      hasAffiliate: true,
+      affiliatePrice: 2600,
+      merchantPrice: 2000,
+      feeAffiliate: 50,
+      feeMerchant: 50,
+      shippingFee: 800, // 600 هامش − 50 − 800 < 0
+      quantity: 1,
+    })
+    expect(r.commission).toBe(0)
+    expect(r.merchantEarning).toBe(1950)
   })
 })

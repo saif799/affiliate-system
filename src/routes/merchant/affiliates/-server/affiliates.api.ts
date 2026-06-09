@@ -26,8 +26,8 @@ import type {
 
 const n = (v: unknown) => Number(v ?? 0)
 
-// عمولة الطلب = (سعر المسوّق - سعر التاجر) × الكمية - رسوم المنصة من المسوّق
-const commissionExpr = sql<number>`GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd}, 0)`
+// عمولة الطلب = (سعر المسوّق - سعر التاجر) × الكمية - رسوم المنصة - سعر التوصيل
+const commissionExpr = sql<number>`GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd} - ${orders.shipping_fee_dzd}, 0)`
 
 const AVATAR_PALETTE = [
   '#ddd1fe',

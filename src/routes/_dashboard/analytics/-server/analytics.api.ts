@@ -33,9 +33,6 @@ async function requireSuperAdmin() {
   return session
 }
 
-
-
-
 function getRangeWindow(range: DateRange): {
   from: Date
   to: Date
@@ -132,7 +129,7 @@ function buildGmvSeriesQuery(from: Date, to: Date, byMonth: boolean) {
     return db
       .select({
         date: sql<string>`DATE_TRUNC('month', ${orders.created_at})::date`,
-        gmv:  sql<number>`COALESCE(SUM(${orders.unit_affiliate_price_dzd} * ${orders.quantity}), 0)`,
+        gmv: sql<number>`COALESCE(SUM(${orders.unit_affiliate_price_dzd} * ${orders.quantity}), 0)`,
       })
       .from(orders)
       .where(whereClause)
@@ -143,7 +140,7 @@ function buildGmvSeriesQuery(from: Date, to: Date, byMonth: boolean) {
   return db
     .select({
       date: sql<string>`DATE_TRUNC('day', ${orders.created_at})::date`,
-      gmv:  sql<number>`COALESCE(SUM(${orders.unit_affiliate_price_dzd} * ${orders.quantity}), 0)`,
+      gmv: sql<number>`COALESCE(SUM(${orders.unit_affiliate_price_dzd} * ${orders.quantity}), 0)`,
     })
     .from(orders)
     .where(whereClause)
@@ -171,69 +168,70 @@ async function fetchKpis(
           FILTER (WHERE ${orders.status} = 'delivered')
         , 0)`,
         delivered: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'delivered')`,
-        returned:  sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'returned')`,
-        total:     sql<number>`COUNT(*)`,
+        returned: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'returned')`,
+        total: sql<number>`COUNT(*)`,
       })
       .from(orders)
       .where(and(gte(orders.created_at, from), lte(orders.created_at, to)))
 
-  const [prev = { gmv: 0, platform: 0, total: 0, delivered: 0 }] =
-    await db
-      .select({
-        gmv: sql<number>`COALESCE(
+  const [prev = { gmv: 0, platform: 0, total: 0, delivered: 0 }] = await db
+    .select({
+      gmv: sql<number>`COALESCE(
           SUM(${orders.unit_affiliate_price_dzd} * ${orders.quantity})
           FILTER (WHERE ${orders.status} = 'delivered')
         , 0)`,
-        platform:  sql<number>`COALESCE(
+      platform: sql<number>`COALESCE(
           SUM(${orders.platform_fee_dzd})
           FILTER (WHERE ${orders.status} = 'delivered')
         , 0)`,
-        total:     sql<number>`COUNT(*)`,
-        delivered: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'delivered')`,
-      })
-      .from(orders)
-      .where(and(gte(orders.created_at, prevFrom), lte(orders.created_at, prevTo)))
+      total: sql<number>`COUNT(*)`,
+      delivered: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'delivered')`,
+    })
+    .from(orders)
+    .where(
+      and(gte(orders.created_at, prevFrom), lte(orders.created_at, prevTo)),
+    )
 
-  const [pending = { total: 0 }] =
-    await db
-      .select({
-        total: sql<number>`COALESCE(SUM(${withdrawalRequests.amount_dzd}), 0)`,
-      })
-      .from(withdrawalRequests)
-      .where(eq(withdrawalRequests.status, 'pending'))
+  const [pending = { total: 0 }] = await db
+    .select({
+      total: sql<number>`COALESCE(SUM(${withdrawalRequests.amount_dzd}), 0)`,
+    })
+    .from(withdrawalRequests)
+    .where(eq(withdrawalRequests.status, 'pending'))
 
   // باقي الكود بدون أي تغيير...
-  const gmvCurr       = Number(curr.gmv)
-  const gmvPrev       = Number(prev.gmv)
-  const platformCurr  = Number(curr.platform)
-  const platformPrev  = Number(prev.platform)
-  const totalCurr     = Number(curr.total)
-  const totalPrev     = Number(prev.total)
+  const gmvCurr = Number(curr.gmv)
+  const gmvPrev = Number(prev.gmv)
+  const platformCurr = Number(curr.platform)
+  const platformPrev = Number(prev.platform)
+  const totalCurr = Number(curr.total)
+  const totalPrev = Number(prev.total)
   const deliveredCurr = Number(curr.delivered)
   const deliveredPrev = Number(prev.delivered)
-  const returnedCurr  = Number(curr.returned)
+  const returnedCurr = Number(curr.returned)
 
-  const takeRateRaw         = gmvCurr > 0 ? (platformCurr / gmvCurr) * 100 : 0
-  const takeRatePrevRaw     = gmvPrev  > 0 ? (platformPrev  / gmvPrev)  * 100 : 0
-  const deliveryRateRaw     = totalCurr > 0 ? (deliveredCurr / totalCurr) * 100 : 0
-  const deliveryRatePrevRaw = totalPrev  > 0 ? (deliveredPrev  / totalPrev)  * 100 : 0
+  const takeRateRaw = gmvCurr > 0 ? (platformCurr / gmvCurr) * 100 : 0
+  const takeRatePrevRaw = gmvPrev > 0 ? (platformPrev / gmvPrev) * 100 : 0
+  const deliveryRateRaw = totalCurr > 0 ? (deliveredCurr / totalCurr) * 100 : 0
+  const deliveryRatePrevRaw =
+    totalPrev > 0 ? (deliveredPrev / totalPrev) * 100 : 0
 
   return {
-    gmv_dzd:                  Math.round(gmvCurr),
-    gmv_change_pct:           pctChange(gmvCurr, gmvPrev),
+    gmv_dzd: Math.round(gmvCurr),
+    gmv_change_pct: pctChange(gmvCurr, gmvPrev),
 
-    take_rate_pct:            Math.round(takeRateRaw * 10) / 10,
-    take_rate_change_pct:     pctChange(takeRateRaw, takeRatePrevRaw),
+    take_rate_pct: Math.round(takeRateRaw * 10) / 10,
+    take_rate_change_pct: pctChange(takeRateRaw, takeRatePrevRaw),
 
-    delivery_rate_pct:        Math.round(deliveryRateRaw * 10) / 10,
+    delivery_rate_pct: Math.round(deliveryRateRaw * 10) / 10,
     delivery_rate_change_pct: pctChange(deliveryRateRaw, deliveryRatePrevRaw),
 
-    orders_total:             totalCurr,
-    orders_change_pct:        pctChange(totalCurr, totalPrev),
-    orders_delivered:         deliveredCurr,
-    orders_returned:          returnedCurr,
+    orders_total: totalCurr,
+    orders_change_pct: pctChange(totalCurr, totalPrev),
+    orders_delivered: deliveredCurr,
+    orders_returned: returnedCurr,
 
-    pending_withdrawals_dzd:  Number(pending.total),
+    pending_withdrawals_dzd: Number(pending.total),
   }
 }
 
@@ -250,12 +248,15 @@ async function fetchGmvSeries(
 
 // ── Top affiliates ────────────────────────────────────────────
 
-async function fetchTopAffiliates(from: Date, to: Date): Promise<TopAffiliate[]> {
+async function fetchTopAffiliates(
+  from: Date,
+  to: Date,
+): Promise<TopAffiliate[]> {
   const rows = await db
     .select({
       affiliate_id: affiliateProfiles.id,
-      name:         users.name,
-      wilaya:       users.wilaya,
+      name: users.name,
+      wilaya: users.wilaya,
       // إيراد = (سعر البيع - سعر التاجر) × الكمية - رسوم المنصة (per-order)
       // محسوب على delivered فقط
       revenue_dzd: sql<number>`COALESCE(
@@ -263,11 +264,12 @@ async function fetchTopAffiliates(from: Date, to: Date): Promise<TopAffiliate[]>
           (${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd})
           * ${orders.quantity}
           - ${orders.platform_fee_affiliate_dzd}
+          - ${orders.shipping_fee_dzd}
         ) FILTER (WHERE ${orders.status} = 'delivered')
       , 0)`,
       // orders_delivered للاتساق مع الإيراد + orders_total للسياق
       orders_delivered: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'delivered')`,
-      orders_total:     sql<number>`COUNT(*)`,
+      orders_total: sql<number>`COUNT(*)`,
       refusal_rate_pct: sql<number>`
         ROUND(
           COUNT(*) FILTER (WHERE ${orders.status} = 'returned')::numeric
@@ -286,18 +288,19 @@ async function fetchTopAffiliates(from: Date, to: Date): Promise<TopAffiliate[]>
           (${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd})
           * ${orders.quantity}
           - ${orders.platform_fee_affiliate_dzd}
+          - ${orders.shipping_fee_dzd}
         ) FILTER (WHERE ${orders.status} = 'delivered')`,
       ),
     )
     .limit(5)
 
   return rows.map((r) => ({
-    affiliate_id:     r.affiliate_id,
-    name:             r.name,
-    wilaya:           r.wilaya ?? '—',
-    revenue_dzd:      Number(r.revenue_dzd),
+    affiliate_id: r.affiliate_id,
+    name: r.name,
+    wilaya: r.wilaya ?? '—',
+    revenue_dzd: Number(r.revenue_dzd),
     orders_delivered: Number(r.orders_delivered),
-    orders_total:     Number(r.orders_total),
+    orders_total: Number(r.orders_total),
     refusal_rate_pct: Number(r.refusal_rate_pct ?? 0),
   }))
 }
@@ -307,9 +310,9 @@ async function fetchTopAffiliates(from: Date, to: Date): Promise<TopAffiliate[]>
 async function fetchTopMerchants(from: Date, to: Date): Promise<TopMerchant[]> {
   const rows = await db
     .select({
-      merchant_id:   merchantProfiles.id,
+      merchant_id: merchantProfiles.id,
       business_name: merchantProfiles.business_name,
-      orders_total:  sql<number>`COUNT(*)`,
+      orders_total: sql<number>`COUNT(*)`,
       // صافي أرباح التاجر = (سعره × الكمية − رسوم المنصة من التاجر) على delivered فقط
       revenue_dzd: sql<number>`COALESCE(
         SUM(GREATEST(${orders.unit_merchant_price_dzd} * ${orders.quantity} - ${orders.platform_fee_merchant_dzd}, 0))
@@ -335,10 +338,10 @@ async function fetchTopMerchants(from: Date, to: Date): Promise<TopMerchant[]> {
     .limit(5)
 
   return rows.map((r) => ({
-    merchant_id:     r.merchant_id,
-    business_name:   r.business_name,
-    revenue_dzd:     Number(r.revenue_dzd),
-    orders_total:    Number(r.orders_total),
+    merchant_id: r.merchant_id,
+    business_name: r.business_name,
+    revenue_dzd: Number(r.revenue_dzd),
+    orders_total: Number(r.orders_total),
     return_rate_pct: Number(r.return_rate_pct ?? 0),
   }))
 }
@@ -348,7 +351,7 @@ async function fetchTopMerchants(from: Date, to: Date): Promise<TopMerchant[]> {
 async function fetchWilayaStats(from: Date, to: Date): Promise<WilayaStat[]> {
   const rows = await db
     .select({
-      wilaya:       sql<string>`COALESCE(${orders.customer_wilaya}, 'غير محدد')`,
+      wilaya: sql<string>`COALESCE(${orders.customer_wilaya}, 'غير محدد')`,
       orders_count: sql<number>`COUNT(*)`,
       return_rate_pct: sql<number>`
         ROUND(
@@ -364,15 +367,18 @@ async function fetchWilayaStats(from: Date, to: Date): Promise<WilayaStat[]> {
     .limit(10)
 
   return rows.map((r) => ({
-    wilaya:          r.wilaya,
-    orders_count:    Number(r.orders_count),
+    wilaya: r.wilaya,
+    orders_count: Number(r.orders_count),
     return_rate_pct: Number(r.return_rate_pct ?? 0),
   }))
 }
 
 // ── Delivery timing ───────────────────────────────────────────
 
-async function fetchDeliveryTiming(from: Date, to: Date): Promise<DeliveryTiming> {
+async function fetchDeliveryTiming(
+  from: Date,
+  to: Date,
+): Promise<DeliveryTiming> {
   // AVG في PostgreSQL يتجاهل الصفوف التي تحتوي NULL في أي طرف من الطرح.
   // لذا sample_size لكل مرحلة = عدد الصفوف التي دخلت AVG فعلاً،
   // وليس COUNT(*) الكلي الذي قد يكون أكبر بكثير ويضلل.
@@ -434,16 +440,16 @@ async function fetchDeliveryTiming(from: Date, to: Date): Promise<DeliveryTiming
     )
 
   return {
-    avg_confirm_hours:  Number(row?.confirm_hours  ?? 0),
-    avg_ship_hours:     Number(row?.ship_hours     ?? 0),
-    avg_wilaya_hours:   Number(row?.wilaya_hours   ?? 0),
-    avg_deliver_hours:  Number(row?.deliver_hours  ?? 0),
-    avg_total_days:     Math.round((Number(row?.total_hours ?? 0) / 24) * 10) / 10,
-    sample_size:        Number(row?.sample_size    ?? 0),
-    sample_confirm:     Number(row?.sample_confirm ?? 0),
-    sample_ship:        Number(row?.sample_ship    ?? 0),
-    sample_wilaya:      Number(row?.sample_wilaya  ?? 0),
-    sample_deliver:     Number(row?.sample_deliver ?? 0),
+    avg_confirm_hours: Number(row?.confirm_hours ?? 0),
+    avg_ship_hours: Number(row?.ship_hours ?? 0),
+    avg_wilaya_hours: Number(row?.wilaya_hours ?? 0),
+    avg_deliver_hours: Number(row?.deliver_hours ?? 0),
+    avg_total_days: Math.round((Number(row?.total_hours ?? 0) / 24) * 10) / 10,
+    sample_size: Number(row?.sample_size ?? 0),
+    sample_confirm: Number(row?.sample_confirm ?? 0),
+    sample_ship: Number(row?.sample_ship ?? 0),
+    sample_wilaya: Number(row?.sample_wilaya ?? 0),
+    sample_deliver: Number(row?.sample_deliver ?? 0),
   }
 }
 

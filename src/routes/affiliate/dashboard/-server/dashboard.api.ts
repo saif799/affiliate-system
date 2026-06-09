@@ -40,8 +40,8 @@ async function requireAffiliate() {
 const n = (v: unknown) => Number(v ?? 0)
 const round1 = (v: number) => Math.round(v * 10) / 10
 
-// عمولة المسوّق لكل طلبية = (سعر بيعه − سعر الجملة) × الكمية − رسوم المنصة من المسوّق
-const commissionExpr = sql<number>`GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd}, 0)`
+// عمولة المسوّق لكل طلبية = (سعر بيعه − سعر الجملة) × الكمية − رسوم المنصة − سعر التوصيل
+const commissionExpr = sql<number>`GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd} - ${orders.shipping_fee_dzd}, 0)`
 
 const RECENT_STATUS_MAP: Record<string, OrderStatus> = {
   pending: 'processing',
@@ -99,7 +99,8 @@ export const getAffiliateDashboard = createServerFn({ method: 'GET' }).handler(
     const stats = {
       totalEarnings: n(statsRow.totalEarnings),
       availableBalance: n(wallet?.available),
-      deliveredRate: nonPending > 0 ? round1((delivered / nonPending) * 100) : 0,
+      deliveredRate:
+        nonPending > 0 ? round1((delivered / nonPending) * 100) : 0,
       retourRate: total > 0 ? round1((returned / total) * 100) : 0,
     }
 
@@ -120,7 +121,11 @@ export const getAffiliateDashboard = createServerFn({ method: 'GET' }).handler(
       .innerJoin(products, eq(orders.product_id, products.id))
       .where(scoped)
       .groupBy(orders.merchant_id, merchantProfiles.business_name)
-      .orderBy(desc(sql`COALESCE(SUM(${commissionExpr}) FILTER (WHERE ${orders.status} = 'delivered'), 0)`))
+      .orderBy(
+        desc(
+          sql`COALESCE(SUM(${commissionExpr}) FILTER (WHERE ${orders.status} = 'delivered'), 0)`,
+        ),
+      )
       .limit(5)
 
     const topMerchants: TopMerchant[] = merchantRows.map((r) => {
@@ -132,7 +137,8 @@ export const getAffiliateDashboard = createServerFn({ method: 'GET' }).handler(
         id: r.merchantId,
         name: r.name,
         category: r.category || 'تاجر',
-        deliveredRate: mNonPending > 0 ? round1((mDelivered / mNonPending) * 100) : 0,
+        deliveredRate:
+          mNonPending > 0 ? round1((mDelivered / mNonPending) * 100) : 0,
         retourRate: mTotal > 0 ? round1((mReturned / mTotal) * 100) : 0,
         totalOrders: mTotal,
         earnings: n(r.earnings),
@@ -149,6 +155,7 @@ export const getAffiliateDashboard = createServerFn({ method: 'GET' }).handler(
         affiliatePrice: orders.unit_affiliate_price_dzd,
         merchantPrice: orders.unit_merchant_price_dzd,
         platformFee: orders.platform_fee_affiliate_dzd,
+        shipping: orders.shipping_fee_dzd,
         quantity: orders.quantity,
         createdAt: orders.created_at,
       })
@@ -167,7 +174,9 @@ export const getAffiliateDashboard = createServerFn({ method: 'GET' }).handler(
       status: RECENT_STATUS_MAP[r.status] ?? 'processing',
       commission: Math.max(
         0,
-        (r.affiliatePrice - r.merchantPrice) * r.quantity - r.platformFee,
+        (r.affiliatePrice - r.merchantPrice) * r.quantity -
+          r.platformFee -
+          r.shipping,
       ),
       updatedAt: relativeTimeAr(r.createdAt),
     }))

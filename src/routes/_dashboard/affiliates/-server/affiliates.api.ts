@@ -91,7 +91,7 @@ async function fetchAffiliates(): Promise<Affiliate[]> {
         affiliateId: orders.affiliate_id,
         totalOrders: sql<number>`COUNT(*)`.as('total_orders'),
         totalCommissions: sql<number>`COALESCE(SUM(
-        GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd}, 0)
+        GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd} - ${orders.shipping_fee_dzd}, 0)
       ), 0)`.as('total_commissions'),
       })
       .from(orders)

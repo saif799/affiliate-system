@@ -5,7 +5,7 @@
 // تُنشئ transactions للمسوّق والتاجر وتُحدّث أرصدة المحافظ
 //
 // نموذج الرسوم: رسوم ثابتة لكل طلب، تُؤخذ من الطرفين
-//   commission       = (سعر المسوّق - سعر التاجر) × الكمية - رسوم المنصة من المسوّق
+//   commission       = (سعر المسوّق - سعر التاجر) × الكمية - رسوم المنصة - سعر التوصيل
 //   merchant_earning = سعر التاجر × الكمية - رسوم المنصة من التاجر
 //
 // نموذج الحجز (clearing): عند التسليم تُضاف الأرباح إلى pending_balance_dzd
@@ -50,7 +50,10 @@ async function getClearanceDays(): Promise<number> {
 // جلب أو إنشاء محفظة لمستخدم (الـ hook قد لا ينشئها)
 // ────────────────────────────────────────────────────────────
 
-async function getOrCreateWallet(tx: Tx, userId: string): Promise<{ id: string }> {
+async function getOrCreateWallet(
+  tx: Tx,
+  userId: string,
+): Promise<{ id: string }> {
   const [existing] = await tx
     .select({ id: wallets.id })
     .from(wallets)
@@ -75,7 +78,8 @@ async function getOrCreateWallet(tx: Tx, userId: string): Promise<{ id: string }
     .where(eq(wallets.user_id, userId))
     .limit(1)
 
-  if (!w) throw new Error(`getOrCreateWallet: تعذّر جلب/إنشاء المحفظة — ${userId}`)
+  if (!w)
+    throw new Error(`getOrCreateWallet: تعذّر جلب/إنشاء المحفظة — ${userId}`)
   return w
 }
 
@@ -115,15 +119,16 @@ export async function settleOrderTx(tx: Tx, orderId: string): Promise<void> {
 
   const [order] = await tx
     .select({
-      id:              orders.id,
+      id: orders.id,
       affiliateUserId: affiliateProfiles.user_id,
-      merchantUserId:  merchantProfiles.user_id,
-      affiliatePrice:  orders.unit_affiliate_price_dzd,
-      merchantPrice:   orders.unit_merchant_price_dzd,
-      feeMerchant:     orders.platform_fee_merchant_dzd,
-      feeAffiliate:    orders.platform_fee_affiliate_dzd,
-      quantity:        orders.quantity,
-      settledAt:       orders.settled_at,
+      merchantUserId: merchantProfiles.user_id,
+      affiliatePrice: orders.unit_affiliate_price_dzd,
+      merchantPrice: orders.unit_merchant_price_dzd,
+      feeMerchant: orders.platform_fee_merchant_dzd,
+      feeAffiliate: orders.platform_fee_affiliate_dzd,
+      shippingFee: orders.shipping_fee_dzd,
+      quantity: orders.quantity,
+      settledAt: orders.settled_at,
     })
     .from(orders)
     .leftJoin(affiliateProfiles, eq(orders.affiliate_id, affiliateProfiles.id))
@@ -141,6 +146,7 @@ export async function settleOrderTx(tx: Tx, orderId: string): Promise<void> {
     merchantPrice: order.merchantPrice,
     feeAffiliate: order.feeAffiliate,
     feeMerchant: order.feeMerchant,
+    shippingFee: order.shippingFee,
     quantity: order.quantity,
   })
   const now = new Date()
@@ -150,18 +156,20 @@ export async function settleOrderTx(tx: Tx, orderId: string): Promise<void> {
     const affiliateWallet = await getOrCreateWallet(tx, order.affiliateUserId)
 
     await tx.insert(transactions).values({
-      wallet_id:   affiliateWallet.id,
-      order_id:    orderId,
-      type:        'commission',
-      status:      'pending', // قيد الحجز — يُحرَّر بعد HOLD_HOURS
-      amount_dzd:  commission,
+      wallet_id: affiliateWallet.id,
+      order_id: orderId,
+      type: 'commission',
+      status: 'pending', // قيد الحجز — يُحرَّر بعد HOLD_HOURS
+      amount_dzd: commission,
       description: 'عمولة طلبية مُسلَّمة',
-      created_at:  now,
+      created_at: now,
     })
 
     await tx
       .update(wallets)
-      .set({ pending_balance_dzd: sql`${wallets.pending_balance_dzd} + ${commission}` })
+      .set({
+        pending_balance_dzd: sql`${wallets.pending_balance_dzd} + ${commission}`,
+      })
       .where(eq(wallets.id, affiliateWallet.id))
   }
 
@@ -170,18 +178,20 @@ export async function settleOrderTx(tx: Tx, orderId: string): Promise<void> {
     const merchantWallet = await getOrCreateWallet(tx, order.merchantUserId)
 
     await tx.insert(transactions).values({
-      wallet_id:   merchantWallet.id,
-      order_id:    orderId,
-      type:        'merchant_earning',
-      status:      'pending', // قيد الحجز — يُحرَّر بعد HOLD_HOURS
-      amount_dzd:  merchantEarning,
+      wallet_id: merchantWallet.id,
+      order_id: orderId,
+      type: 'merchant_earning',
+      status: 'pending', // قيد الحجز — يُحرَّر بعد HOLD_HOURS
+      amount_dzd: merchantEarning,
       description: 'أرباح طلبية مُسلَّمة',
-      created_at:  now,
+      created_at: now,
     })
 
     await tx
       .update(wallets)
-      .set({ pending_balance_dzd: sql`${wallets.pending_balance_dzd} + ${merchantEarning}` })
+      .set({
+        pending_balance_dzd: sql`${wallets.pending_balance_dzd} + ${merchantEarning}`,
+      })
       .where(eq(wallets.id, merchantWallet.id))
   }
 
@@ -191,18 +201,20 @@ export async function settleOrderTx(tx: Tx, orderId: string): Promise<void> {
     const systemWallet = await getSystemWallet(tx)
 
     await tx.insert(transactions).values({
-      wallet_id:   systemWallet.id,
-      order_id:    orderId,
-      type:        'platform_fee',
-      status:      'completed',
-      amount_dzd:  platformFee,
+      wallet_id: systemWallet.id,
+      order_id: orderId,
+      type: 'platform_fee',
+      status: 'completed',
+      amount_dzd: platformFee,
       description: 'رسوم المنصة من طلبية مُسلَّمة',
-      created_at:  now,
+      created_at: now,
     })
 
     await tx
       .update(wallets)
-      .set({ available_balance_dzd: sql`${wallets.available_balance_dzd} + ${platformFee}` })
+      .set({
+        available_balance_dzd: sql`${wallets.available_balance_dzd} + ${platformFee}`,
+      })
       .where(eq(wallets.id, systemWallet.id))
   }
 
@@ -277,7 +289,10 @@ export async function flagOrderDisputedTx(
   }
 
   const now = new Date()
-  await tx.update(orders).set({ status: 'disputed' }).where(eq(orders.id, orderId))
+  await tx
+    .update(orders)
+    .set({ status: 'disputed' })
+    .where(eq(orders.id, orderId))
   await tx.insert(orderStatusHistory).values({
     order_id: orderId,
     from_status: order.status,
@@ -297,7 +312,11 @@ export async function resolveDisputeTx(
   note?: string,
 ): Promise<void> {
   const [order] = await tx
-    .select({ id: orders.id, status: orders.status, affiliateId: orders.affiliate_id })
+    .select({
+      id: orders.id,
+      status: orders.status,
+      affiliateId: orders.affiliate_id,
+    })
     .from(orders)
     .where(eq(orders.id, orderId))
     .for('update')
@@ -388,7 +407,12 @@ export async function releaseMaturedFundsTx(
   await tx
     .update(transactions)
     .set({ status: 'completed' })
-    .where(inArray(transactions.id, matured.map((t) => t.id)))
+    .where(
+      inArray(
+        transactions.id,
+        matured.map((t) => t.id),
+      ),
+    )
 
   await tx
     .update(wallets)
