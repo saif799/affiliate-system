@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState } from 'react'
-import { Camera, Link, ExternalLink } from 'lucide-react'
+import { Link, ExternalLink } from 'lucide-react'
 import { updateProfile } from '../-server/settings.api'
 import type { AffiliateProfile, UpdateProfileForm } from '../-settings.types'
 
@@ -32,16 +32,10 @@ function AvatarBlock({ profile }: { profile: AffiliateProfile }) {
             {initials}
           </div>
         )}
-        <button className="absolute -bottom-1 -left-1 rounded-full border-2 border-white bg-gray-100 p-1 transition-colors hover:bg-gray-200">
-          <Camera size={12} className="text-gray-600" />
-        </button>
       </div>
       <div>
         <p className="text-sm font-medium text-gray-900">{profile.fullName}</p>
         <p className="text-xs text-gray-400">@{profile.username}</p>
-        <button className="mt-1 text-xs text-gray-500 underline hover:text-gray-700">
-          تغيير الصورة
-        </button>
       </div>
     </div>
   )
@@ -116,15 +110,16 @@ export function ProfileTab({ profile }: Props) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-gray-500">اسم المستخدم</label>
-            <div className="flex items-center overflow-hidden rounded-lg border border-gray-200 focus-within:border-gray-400">
-              <span className="bg-gray-50 px-2 py-2 text-xs text-gray-400 border-l border-gray-200">@</span>
+            <label className="mb-1 block text-xs text-gray-500">رمز الإحالة</label>
+            <div className="flex items-center overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+              <span className="bg-gray-100 px-2 py-2 text-xs text-gray-400 border-l border-gray-200">@</span>
               <input
                 value={form.username}
-                onChange={(e) => handleChange('username', e.target.value)}
-                className="flex-1 px-2 py-2 text-xs outline-none"
+                disabled
+                className="flex-1 bg-gray-50 px-2 py-2 text-xs text-gray-400 outline-none cursor-not-allowed"
               />
             </div>
+            <p className="mt-0.5 text-xs text-gray-400">يُولّده النظام ولا يمكن تغييره</p>
           </div>
           <div>
             <label className="mb-1 block text-xs text-gray-500">البريد الإلكتروني</label>

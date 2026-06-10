@@ -12,6 +12,7 @@ import {
   users,
   sessions,
   withdrawalRequests,
+  settings,
 } from '#/server/db/schema'
 import { and, eq, ne, desc } from 'drizzle-orm'
 import { z } from 'zod'
@@ -20,7 +21,38 @@ import type {
   PayoutMethod,
   ActiveSession,
   NotificationSettings,
+  SocialLinks,
 } from '../-settings.types'
+
+// ── تخزين تفضيلات المستخدم في جدول settings (مفتاح/قيمة) ────────
+// لا يوجد جدول تفضيلات مخصّص؛ نخزّن قيمة JSON تحت مفتاح يحمل معرّف المستخدم.
+// قراءة دفاعية: أي قيمة تالفة تُعاد كـ null فتُستخدم القيم الافتراضية.
+async function readUserPref<T>(key: string): Promise<T | null> {
+  const [row] = await db
+    .select({ value: settings.value })
+    .from(settings)
+    .where(eq(settings.key, key))
+    .limit(1)
+  if (!row) return null
+  try {
+    return JSON.parse(row.value) as T
+  } catch {
+    return null
+  }
+}
+
+async function writeUserPref(key: string, value: unknown): Promise<void> {
+  await db
+    .insert(settings)
+    .values({ key, value: JSON.stringify(value) })
+    .onConflictDoUpdate({
+      target: settings.key,
+      set: { value: JSON.stringify(value), updated_at: new Date() },
+    })
+}
+
+const socialKey = (userId: string) => `affiliate_social:${userId}`
+const notifKey = (userId: string) => `affiliate_notif:${userId}`
 
 // ============================================================
 // HELPERS
@@ -74,6 +106,26 @@ const DEFAULT_NOTIFICATIONS: NotificationSettings = {
     { id: 'notif-04', label: 'منتجات جديدة', description: 'عند إضافة منتجات جديدة في السوق', channels: { email: false, platform: false } },
     { id: 'notif-05', label: 'طلب سحب مرفوض', description: 'عند رفض طلب سحب الأموال مع ذكر السبب', channels: { email: true, platform: true } },
   ],
+}
+
+// الشكل المُخزَّن المُدمَج: علم عدم الإزعاج + قنوات كل تفضيل حسب معرّفه.
+// نخزّن الاختيارات فقط (لا العناوين/الأوصاف — تبقى مصدرها الخادم).
+type StoredNotif = {
+  doNotDisturb: boolean
+  channels: Record<string, { email: boolean; platform: boolean }>
+}
+
+function mergeNotifications(stored: StoredNotif | null): NotificationSettings {
+  if (!stored || typeof stored !== 'object') return DEFAULT_NOTIFICATIONS
+  return {
+    doNotDisturb: Boolean(stored.doNotDisturb),
+    preferences: DEFAULT_NOTIFICATIONS.preferences.map((p) => {
+      const c = stored.channels?.[p.id]
+      return c
+        ? { ...p, channels: { email: Boolean(c.email), platform: Boolean(c.platform) } }
+        : p
+    }),
+  }
 }
 
 // ============================================================
@@ -137,6 +189,10 @@ export const getSettingsData = createServerFn({ method: 'GET' }).handler(
       isCurrent: s.token === currentToken,
     }))
 
+    // تفضيلات محفوظة (روابط التواصل + الإشعارات) — أو القيم الافتراضية
+    const storedSocial = (await readUserPref<SocialLinks>(socialKey(userId))) ?? {}
+    const storedNotif = await readUserPref<StoredNotif>(notifKey(userId))
+
     return {
       profile: {
         id: userId,
@@ -145,11 +201,11 @@ export const getSettingsData = createServerFn({ method: 'GET' }).handler(
         email: user?.email ?? '',
         phone: user?.phone ?? '',
         avatarUrl: user?.image ?? undefined,
-        socialLinks: {},
+        socialLinks: storedSocial,
         joinedAt: (user?.approved_at ?? user?.createdAt ?? new Date()).toISOString(),
       },
       payoutMethods,
-      notifications: DEFAULT_NOTIFICATIONS,
+      notifications: mergeNotifications(storedNotif),
       security: {
         sessions: sessionList,
         twoFactorEnabled: false,
@@ -181,6 +237,8 @@ export const updateProfile = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { session } = await requireAffiliate()
 
+    // الاسم والهاتف على جدول المستخدمين؛ اسم المستخدم = رمز الإحالة (غير قابل
+    // للتغيير من هنا) فلا نلمسه.
     await db
       .update(users)
       .set({
@@ -190,17 +248,46 @@ export const updateProfile = createServerFn({ method: 'POST' })
       })
       .where(eq(users.id, session.user.id))
 
+    // روابط التواصل تُحفظ في تفضيلات المستخدم (لا عمود مخصّص لها)
+    if (data.socialLinks) {
+      await writeUserPref(socialKey(session.user.id), {
+        tiktok: data.socialLinks.tiktok?.trim() || undefined,
+        facebook: data.socialLinks.facebook?.trim() || undefined,
+        instagram: data.socialLinks.instagram?.trim() || undefined,
+      })
+    }
+
     return { success: true }
   })
 
 // ============================================================
-// UPDATE NOTIFICATIONS (لا يوجد جدول — يُقبل دون حفظ)
+// UPDATE NOTIFICATIONS — يُحفظ في تفضيلات المستخدم (جدول settings)
 // ============================================================
 
+const NotifSaveSchema = z.object({
+  doNotDisturb: z.boolean(),
+  preferences: z.array(
+    z.object({
+      id: z.string(),
+      channels: z.object({ email: z.boolean(), platform: z.boolean() }),
+    }),
+  ),
+})
+
 export const updateNotifications = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data)
-  .handler(async (): Promise<{ success: boolean }> => {
-    await requireAffiliate()
+  .inputValidator((input: unknown) => NotifSaveSchema.parse(input))
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const { session } = await requireAffiliate()
+
+    // نخزّن الاختيارات فقط (علم عدم الإزعاج + قنوات كل تفضيل حسب معرّفه)
+    const channels: StoredNotif['channels'] = {}
+    for (const p of data.preferences) channels[p.id] = p.channels
+
+    await writeUserPref(notifKey(session.user.id), {
+      doNotDisturb: data.doNotDisturb,
+      channels,
+    })
+
     return { success: true }
   })
 

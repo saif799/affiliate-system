@@ -1,13 +1,8 @@
 import { useState, useEffect } from 'react'
 import { X, Package, Loader2, Home, Building2 } from 'lucide-react'
 import type { AddLeadForm, LeadProduct } from '../-orders.types'
-import {
-  getWilayasLocal,
-  getOfficesLocal
-  
-  
-} from '../-server/orders.api'
-import type {LocalWilaya, LocalOffice} from '../-server/orders.api';
+import { getWilayasLocal, getOfficesLocal } from '../-server/orders.api'
+import type { LocalWilaya, LocalOffice } from '../-server/orders.api'
 
 interface Props {
   open: boolean
@@ -30,7 +25,13 @@ const EMPTY: AddLeadForm = {
   notes: '',
 }
 
-export function AddLeadModal({ open, onClose, onSubmit, products, initialProductId }: Props) {
+export function AddLeadModal({
+  open,
+  onClose,
+  onSubmit,
+  products,
+  initialProductId,
+}: Props) {
   const [form, setForm] = useState<AddLeadForm>(EMPTY)
   const [wilayas, setWilayas] = useState<LocalWilaya[]>([])
   const [offices, setOffices] = useState<LocalOffice[]>([])
@@ -44,7 +45,11 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
       const p = initialProductId
         ? products.find((x) => x.id === initialProductId)
         : undefined
-      setForm({ ...EMPTY, productId: p?.id ?? '', salePrice: p?.basePrice ?? 0 })
+      setForm({
+        ...EMPTY,
+        productId: p?.id ?? '',
+        salePrice: p?.basePrice ?? 0,
+      })
       setOffices([])
       setError('')
     }
@@ -60,7 +65,8 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
         if (!cancelled) setWilayas(z)
       })
       .catch(() => {
-        if (!cancelled) setError('تعذّر تحميل قائمة الولايات — راجع الأدمن لمزامنة الأسعار')
+        if (!cancelled)
+          setError('تعذّر تحميل قائمة الولايات — راجع الأدمن لمزامنة الأسعار')
       })
       .finally(() => {
         if (!cancelled) setLoadingWilayas(false)
@@ -75,28 +81,46 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
   const selectedProduct = products.find((p) => p.id === form.productId)
   const selectedWilaya = wilayas.find((w) => w.code === form.wilayaCode)
   const locked = !!initialProductId || products.length <= 1
-  const estimatedComm = selectedProduct
-    ? Math.max(0, form.salePrice - selectedProduct.basePrice)
-    : null
-
-  // قائمة الخيارات: للمكتب نعرض البلديات ذات stop-desk فقط
-  const officeOptions =
-    form.deliveryType === 'office' ? offices.filter((o) => o.hasStopDesk) : offices
-
-  // سعر التوصيل المعروض (من الجدول المحلّي) حسب نوع التوصيل
   const deliveryPrice = selectedWilaya
     ? form.deliveryType === 'office'
       ? selectedWilaya.officePrice
       : selectedWilaya.homePrice
+    : 0
+
+  const estimatedComm = selectedProduct
+    ? Math.max(0, form.salePrice - selectedProduct.basePrice - deliveryPrice)
     : null
 
-  function handleChange<TKey extends keyof AddLeadForm>(key: TKey, value: AddLeadForm[TKey]) {
+  // قائمة الخيارات: للمكتب نعرض البلديات ذات stop-desk فقط
+  const officeOptions =
+    form.deliveryType === 'office'
+      ? offices.filter((o) => o.hasStopDesk)
+      : offices
+
+  // سعر التوصيل المعروض (من الجدول المحلّي) حسب نوع التوصيل
+
+  // الحدّ الأدنى لسعر البيع = الجملة + التوصيل (يُفرَض على الخادم أيضاً)
+  const minSalePrice = selectedProduct
+    ? selectedProduct.basePrice + (deliveryPrice ?? 0)
+    : 0
+  const belowMin =
+    !!selectedProduct && deliveryPrice !== null && form.salePrice < minSalePrice
+
+  function handleChange<TKey extends keyof AddLeadForm>(
+    key: TKey,
+    value: AddLeadForm[TKey],
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   async function handleWilayaChange(code: number) {
     const w = wilayas.find((x) => x.code === code)
-    setForm((prev) => ({ ...prev, wilayaCode: code, wilayaName: w?.name ?? '', officeId: '' }))
+    setForm((prev) => ({
+      ...prev,
+      wilayaCode: code,
+      wilayaName: w?.name ?? '',
+      officeId: '',
+    }))
     setOffices([])
     if (!code) return
     setLoadingOffices(true)
@@ -122,8 +146,10 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
     if (!form.wilayaCode) return setError('اختر الولاية')
     if (!form.officeId) return setError('اختر البلدية / المكتب')
     if (!form.address.trim()) return setError('العنوان مطلوب')
-    if (selectedProduct && form.salePrice < selectedProduct.basePrice)
-      return setError('سعر البيع لا يمكن أن يكون أقل من سعر الجملة')
+    if (belowMin)
+      return setError(
+        `سعر البيع لا يمكن أن يكون أقل من الحدّ الأدنى ${minSalePrice.toLocaleString('ar-DZ')} د.ج (الجملة + التوصيل)`,
+      )
 
     setSubmitting(true)
     try {
@@ -144,10 +170,15 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
         if (e.target === e.currentTarget && !submitting) onClose()
       }}
     >
-      <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-xl" dir="rtl">
+      <div
+        className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-xl"
+        dir="rtl"
+      >
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">إضافة طلبية يدوية</h2>
+            <h2 className="text-sm font-semibold text-gray-900">
+              إضافة طلبية يدوية
+            </h2>
             <p className="mt-0.5 text-xs text-gray-400">
               للزبائن الذين تواصلوا عبر الماسنجر أو واتساب
             </p>
@@ -210,7 +241,9 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
           {/* بيانات الزبون */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-gray-600">اسم الزبون</label>
+              <label className="text-xs font-medium text-gray-600">
+                اسم الزبون
+              </label>
               <input
                 value={form.customerName}
                 onChange={(e) => handleChange('customerName', e.target.value)}
@@ -219,7 +252,9 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-gray-600">رقم الهاتف</label>
+              <label className="text-xs font-medium text-gray-600">
+                رقم الهاتف
+              </label>
               <input
                 value={form.customerPhone}
                 onChange={(e) => handleChange('customerPhone', e.target.value)}
@@ -233,7 +268,10 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
           {/* الولاية */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-gray-600">
-              الولاية {loadingWilayas && <Loader2 size={11} className="inline animate-spin" />}
+              الولاية{' '}
+              {loadingWilayas && (
+                <Loader2 size={11} className="inline animate-spin" />
+              )}
             </label>
             <select
               value={form.wilayaCode || ''}
@@ -252,7 +290,9 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
 
           {/* نوع التوصيل */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-gray-600">نوع التوصيل</label>
+            <label className="text-xs font-medium text-gray-600">
+              نوع التوصيل
+            </label>
             <div className="grid grid-cols-2 gap-2">
               {(
                 [
@@ -280,7 +320,9 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-gray-600">
               {form.deliveryType === 'office' ? 'مكتب الاستلام' : 'البلدية'}{' '}
-              {loadingOffices && <Loader2 size={11} className="inline animate-spin" />}
+              {loadingOffices && (
+                <Loader2 size={11} className="inline animate-spin" />
+              )}
             </label>
             <select
               value={form.officeId}
@@ -294,13 +336,20 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
               {officeOptions.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name}
-                  {form.deliveryType === 'home' && o.hasStopDesk ? ' (يتوفّر مكتب)' : ''}
+                  {form.deliveryType === 'home' && o.hasStopDesk
+                    ? ' (يتوفّر مكتب)'
+                    : ''}
                 </option>
               ))}
             </select>
-            {form.deliveryType === 'office' && form.wilayaCode > 0 && officeOptions.length === 0 && !loadingOffices && (
-              <p className="text-xs text-amber-600">لا توجد مكاتب استلام في هذه الولاية — اختر توصيلاً منزليّاً</p>
-            )}
+            {form.deliveryType === 'office' &&
+              form.wilayaCode > 0 &&
+              officeOptions.length === 0 &&
+              !loadingOffices && (
+                <p className="text-xs text-amber-600">
+                  لا توجد مكاتب استلام في هذه الولاية — اختر توصيلاً منزليّاً
+                </p>
+              )}
           </div>
 
           {/* سعر التوصيل (من الجدول المحلّي) */}
@@ -328,18 +377,42 @@ export function AddLeadModal({ open, onClose, onSubmit, products, initialProduct
 
           {/* سعر البيع */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-gray-600">سعر البيع (د.ج)</label>
+            <label className="text-xs font-medium text-gray-600">
+              سعر البيع (د.ج)
+            </label>
             <input
               type="number"
               value={form.salePrice}
-              min={selectedProduct?.basePrice ?? 0}
-              onChange={(e) => handleChange('salePrice', Number(e.target.value))}
-              className="rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
+              min={minSalePrice || (selectedProduct?.basePrice ?? 0)}
+              onChange={(e) =>
+                handleChange('salePrice', Number(e.target.value))
+              }
+              className={`rounded-lg border px-3 py-2 text-xs outline-none focus:border-gray-400 ${
+                belowMin ? 'border-amber-400 bg-amber-50' : 'border-gray-200'
+              }`}
             />
             {selectedProduct && (
-              <p className="text-xs text-gray-400">
-                سعر الجملة: {selectedProduct.basePrice.toLocaleString('ar-DZ')} د.ج — تبيع بالسعر الذي تريده
-              </p>
+              <>
+                <p className="text-xs text-gray-400">
+                  الجملة {selectedProduct.basePrice.toLocaleString('ar-DZ')} د.ج
+                  {deliveryPrice !== null ? (
+                    <>
+                      {' '}
+                      + التوصيل {deliveryPrice.toLocaleString('ar-DZ')} د.ج ={' '}
+                      <span className="font-semibold text-gray-600">
+                        الحدّ الأدنى {minSalePrice.toLocaleString('ar-DZ')} د.ج
+                      </span>
+                    </>
+                  ) : (
+                    <> — اختر الولاية لاحتساب الحدّ الأدنى (الجملة + التوصيل)</>
+                  )}
+                </p>
+                {belowMin && (
+                  <p className="text-xs font-medium text-amber-600">
+                    ⚠️ سعر البيع أقل من الحدّ الأدنى — لن يغطّي تكلفة التوصيل
+                  </p>
+                )}
+              </>
             )}
           </div>
 

@@ -19,7 +19,30 @@ import type {
   PayoutAccount,
   ActiveSession,
   SessionDevice,
+  NotificationToggles,
 } from '../-settings.types'
+
+// ── تخزين تفضيلات الإشعارات في جدول settings (مفتاح/قيمة) ───────
+// لا يوجد جدول تفضيلات مخصّص؛ نخزّن JSON تحت مفتاح يحمل معرّف المستخدم.
+type StoredMerchantNotif = {
+  toggles: NotificationToggles
+  channels: { email: string; whatsapp: string }
+}
+const merchantNotifKey = (userId: string) => `merchant_notif:${userId}`
+
+async function readMerchantNotif(userId: string): Promise<StoredMerchantNotif | null> {
+  const [row] = await db
+    .select({ value: settings.value })
+    .from(settings)
+    .where(eq(settings.key, merchantNotifKey(userId)))
+    .limit(1)
+  if (!row) return null
+  try {
+    return JSON.parse(row.value) as StoredMerchantNotif
+  } catch {
+    return null
+  }
+}
 
 // ============================================================
 // HELPERS
@@ -148,6 +171,16 @@ export const getSettingsData = createServerFn({ method: 'GET' }).handler(
       }
     })
 
+    // تفضيلات الإشعارات المحفوظة (أو الافتراضية)
+    const DEFAULT_TOGGLES: NotificationToggles = {
+      newOrders: true,
+      paymentConfirmation: true,
+      weeklyReport: false,
+      returnRateAlert: true,
+      affiliateActivity: false,
+    }
+    const storedNotif = await readMerchantNotif(userId)
+
     return {
       profile: {
         profile: {
@@ -167,14 +200,8 @@ export const getSettingsData = createServerFn({ method: 'GET' }).handler(
         minimumPayout: minPayout ? Number(minPayout.value) : 5000,
       },
       notifications: {
-        toggles: {
-          newOrders: true,
-          paymentConfirmation: true,
-          weeklyReport: false,
-          returnRateAlert: true,
-          affiliateActivity: false,
-        },
-        channels: {
+        toggles: storedNotif?.toggles ?? DEFAULT_TOGGLES,
+        channels: storedNotif?.channels ?? {
           email: user?.email ?? '',
           whatsapp: user?.phone ?? '',
         },
@@ -223,13 +250,39 @@ export const updateProfile = createServerFn({ method: 'POST' })
   })
 
 // ============================================================
-// UPDATE NOTIFICATIONS (no DB table — accepted but not persisted)
+// UPDATE NOTIFICATIONS — يُحفظ في تفضيلات المستخدم (جدول settings)
 // ============================================================
 
+const MerchantNotifSchema = z.object({
+  toggles: z.object({
+    newOrders: z.boolean(),
+    paymentConfirmation: z.boolean(),
+    weeklyReport: z.boolean(),
+    returnRateAlert: z.boolean(),
+    affiliateActivity: z.boolean(),
+  }),
+  channels: z.object({
+    email: z.string(),
+    whatsapp: z.string(),
+  }),
+})
+
 export const updateNotifications = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) => data)
-  .handler(async (): Promise<{ success: boolean }> => {
-    await requireMerchant()
+  .inputValidator((input: unknown) => MerchantNotifSchema.parse(input))
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const { session } = await requireMerchant()
+
+    await db
+      .insert(settings)
+      .values({
+        key: merchantNotifKey(session.user.id),
+        value: JSON.stringify(data),
+      })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: JSON.stringify(data), updated_at: new Date() },
+      })
+
     return { success: true }
   })
 

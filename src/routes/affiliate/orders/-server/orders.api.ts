@@ -11,7 +11,16 @@ import {
   deliveryPricing,
   deliveryOffices,
 } from '#/server/db/schema'
-import { and, eq, sql, desc, asc, notInArray, isNull, inArray } from 'drizzle-orm'
+import {
+  and,
+  eq,
+  sql,
+  desc,
+  asc,
+  notInArray,
+  isNull,
+  inArray,
+} from 'drizzle-orm'
 import { notify } from '#/server/notify'
 import { requireAffiliate } from '#/server/auth/guards'
 import { z } from 'zod'
@@ -31,7 +40,11 @@ async function resolveDelivery(
   wilayaCode: number,
   officeId: string,
   deliveryType: 'home' | 'office',
-): Promise<{ communeName: string; deliveryOfficeId: string | null; deliveryPrice: number }> {
+): Promise<{
+  communeName: string
+  deliveryOfficeId: string | null
+  deliveryPrice: number
+}> {
   const [office] = await db
     .select({
       id: deliveryOffices.id,
@@ -59,7 +72,10 @@ async function resolveDelivery(
     .where(eq(deliveryPricing.wilaya_id, wilayaCode))
     .limit(1)
 
-  if (!pricing) throw new Error('لا توجد تعرفة توصيل لهذه الولاية — اطلب من الأدمن مزامنتها')
+  if (!pricing)
+    throw new Error(
+      'لا توجد تعرفة توصيل لهذه الولاية — اطلب من الأدمن مزامنتها',
+    )
 
   return {
     communeName: office.name,
@@ -74,16 +90,30 @@ const ref = (id: string, prefix: string) =>
   `${prefix}-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
 
 // رسوم المنصة الثابتة لكل طلب (من الإعدادات) — تُؤخذ من الطرفين
-async function getPlatformFees(): Promise<{ merchant: number; affiliate: number }> {
+async function getPlatformFees(): Promise<{
+  merchant: number
+  affiliate: number
+}> {
   const rows = await db
     .select({ key: settings.key, value: settings.value })
     .from(settings)
-    .where(inArray(settings.key, ['platform_fee_merchant', 'platform_fee_affiliate']))
+    .where(
+      inArray(settings.key, [
+        'platform_fee_merchant',
+        'platform_fee_affiliate',
+      ]),
+    )
 
   const kv = Object.fromEntries(rows.map((r) => [r.key, r.value]))
   return {
-    merchant: kv.platform_fee_merchant !== undefined ? Number(kv.platform_fee_merchant) : 50,
-    affiliate: kv.platform_fee_affiliate !== undefined ? Number(kv.platform_fee_affiliate) : 50,
+    merchant:
+      kv.platform_fee_merchant !== undefined
+        ? Number(kv.platform_fee_merchant)
+        : 50,
+    affiliate:
+      kv.platform_fee_affiliate !== undefined
+        ? Number(kv.platform_fee_affiliate)
+        : 50,
   }
 }
 
@@ -124,6 +154,7 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
         affiliatePrice: orders.unit_affiliate_price_dzd,
         merchantPrice: orders.unit_merchant_price_dzd,
         platformFee: orders.platform_fee_affiliate_dzd,
+        shipping: orders.shipping_fee_dzd,
         status: orders.status,
         trackingNumber: orders.tracking_number,
         confirmedAt: orders.confirmed_at,
@@ -155,7 +186,9 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
       price: r.affiliatePrice * r.quantity,
       commission: Math.max(
         0,
-        (r.affiliatePrice - r.merchantPrice) * r.quantity - r.platformFee,
+        (r.affiliatePrice - r.merchantPrice) * r.quantity -
+          r.platformFee -
+          r.shipping,
       ),
       status: STATUS_MAP[r.status] ?? 'pending',
       dbStatus: r.status,
@@ -175,7 +208,7 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
         delivered: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'delivered')`,
         returned: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} = 'returned')`,
         inShipping: sql<number>`COUNT(*) FILTER (WHERE ${orders.status} IN ('shipped', 'at_wilaya'))`,
-        earnedComm: sql<number>`COALESCE(SUM(GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd}, 0)) FILTER (WHERE ${orders.status} = 'delivered'), 0)`,
+        earnedComm: sql<number>`COALESCE(SUM(GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd} - ${orders.shipping_fee_dzd}, 0)) FILTER (WHERE ${orders.status} = 'delivered'), 0)`,
       })
       .from(orders)
       .where(visible)
@@ -233,13 +266,23 @@ export const addLeadManual = createServerFn({ method: 'POST' })
     if (!product) throw new Error('المنتج غير موجود')
     if (!product.isActive || product.stockQty <= 0)
       throw new Error('المنتج غير متاح حالياً')
-    if (data.salePrice < product.merchantPrice)
-      throw new Error('سعر البيع لا يمكن أن يكون أقل من سعر الجملة')
 
     const fees = await getPlatformFees()
     // البلدية + سعر التوصيل من الجداول المحلّية (السعر يُعاد حسابه على الخادم —
     // لا نثق بأيّ سعر من العميل).
-    const loc = await resolveDelivery(data.wilayaCode, data.officeId, data.deliveryType)
+    const loc = await resolveDelivery(
+      data.wilayaCode,
+      data.officeId,
+      data.deliveryType,
+    )
+
+    // الحدّ الأدنى لسعر البيع = سعر الجملة + سعر التوصيل، كي يغطّي دفعُ الزبون
+    // تكلفةَ التوصيل ولا يبيع المسوّق بأقلّ من التكلفة. (السعر مُعاد حسابه خادميّاً.)
+    const minSalePrice = product.merchantPrice + loc.deliveryPrice
+    if (data.salePrice < minSalePrice)
+      throw new Error(
+        `سعر البيع لا يمكن أن يكون أقل من ${minSalePrice} د.ج (الجملة ${product.merchantPrice} + التوصيل ${loc.deliveryPrice})`,
+      )
 
     await db.insert(orders).values({
       product_id: product.id,
@@ -289,7 +332,9 @@ export const confirmLead = createServerFn({ method: 'POST' })
           quantity: orders.quantity,
         })
         .from(orders)
-        .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+        .where(
+          and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)),
+        )
         .for('update')
         .limit(1)
 
@@ -397,7 +442,9 @@ export const rejectLead = createServerFn({ method: 'POST' })
       const [order] = await tx
         .select({ id: orders.id, status: orders.status })
         .from(orders)
-        .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+        .where(
+          and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)),
+        )
         .for('update')
         .limit(1)
 
@@ -408,7 +455,10 @@ export const rejectLead = createServerFn({ method: 'POST' })
       const now = new Date()
 
       // المخزون لم يُنقَص بعد (يُنقَص عند التأكيد فقط) → لا حاجة لإرجاعه
-      await tx.update(orders).set({ status: 'cancelled' }).where(eq(orders.id, order.id))
+      await tx
+        .update(orders)
+        .set({ status: 'cancelled' })
+        .where(eq(orders.id, order.id))
 
       await tx.insert(orderStatusHistory).values({
         order_id: order.id,
@@ -476,7 +526,11 @@ export const getOfficesLocal = createServerFn({ method: 'GET' })
       .from(deliveryOffices)
       .where(eq(deliveryOffices.wilaya_id, data.wilayaCode))
       .orderBy(asc(deliveryOffices.name))
-    return rows.map((r) => ({ id: r.id, name: r.name, hasStopDesk: r.hasStopDesk }))
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      hasStopDesk: r.hasStopDesk,
+    }))
   })
 
 // ============================================================
@@ -494,6 +548,7 @@ export interface EditableOrder {
   deliveryType: 'home' | 'office'
   address: string
   salePrice: number
+  merchantPrice: number
   quantity: number
   notes: string
   status: string
@@ -501,7 +556,9 @@ export interface EditableOrder {
 }
 
 export const getEditableOrder = createServerFn({ method: 'GET' })
-  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ orderId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }): Promise<EditableOrder> => {
     const { profileId } = await requireAffiliate()
     const [o] = await db
@@ -516,12 +573,15 @@ export const getEditableOrder = createServerFn({ method: 'GET' })
         deliveryType: orders.delivery_type,
         address: orders.customer_address,
         salePrice: orders.unit_affiliate_price_dzd,
+        merchantPrice: orders.unit_merchant_price_dzd,
         quantity: orders.quantity,
         notes: orders.customer_note,
         status: orders.status,
       })
       .from(orders)
-      .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+      .where(
+        and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)),
+      )
       .limit(1)
 
     if (!o) throw new Error('الطلبية غير موجودة')
@@ -540,6 +600,7 @@ export const getEditableOrder = createServerFn({ method: 'GET' })
       deliveryType: o.deliveryType,
       address: o.address ?? '',
       salePrice: o.salePrice,
+      merchantPrice: o.merchantPrice,
       quantity: o.quantity,
       notes: o.notes ?? '',
       status: o.status,
@@ -566,7 +627,11 @@ export const updateOrderManual = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { profileId } = await requireAffiliate()
     // البلدية + السعر من الجداول المحلّية (لا نثق بسعر العميل)
-    const loc = await resolveDelivery(data.wilayaCode, data.officeId, data.deliveryType)
+    const loc = await resolveDelivery(
+      data.wilayaCode,
+      data.officeId,
+      data.deliveryType,
+    )
 
     await db.transaction(async (tx) => {
       const [order] = await tx
@@ -577,7 +642,9 @@ export const updateOrderManual = createServerFn({ method: 'POST' })
           merchantPrice: orders.unit_merchant_price_dzd,
         })
         .from(orders)
-        .where(and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)))
+        .where(
+          and(eq(orders.id, data.orderId), eq(orders.affiliate_id, profileId)),
+        )
         .for('update')
         .limit(1)
 
@@ -585,8 +652,12 @@ export const updateOrderManual = createServerFn({ method: 'POST' })
       if (order.status !== 'pending' && order.status !== 'confirmed') {
         throw new Error('لا يمكن تعديل الطلبية بعد شحنها')
       }
-      if (data.salePrice < order.merchantPrice) {
-        throw new Error('سعر البيع لا يمكن أن يكون أقل من سعر الجملة')
+      // الحدّ الأدنى = سعر الجملة + سعر التوصيل المُعاد حسابه على الخادم
+      const minSalePrice = order.merchantPrice + loc.deliveryPrice
+      if (data.salePrice < minSalePrice) {
+        throw new Error(
+          `سعر البيع لا يمكن أن يكون أقل من ${minSalePrice} د.ج (الجملة ${order.merchantPrice} + التوصيل ${loc.deliveryPrice})`,
+        )
       }
       // الكمية قابلة للتعديل قبل التأكيد فقط (بعده خُصم المخزون)
       if (order.status === 'confirmed' && data.quantity !== order.quantity) {

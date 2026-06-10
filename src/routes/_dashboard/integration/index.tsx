@@ -22,8 +22,7 @@ const INTEGRATION_GROUPS: IntegrationGroup[] = [
         icon:        '🛒',
         iconBg:      '#e0f2fe',
         category:    'ecommerce',
-        status:      'connected',
-        lastSync:    'منذ 3 دقائق',
+        status:      'disconnected',
         docsUrl:     'https://developers.youcan.shop',
       },
       {
@@ -62,8 +61,7 @@ const INTEGRATION_GROUPS: IntegrationGroup[] = [
         icon:        '📊',
         iconBg:      '#f0fdf4',
         category:    'automation',
-        status:      'connected',
-        lastSync:    'منذ 1 دقيقة',
+        status:      'disconnected',
         docsUrl:     'https://developers.google.com/sheets/api',
       },
       {
@@ -73,8 +71,7 @@ const INTEGRATION_GROUPS: IntegrationGroup[] = [
         icon:        '🔗',
         iconBg:      '#f8fafc',
         category:    'automation',
-        status:      'connected',
-        lastSync:    'منذ 1 ساعة',
+        status:      'disconnected',
         docsUrl:     'https://docs.yourdomain.com/webhooks',
       },
     ],
@@ -91,8 +88,7 @@ const INTEGRATION_GROUPS: IntegrationGroup[] = [
         icon:        '✈️',
         iconBg:      '#e0f2fe',
         category:    'notifications',
-        status:      'connected',
-        lastSync:    'منذ 3 ساعات',
+        status:      'disconnected',
       },
       {
         id:          'messenger',
@@ -122,14 +118,6 @@ const INTEGRATION_GROUPS: IntegrationGroup[] = [
 // ─── page ─────────────────────────────────────────────
 
 function IntegrationHubPage() {
-  const connectedCount = INTEGRATION_GROUPS
-    .flatMap((g) => g.integrations)
-    .filter((i) => i.status === 'connected').length
-
-  const errorCount = INTEGRATION_GROUPS
-    .flatMap((g) => g.integrations)
-    .filter((i) => i.status === 'error').length
-
   return (
     <div className="flex flex-col gap-6 p-5" dir="rtl">
 
@@ -139,16 +127,19 @@ function IntegrationHubPage() {
           <h1 className="text-lg font-bold text-gray-900">Integration Hub</h1>
           <p className="text-xs text-gray-400">البنية التحتية التقنية للمنصة — ربط وإدارة جميع الخدمات الخارجية</p>
         </div>
-        <div className="flex gap-2">
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-            {connectedCount} متصل
-          </span>
-          {errorCount > 0 && (
-            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
-              {errorCount} خطأ
-            </span>
-          )}
-        </div>
+        <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+          قيد التطوير
+        </span>
+      </div>
+
+      {/* تنويه: هذه التكاملات لم تُفعَّل بعد (معاينة لخارطة الطريق) */}
+      <div className="flex items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3">
+        <span className="text-base leading-none">🚧</span>
+        <p className="text-xs leading-relaxed text-indigo-900">
+          هذه التكاملات معاينة قيد التطوير ولم تُفعَّل بعد — أزرار الربط لا تحفظ
+          بياناتٍ فعليّة حالياً. <strong>إدارة شركة التوصيل (ECOTRACK) الفعلية تتمّ
+          من الإعدادات ← التوصيل.</strong>
+        </p>
       </div>
 
       {/* Integration Groups */}

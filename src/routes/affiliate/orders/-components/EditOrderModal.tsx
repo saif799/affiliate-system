@@ -4,11 +4,9 @@ import {
   getEditableOrder,
   getWilayasLocal,
   getOfficesLocal,
-  updateOrderManual
-  
-  
+  updateOrderManual,
 } from '../-server/orders.api'
-import type {LocalWilaya, LocalOffice} from '../-server/orders.api';
+import type { LocalWilaya, LocalOffice } from '../-server/orders.api'
 import type { EditOrderForm } from '../-orders.types'
 
 interface Props {
@@ -20,6 +18,7 @@ interface Props {
 export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
   const [form, setForm] = useState<EditOrderForm | null>(null)
   const [canEditQty, setCanEditQty] = useState(false)
+  const [merchantPrice, setMerchantPrice] = useState(0)
   const [wilayas, setWilayas] = useState<LocalWilaya[]>([])
   const [offices, setOffices] = useState<LocalOffice[]>([])
   const [loading, setLoading] = useState(false)
@@ -41,6 +40,7 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
         if (cancelled) return
         setWilayas(w)
         setCanEditQty(o.canEditQuantity)
+        setMerchantPrice(o.merchantPrice)
         setForm({
           orderId: o.orderId,
           customerName: o.customerName,
@@ -57,13 +57,18 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
         if (o.wilayaCode) {
           setLoadingOffices(true)
           try {
-            const offs = await getOfficesLocal({ data: { wilayaCode: o.wilayaCode } })
+            const offs = await getOfficesLocal({
+              data: { wilayaCode: o.wilayaCode },
+            })
             if (cancelled) return
             setOffices(offs)
             // استرجاع اختيار البلدية للطلبيات المنزلية (لا تخزّن delivery_office_id)
             if (!o.officeId && o.commune) {
               const match = offs.find((x) => x.name === o.commune)
-              if (match) setForm((prev) => (prev ? { ...prev, officeId: match.id } : prev))
+              if (match)
+                setForm((prev) =>
+                  prev ? { ...prev, officeId: match.id } : prev,
+                )
             }
           } finally {
             if (!cancelled) setLoadingOffices(false)
@@ -71,7 +76,8 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
         }
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'تعذّر تحميل الطلبية')
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : 'تعذّر تحميل الطلبية')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -83,15 +89,27 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
 
   if (!orderId) return null
 
-  const selectedWilaya = form ? wilayas.find((w) => w.code === form.wilayaCode) : undefined
+  const selectedWilaya = form
+    ? wilayas.find((w) => w.code === form.wilayaCode)
+    : undefined
   const officeOptions =
-    form && form.deliveryType === 'office' ? offices.filter((o) => o.hasStopDesk) : offices
+    form && form.deliveryType === 'office'
+      ? offices.filter((o) => o.hasStopDesk)
+      : offices
   const deliveryPrice =
     form && selectedWilaya
       ? form.deliveryType === 'office'
         ? selectedWilaya.officePrice
         : selectedWilaya.homePrice
       : null
+
+  // الحدّ الأدنى لسعر البيع = الجملة + التوصيل (يُفرَض على الخادم أيضاً)
+  const minSalePrice = merchantPrice + (deliveryPrice ?? 0)
+  const belowMin =
+    !!form &&
+    merchantPrice > 0 &&
+    deliveryPrice !== null &&
+    form.salePrice < minSalePrice
 
   function patch(p: Partial<EditOrderForm>) {
     setForm((prev) => (prev ? { ...prev, ...p } : prev))
@@ -121,6 +139,10 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
     if (!form.officeId) return setError('اختر البلدية / المكتب')
     if (!form.address.trim()) return setError('العنوان مطلوب')
     if (form.salePrice <= 0) return setError('سعر البيع غير صالح')
+    if (belowMin)
+      return setError(
+        `سعر البيع لا يمكن أن يكون أقل من الحدّ الأدنى ${minSalePrice.toLocaleString('ar-DZ')} د.ج (الجملة + التوصيل)`,
+      )
     if (form.quantity <= 0) return setError('الكمية غير صالحة')
 
     setSubmitting(true)
@@ -142,7 +164,10 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
         if (e.target === e.currentTarget && !submitting) onClose()
       }}
     >
-      <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-xl" dir="rtl">
+      <div
+        className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-xl"
+        dir="rtl"
+      >
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-gray-900">تعديل الطلبية</h2>
           <button
@@ -168,7 +193,9 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-gray-600">اسم الزبون</label>
+                  <label className="text-xs font-medium text-gray-600">
+                    اسم الزبون
+                  </label>
                   <input
                     value={form.customerName}
                     onChange={(e) => patch({ customerName: e.target.value })}
@@ -176,7 +203,9 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-gray-600">رقم الهاتف</label>
+                  <label className="text-xs font-medium text-gray-600">
+                    رقم الهاتف
+                  </label>
                   <input
                     value={form.customerPhone}
                     onChange={(e) => patch({ customerPhone: e.target.value })}
@@ -187,7 +216,9 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-gray-600">الولاية</label>
+                <label className="text-xs font-medium text-gray-600">
+                  الولاية
+                </label>
                 <select
                   value={form.wilayaCode || ''}
                   onChange={(e) => handleWilayaChange(Number(e.target.value))}
@@ -203,12 +234,18 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-gray-600">نوع التوصيل</label>
+                <label className="text-xs font-medium text-gray-600">
+                  نوع التوصيل
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   {(
                     [
                       { v: 'home', label: 'توصيل منزلي', Icon: Home },
-                      { v: 'office', label: 'استلام من المكتب', Icon: Building2 },
+                      {
+                        v: 'office',
+                        label: 'استلام من المكتب',
+                        Icon: Building2,
+                      },
                     ] as const
                   ).map(({ v, label, Icon }) => (
                     <button
@@ -230,7 +267,9 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-600">
                   {form.deliveryType === 'office' ? 'مكتب الاستلام' : 'البلدية'}{' '}
-                  {loadingOffices && <Loader2 size={11} className="inline animate-spin" />}
+                  {loadingOffices && (
+                    <Loader2 size={11} className="inline animate-spin" />
+                  )}
                 </label>
                 <select
                   value={form.officeId}
@@ -250,7 +289,8 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
               {deliveryPrice !== null && (
                 <div className="flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5">
                   <p className="text-xs text-blue-600">
-                    سعر التوصيل ({form.deliveryType === 'office' ? 'مكتب' : 'منزل'})
+                    سعر التوصيل (
+                    {form.deliveryType === 'office' ? 'مكتب' : 'منزل'})
                   </p>
                   <p className="text-sm font-bold text-blue-700">
                     {deliveryPrice.toLocaleString('ar-DZ')} د.ج
@@ -259,7 +299,9 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-gray-600">العنوان</label>
+                <label className="text-xs font-medium text-gray-600">
+                  العنوان
+                </label>
                 <input
                   value={form.address}
                   onChange={(e) => patch({ address: e.target.value })}
@@ -269,32 +311,69 @@ export function EditOrderModal({ orderId, onClose, onSaved }: Props) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-gray-600">سعر البيع (د.ج)</label>
+                  <label className="text-xs font-medium text-gray-600">
+                    سعر البيع (د.ج)
+                  </label>
                   <input
                     type="number"
-                    min={0}
+                    min={minSalePrice || 0}
                     value={form.salePrice}
-                    onChange={(e) => patch({ salePrice: Number(e.target.value) })}
-                    className="rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
+                    onChange={(e) =>
+                      patch({ salePrice: Number(e.target.value) })
+                    }
+                    className={`rounded-lg border px-3 py-2 text-xs outline-none focus:border-gray-400 ${
+                      belowMin
+                        ? 'border-amber-400 bg-amber-50'
+                        : 'border-gray-200'
+                    }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-gray-600">
-                    الكمية {!canEditQty && <span className="text-gray-400">(مقفلة بعد التأكيد)</span>}
+                    الكمية{' '}
+                    {!canEditQty && (
+                      <span className="text-gray-400">(مقفلة بعد التأكيد)</span>
+                    )}
                   </label>
                   <input
                     type="number"
                     min={1}
                     value={form.quantity}
                     disabled={!canEditQty}
-                    onChange={(e) => patch({ quantity: Number(e.target.value) })}
+                    onChange={(e) =>
+                      patch({ quantity: Number(e.target.value) })
+                    }
                     className="rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:opacity-60"
                   />
                 </div>
               </div>
 
+              {merchantPrice > 0 && (
+                <p className="text-xs text-gray-400">
+                  الجملة {merchantPrice.toLocaleString('ar-DZ')} د.ج
+                  {deliveryPrice !== null ? (
+                    <>
+                      {' '}
+                      + التوصيل {deliveryPrice.toLocaleString('ar-DZ')} د.ج ={' '}
+                      <span className="font-semibold text-gray-600">
+                        الحدّ الأدنى {minSalePrice.toLocaleString('ar-DZ')} د.ج
+                      </span>
+                    </>
+                  ) : (
+                    <> — اختر الولاية لاحتساب الحدّ الأدنى</>
+                  )}
+                </p>
+              )}
+              {belowMin && (
+                <p className="text-xs font-medium text-amber-600">
+                  ⚠️ سعر البيع أقل من الحدّ الأدنى — لن يغطّي تكلفة التوصيل
+                </p>
+              )}
+
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-gray-600">ملاحظات</label>
+                <label className="text-xs font-medium text-gray-600">
+                  ملاحظات
+                </label>
                 <textarea
                   value={form.notes ?? ''}
                   onChange={(e) => patch({ notes: e.target.value })}

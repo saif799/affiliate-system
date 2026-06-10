@@ -176,7 +176,7 @@ export function TeamTab({ members: initialMembers }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              {['العضو', 'الدور', 'الحالة', 'تاريخ الانضمام', 'إجراءات'].map((h) => (
+              {['العضو', 'الدور', 'الحالة', 'تاريخ الانضمام'].map((h) => (
                 <th key={h} className="text-right text-gray-500 font-medium px-5 py-3">
                   {h}
                 </th>
@@ -207,11 +207,6 @@ export function TeamTab({ members: initialMembers }: Props) {
                 </td>
                 <td className="px-5 py-4 text-gray-500">
                   {m.joined_at ? new Date(m.joined_at).toLocaleDateString('fr-DZ') : '—'}
-                </td>
-                <td className="px-5 py-4">
-                  <button className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium transition-colors">
-                    تعديل
-                  </button>
                 </td>
               </tr>
             ))}

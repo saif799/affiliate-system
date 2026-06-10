@@ -151,14 +151,18 @@ export function IntegrationCard({ integration: itg }: Props) {
               </div>
             )}
 
+            <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+              🚧 هذا التكامل قيد التطوير ولن يُحفظ بعد — معاينة فقط.
+            </p>
+
             <div className="flex gap-3">
               <button type="button" onClick={() => setShowModal(false)}
                 className="flex-1 rounded-lg border border-gray-200 py-2 text-sm hover:bg-gray-50">
-                إلغاء
+                إغلاق
               </button>
-              <button type="button" onClick={() => setShowModal(false)}
-                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                حفظ وربط
+              <button type="button" disabled
+                className="flex-1 rounded-lg bg-gray-200 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">
+                قريباً
               </button>
             </div>
           </div>
