@@ -6,7 +6,7 @@ interface Props {
 
 export function OrdersStats({ stats }: Props) {
   return (
-    <div className="grid grid-cols-4 gap-2.5">
+    <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
       <div className="rounded-xl border border-gray-200 bg-white px-4 py-3.5">
         <p className="text-xs text-gray-500">إجمالي الطلبيات</p>
         <p className="mt-1.5 text-xl font-bold text-gray-900">
@@ -37,7 +37,9 @@ export function OrdersStats({ stats }: Props) {
           {stats.deliveryRate}%
         </p>
         <p className="mt-0.5 text-xs text-gray-400">
-          {100 - stats.deliveryRate}% مرتجعة
+          {stats.finalized > 0
+            ? `${Math.round((100 - stats.deliveryRate) * 10) / 10}% مرتجعة`
+            : 'لا طلبيات نهائية بعد'}
         </p>
       </div>
     </div>

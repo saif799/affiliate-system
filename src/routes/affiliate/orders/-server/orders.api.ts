@@ -222,6 +222,7 @@ export const getAffiliateOrders = createServerFn({ method: 'GET' }).handler(
       earnedComm: n(statsRow.earnedComm),
       inShipping: n(statsRow.inShipping),
       deliveryRate: finalized > 0 ? round1((delivered / finalized) * 100) : 0,
+      finalized,
     }
 
     return { orders: ordersList, stats }
@@ -247,7 +248,7 @@ const AddLeadSchema = z.object({
 })
 
 export const addLeadManual = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => AddLeadSchema.parse(input))
+  .validator((input: unknown) => AddLeadSchema.parse(input))
   .handler(async ({ data }) => {
     const { profileId } = await requireAffiliate()
 
@@ -317,7 +318,7 @@ export const addLeadManual = createServerFn({ method: 'POST' })
 const OrderIdSchema = z.object({ orderId: z.string().uuid() })
 
 export const confirmLead = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => OrderIdSchema.parse(input))
+  .validator((input: unknown) => OrderIdSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { session, profileId } = await requireAffiliate()
 
@@ -432,7 +433,7 @@ export const confirmLead = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const rejectLead = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => OrderIdSchema.parse(input))
+  .validator((input: unknown) => OrderIdSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { profileId } = await requireAffiliate()
 
@@ -512,7 +513,7 @@ export interface LocalOffice {
 }
 
 export const getOfficesLocal = createServerFn({ method: 'GET' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ wilayaCode: z.number().int().min(1).max(58) }).parse(input),
   )
   .handler(async ({ data }): Promise<LocalOffice[]> => {
@@ -556,7 +557,7 @@ export interface EditableOrder {
 }
 
 export const getEditableOrder = createServerFn({ method: 'GET' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ orderId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }): Promise<EditableOrder> => {
@@ -623,7 +624,7 @@ const UpdateOrderSchema = z.object({
 })
 
 export const updateOrderManual = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => UpdateOrderSchema.parse(input))
+  .validator((input: unknown) => UpdateOrderSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { profileId } = await requireAffiliate()
     // البلدية + السعر من الجداول المحلّية (لا نثق بسعر العميل)

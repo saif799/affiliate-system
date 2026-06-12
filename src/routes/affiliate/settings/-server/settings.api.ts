@@ -233,7 +233,7 @@ const ProfileSchema = z.object({
 })
 
 export const updateProfile = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => ProfileSchema.parse(input))
+  .validator((input: unknown) => ProfileSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { session } = await requireAffiliate()
 
@@ -275,7 +275,7 @@ const NotifSaveSchema = z.object({
 })
 
 export const updateNotifications = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => NotifSaveSchema.parse(input))
+  .validator((input: unknown) => NotifSaveSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { session } = await requireAffiliate()
 
@@ -296,7 +296,7 @@ export const updateNotifications = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const changePassword = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         currentPassword: z.string(),

@@ -80,7 +80,7 @@ export const getAdminOrders = createServerFn({ method: 'GET' }).handler(
 
 // فتح نزاع على طلبية (تجميدها) + إشعار الطرف/الأطراف المختارة
 export const flagOrderDispute = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         orderId: z.string().uuid(),
@@ -143,7 +143,7 @@ export const flagOrderDispute = createServerFn({ method: 'POST' })
 
 // حلّ النزاع → delivered (تسوية) / returned / cancelled
 export const resolveOrderDispute = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         orderId: z.string().uuid(),

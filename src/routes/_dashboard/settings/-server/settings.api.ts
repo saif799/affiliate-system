@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { db } from '#/server/db'
 import { auth } from '#/server/auth'
 import { settings, users, sessions } from '#/server/db/schema'
-import { getSession }     from '#/lib/session'
+import { requireSuperAdmin } from '#/server/auth/guards'
 import { eq, inArray, sql } from 'drizzle-orm'
 import type {
   SettingsData,
@@ -15,15 +15,6 @@ import type {
   SecuritySettings,
 } from '../-settings.types'
 
-// ═══════════════════════════════════════════════════════════════
-//  Auth guard — call at the top of every handler
-// ═══════════════════════════════════════════════════════════════
-
-async function requireSuperAdmin() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'super_admin') throw new Error('Unauthorized')
-  return session
-}
 // ═══════════════════════════════════════════════════════════════
 //  Defaults
 // ═══════════════════════════════════════════════════════════════
@@ -224,7 +215,7 @@ const UpdateFinancialSchema = z.object({
 })
 
 export const updateFinancialSettings = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => UpdateFinancialSchema.parse(input))
+  .validator((input: unknown) => UpdateFinancialSchema.parse(input))
   .handler(async ({ data }): Promise<FinancialSettings> => {
     await requireSuperAdmin()
 
@@ -253,7 +244,7 @@ const UpdateGeneralSchema = z.object({
 })
 
 export const updateGeneralSettings = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => UpdateGeneralSchema.parse(input))
+  .validator((input: unknown) => UpdateGeneralSchema.parse(input))
   .handler(async ({ data }): Promise<GeneralSettings> => {
     await requireSuperAdmin()
 
@@ -279,7 +270,7 @@ const InviteTeamSchema = z.object({
 })
 
 export const inviteTeamMember = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => InviteTeamSchema.parse(input))
+  .validator((input: unknown) => InviteTeamSchema.parse(input))
   .handler(async ({ data }): Promise<TeamMember> => {
     await requireSuperAdmin()
 

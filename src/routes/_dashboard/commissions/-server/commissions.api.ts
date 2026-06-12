@@ -304,7 +304,7 @@ export const getCommissionsPageData = createServerFn({ method: 'GET' }).handler(
 )
 
 export const confirmWithdrawal = createServerFn({ method: 'POST' })
-  .inputValidator(
+  .validator(
     z.object({
       withdrawalId: z.string().uuid(),
       transactionRef: z.string().min(4, 'رقم الإثبات مطلوب'),
@@ -373,7 +373,7 @@ export const confirmWithdrawal = createServerFn({ method: 'POST' })
   })
 
 export const rejectWithdrawal = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({ withdrawalId: z.string().uuid() }))
+  .validator(z.object({ withdrawalId: z.string().uuid() }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     await requireSuperAdmin()
 
@@ -428,7 +428,7 @@ export const rejectWithdrawal = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const approveWithdrawal = createServerFn({ method: 'POST' })
-  .inputValidator(z.object({ withdrawalId: z.string().uuid() }))
+  .validator(z.object({ withdrawalId: z.string().uuid() }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     await requireSuperAdmin()
 
@@ -462,7 +462,7 @@ export const approveWithdrawal = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const getWithdrawalSource = createServerFn({ method: 'GET' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ withdrawalId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }): Promise<EarningSourceItem[]> => {

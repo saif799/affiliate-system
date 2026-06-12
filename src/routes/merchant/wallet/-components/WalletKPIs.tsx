@@ -8,7 +8,7 @@ export function WalletKPIs({ stats }: WalletKPIsProps) {
   const fmt = (n: number) => n.toLocaleString('ar-DZ')
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {/* الرصيد المتاح */}
       <div className="rounded-xl border border-gray-200 bg-white px-5 py-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">

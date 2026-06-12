@@ -14,7 +14,7 @@ function formatDZD(amount: number): string {
 
 export function BalanceCards({ balance }: Props) {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {/* الرصيد المتاح */}
       <div className="rounded-xl border border-gray-200 bg-white px-4 py-3.5">
         <p className="text-xs text-gray-500">الرصيد المتاح للسحب</p>

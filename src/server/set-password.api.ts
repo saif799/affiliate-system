@@ -62,7 +62,7 @@ export const checkHasPassword = createServerFn({ method: 'GET' }).handler(
 //  the client never touches it.
 
 export const setPassword = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => SetPasswordSchema.parse(input))
+  .validator((input: unknown) => SetPasswordSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: true }> => {
     const user = await requireSession()
 

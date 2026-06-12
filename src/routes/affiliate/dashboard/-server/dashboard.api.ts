@@ -2,9 +2,8 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
+import { requireAffiliate } from '#/server/auth/guards'
 import {
-  affiliateProfiles,
   orders,
   products,
   merchantProfiles,
@@ -21,21 +20,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireAffiliate() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'affiliate')
-    throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: affiliateProfiles.id })
-    .from(affiliateProfiles)
-    .where(eq(affiliateProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Affiliate profile not found')
-  return { session, profileId: profile.id }
-}
 
 const n = (v: unknown) => Number(v ?? 0)
 const round1 = (v: number) => Math.round(v * 10) / 10

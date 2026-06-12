@@ -4,7 +4,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { db } from '#/server/db'
 import { auth } from '#/server/auth'
-import { getSession } from '#/lib/session'
+import { requireMerchant } from '#/server/auth/guards'
 import {
   merchantProfiles,
   users,
@@ -47,20 +47,6 @@ async function readMerchantNotif(userId: string): Promise<StoredMerchantNotif | 
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireMerchant() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'merchant') throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: merchantProfiles.id })
-    .from(merchantProfiles)
-    .where(eq(merchantProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Merchant profile not found')
-  return { session, profileId: profile.id }
-}
 
 const PAYOUT_METHOD_LABEL: Record<string, string> = {
   CCP: 'CCP / بريد الجزائر',
@@ -226,7 +212,7 @@ const ProfileSchema = z.object({
 })
 
 export const updateProfile = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => ProfileSchema.parse(input))
+  .validator((input: unknown) => ProfileSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { session } = await requireMerchant()
     const userId = session.user.id
@@ -268,7 +254,7 @@ const MerchantNotifSchema = z.object({
 })
 
 export const updateNotifications = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => MerchantNotifSchema.parse(input))
+  .validator((input: unknown) => MerchantNotifSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { session } = await requireMerchant()
 
@@ -291,7 +277,7 @@ export const updateNotifications = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const updatePassword = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({ currentPassword: z.string(), newPassword: z.string().min(8) })
       .parse(input),
@@ -320,7 +306,7 @@ export const updatePassword = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const terminateSession = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ sessionId: z.string() }).parse(input))
+  .validator((input: unknown) => z.object({ sessionId: z.string() }).parse(input))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const { session } = await requireMerchant()
     await db

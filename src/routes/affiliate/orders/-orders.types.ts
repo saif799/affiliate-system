@@ -70,6 +70,7 @@ export interface OrdersStats {
   earnedComm: number
   inShipping: number
   deliveryRate: number
+  finalized: number // مُسلَّمة + مُرتجَعة — صفر يعني لا نسبة استلام ذات معنى بعد
 }
 
 // منتج متاح لإنشاء طلبية يدوية (المسوّق يبيع بأي سعر ≥ سعر الجملة)

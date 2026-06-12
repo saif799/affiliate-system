@@ -197,7 +197,7 @@ const WithdrawalSchema = z.object({
 })
 
 export const requestWithdrawal = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => WithdrawalSchema.parse(input))
+  .validator((input: unknown) => WithdrawalSchema.parse(input))
   .handler(async ({ data }) => {
     const { session } = await requireMerchant()
     const userId = session.user.id

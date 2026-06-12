@@ -45,14 +45,14 @@ export const getDeliveryPricing = createServerFn({ method: 'GET' }).handler(
 )
 
 export const syncDeliveryPricing = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ force: z.boolean().default(false) }).parse(input))
+  .validator((input: unknown) => z.object({ force: z.boolean().default(false) }).parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     return syncDeliveryCatalog({ force: data.force })
   })
 
 export const updateDeliveryPrice = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         wilayaId: z.number().int().min(1).max(58),
@@ -79,7 +79,7 @@ export const updateDeliveryPrice = createServerFn({ method: 'POST' })
   })
 
 export const resetDeliveryPrice = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ wilayaId: z.number().int().min(1).max(58) }).parse(input),
   )
   .handler(async ({ data }): Promise<{ success: boolean; homePrice: number; officePrice: number }> => {

@@ -21,7 +21,7 @@ import {
 } from '#/server/services/ecotrack.service'
 
 export const syncOrderWithEcotrack = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ orderId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -80,7 +80,7 @@ const CreateAccountSchema = z.object({
 })
 
 export const createDeliveryAccount = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => CreateAccountSchema.parse(input))
+  .validator((input: unknown) => CreateAccountSchema.parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     await db.transaction(async (tx) => {
@@ -117,7 +117,7 @@ const UpdateAccountSchema = z.object({
 })
 
 export const updateDeliveryAccount = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => UpdateAccountSchema.parse(input))
+  .validator((input: unknown) => UpdateAccountSchema.parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
     await db.transaction(async (tx) => {
@@ -165,7 +165,7 @@ export const updateDeliveryAccount = createServerFn({ method: 'POST' })
   })
 
 export const toggleDeliveryAccountStatus = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -192,7 +192,7 @@ export const toggleDeliveryAccountStatus = createServerFn({ method: 'POST' })
   })
 
 export const deleteDeliveryAccount = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -206,7 +206,7 @@ export const deleteDeliveryAccount = createServerFn({ method: 'POST' })
   })
 
 export const testDeliveryAccountConnection = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {

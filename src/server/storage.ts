@@ -28,11 +28,12 @@ const MIME_TO_EXT: Record<string, string> = {
  * يتحقّق من النوع والحجم قبل الحفظ.
  */
 export async function saveImage(file: File): Promise<string> {
-  if (!file.type.startsWith('image/')) throw new Error('الملف يجب أن يكون صورة')
+  // قائمة بيضاء صارمة: لا نقبل أنواعاً خارجها (svg مثلاً قد يحمل سكربتات)
+  const ext = MIME_TO_EXT[file.type]
+  if (!ext)
+    throw new Error('صيغة الصورة غير مدعومة — المسموح: JPG / PNG / WebP / GIF')
   if (file.size > MAX_BYTES)
     throw new Error('حجم الصورة يجب أن يكون أقل من 5MB')
-
-  const ext = MIME_TO_EXT[file.type] ?? 'jpg'
   const filename = `${randomUUID()}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 

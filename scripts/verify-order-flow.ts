@@ -95,7 +95,7 @@ async function main() {
     else fail('confirmed order NOT visible to merchant — transfer broken')
 
     // 6) history recorded
-    const hist = await db.select({ to: orderStatusHistory.to_status }).from(orderStatusHistory).where(eq(orderStatusHistory.order_id, orderId!))
+    const hist = await db.select({ to: orderStatusHistory.to_status }).from(orderStatusHistory).where(eq(orderStatusHistory.order_id, orderId))
     if (hist.some((h) => h.to === 'confirmed')) pass('status history recorded (pending→confirmed)')
     else fail('status history missing')
   } finally {

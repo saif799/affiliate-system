@@ -1,4 +1,4 @@
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
+import { LineChart, Line } from 'recharts'
 import type { StatMetric } from '../-dashboard.types'
 
 type Format = 'dzd' | 'number' | 'percent'
@@ -47,9 +47,12 @@ export function StatsCard({ label, metric, format, icon }: StatsCardProps) {
           </div>
         </div>
 
-        <div className="h-12 w-20 shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
+        {/* الشرارة تُرسم فقط عند توفّر نقطتين فأكثر — أبعاد صريحة (الحاوية
+            ثابتة h-12 w-20 = 48×80px) بدل ResponsiveContainer بنسبتين مئويتين،
+            الذي يُصيَّر أول مرة قبل قياس الحاوية فيُطلق تحذير width(-1) */}
+        {chartData.length > 1 && (
+          <div className="h-12 w-20 shrink-0">
+            <LineChart width={80} height={48} data={chartData}>
               <Line
                 type="monotone"
                 dataKey="v"
@@ -58,8 +61,8 @@ export function StatsCard({ label, metric, format, icon }: StatsCardProps) {
                 dot={false}
               />
             </LineChart>
-          </ResponsiveContainer>
-        </div>
+          </div>
+        )}
 
       </div>
     </div>

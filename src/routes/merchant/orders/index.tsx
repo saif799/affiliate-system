@@ -65,11 +65,14 @@ function MerchantOrdersPage() {
     const today = new Date().toISOString().slice(0, 10)
     return orders.filter((order) => {
       const matchTab = activeTab === 'all' || order.status === activeTab
+      const q = search.trim().toLowerCase()
+      const shortId = `ord-${order.id.replace(/-/g, '').slice(0, 8)}`
       const matchSearch =
-        search === '' ||
-        order.id.includes(search) ||
-        (order.internalShipmentId?.includes(search) ?? false) ||
-        order.product.name.includes(search)
+        q === '' ||
+        order.id.toLowerCase().includes(q) ||
+        shortId.includes(q) ||
+        (order.internalShipmentId?.toLowerCase().includes(q) ?? false) ||
+        order.product.name.toLowerCase().includes(q)
       const matchWilaya =
         wilayaFilter === 'all' || order.wilaya === wilayaFilter
       const matchDate = (() => {

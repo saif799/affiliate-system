@@ -38,7 +38,7 @@ const n = (v: unknown) => Number(v ?? 0)
 // ============================================================
 
 export const uploadProductImages = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => {
+  .validator((input: unknown) => {
     if (!(input instanceof FormData)) throw new Error('بيانات غير صالحة')
     return input
   })
@@ -146,11 +146,15 @@ const AddProductSchema = z.object({
   stockQuantity: z.number().int().min(0),
   lowStockThreshold: z.number().int().min(1).default(10),
   basePrice: z.number().int().min(0),
-  images: z.array(z.string()).max(5).default([]),
+  // روابط محلية فقط (مخرجات uploadProductImages) — لا روابط خارجية اعتباطية
+  images: z
+    .array(z.string().regex(/^\/uploads\/products\/[\w.-]+$/))
+    .max(5)
+    .default([]),
 })
 
 export const addProduct = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => AddProductSchema.parse(input))
+  .validator((input: unknown) => AddProductSchema.parse(input))
   .handler(async ({ data }) => {
     const { profileId } = await requireMerchant()
 
@@ -182,7 +186,7 @@ const UpdateProductSchema = AddProductSchema.extend({
 })
 
 export const updateProduct = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => UpdateProductSchema.parse(input))
+  .validator((input: unknown) => UpdateProductSchema.parse(input))
   .handler(async ({ data }) => {
     const { profileId } = await requireMerchant()
 
@@ -239,7 +243,7 @@ export const updateProduct = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const deleteProduct = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ productId: z.string() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -272,7 +276,7 @@ export const deleteProduct = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const toggleProductActive = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ productId: z.string() }).parse(input),
   )
   .handler(async ({ data }) => {

@@ -311,7 +311,7 @@ export const getMerchantsData = createServerFn({ method: 'GET' }).handler(
 // ============================================================
 
 export const acceptJoinRequest = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         userId: z.string().min(1),
@@ -344,7 +344,7 @@ export const acceptJoinRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const rejectJoinRequest = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ userId: z.string().min(1) }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -361,7 +361,7 @@ export const rejectJoinRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const updateMerchantStatus = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         merchantId: z.string().uuid(),
@@ -389,7 +389,7 @@ export const updateMerchantStatus = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const sendMerchantWarning = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         merchantId: z.string().uuid(),
@@ -432,7 +432,7 @@ export const sendMerchantWarning = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const deleteMerchant = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ merchantId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -471,7 +471,7 @@ const InviteMerchantSchema = z.object({
 export type InviteMerchantInput = z.infer<typeof InviteMerchantSchema>
 
 export const inviteMerchant = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => InviteMerchantSchema.parse(input))
+  .validator((input: unknown) => InviteMerchantSchema.parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
 

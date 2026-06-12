@@ -172,7 +172,7 @@ const WithdrawalSchema = z.object({
 })
 
 export const createWithdrawalRequest = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => WithdrawalSchema.parse(input))
+  .validator((input: unknown) => WithdrawalSchema.parse(input))
   .handler(async ({ data }): Promise<WithdrawalRequest> => {
     const { session } = await requireAffiliate()
     const userId = session.user.id

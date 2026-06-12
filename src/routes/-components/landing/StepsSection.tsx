@@ -18,7 +18,7 @@ export function StepsSection() {
         النظام مصمم ليكون بسيطاً للغاية — بدون تعقيدات تقنية أو وساطة مكلفة.
       </p>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {steps.map((step) => (
           <div
             key={step.num}

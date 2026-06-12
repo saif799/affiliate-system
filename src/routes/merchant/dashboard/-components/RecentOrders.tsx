@@ -9,6 +9,10 @@ const statusConfig = {
   returned:  { label: 'مُرتجعة',         color: 'bg-red-100    text-red-700'    },
 }
 
+// مرجع مختصر مقروء بدل UUID الخام (نفس صيغة بقية الصفحات)
+const shortRef = (id: string) =>
+  `ORD-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
+
 interface RecentOrdersProps {
   orders: RecentOrder[]
 }
@@ -33,7 +37,7 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
                   {order.productName}
                 </span>
                 <span className="text-xs text-gray-400">
-                  {order.id} · {order.wilaya}
+                  {shortRef(order.id)} · {order.wilaya}
                 </span>
               </div>
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>

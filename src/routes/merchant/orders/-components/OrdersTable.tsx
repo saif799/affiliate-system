@@ -10,6 +10,10 @@ function statusAction(
   return null
 }
 
+// مرجع مختصر مقروء بدل UUID الخام (نفس صيغة بقية الصفحات)
+const shortRef = (id: string) =>
+  `ORD-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
+
 const statusConfig: Record<OrderStatus, { label: string; className: string; dot: string }> = {
   pending:   { label: 'للتغليف',  className: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500'  },
   shipped:   { label: 'في الشحن', className: 'bg-blue-100  text-blue-800',  dot: 'bg-blue-500'   },
@@ -105,8 +109,8 @@ export function OrdersTable({
 
                 {/* رقم الطلب */}
                 <td className="px-4 py-3">
-                  <span className="font-mono text-xs font-medium text-gray-800">
-                    {order.id}
+                  <span className="font-mono text-xs font-medium text-gray-800 whitespace-nowrap">
+                    {shortRef(order.id)}
                   </span>
                   <p className="text-xs text-gray-400">{order.createdAt}</p>
                 </td>

@@ -68,7 +68,7 @@ async function authorizeOrderAccess(orderId: string): Promise<string> {
 }
 
 export const getOrderTracking = createServerFn({ method: 'GET' })
-  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data }): Promise<TrackingEventView[]> => {
     const orderId = await authorizeOrderAccess(data.orderId)
 
@@ -96,7 +96,7 @@ export const getOrderTracking = createServerFn({ method: 'GET' })
   })
 
 export const requestOrderReturn = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({ orderId: z.string().uuid(), reason: z.string().trim().min(1).max(300) })
       .parse(input),

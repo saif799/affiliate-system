@@ -2,8 +2,8 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
-import { getSession } from '#/lib/session'
-import { merchantProfiles, orders, products } from '#/server/db/schema'
+import { requireMerchant } from '#/server/auth/guards'
+import { orders, products } from '#/server/db/schema'
 import { and, eq, gte, isNull, sql, desc } from 'drizzle-orm'
 import type {
   MerchantDashboardData,
@@ -15,20 +15,6 @@ import type {
 // ============================================================
 // HELPERS
 // ============================================================
-
-async function requireMerchant() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'merchant') throw new Error('Unauthorized')
-
-  const [profile] = await db
-    .select({ id: merchantProfiles.id })
-    .from(merchantProfiles)
-    .where(eq(merchantProfiles.user_id, session.user.id))
-    .limit(1)
-
-  if (!profile) throw new Error('Merchant profile not found')
-  return { session, profileId: profile.id }
-}
 
 function rangeToDays(range: DateRange): number {
   if (range === 'today') return 1
@@ -73,7 +59,7 @@ const n = (v: unknown) => Number(v ?? 0)
 // ============================================================
 
 export const getMerchantDashboard = createServerFn({ method: 'GET' })
-  .inputValidator((data: unknown) => {
+  .validator((data: unknown) => {
     const range = (data as { range?: DateRange } | undefined)?.range
     return { range: (range ?? '7days') }
   })

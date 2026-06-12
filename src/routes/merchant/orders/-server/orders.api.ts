@@ -172,7 +172,7 @@ async function releaseShipClaim(orderId: string): Promise<void> {
 // ============================================================
 
 export const shipOrder = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => ShipSchema.parse(input))
+  .validator((input: unknown) => ShipSchema.parse(input))
   .handler(async ({ data }): Promise<{ success: boolean; tracking: string }> => {
     const { profileId } = await requireMerchant()
     const accountId = await getDefaultDeliveryAccountId()
@@ -357,7 +357,7 @@ export interface InternalLabelData {
 }
 
 export const getInternalLabel = createServerFn({ method: 'GET' })
-  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data }): Promise<InternalLabelData> => {
     const { profileId } = await requireMerchant()
 

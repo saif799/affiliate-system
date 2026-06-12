@@ -102,7 +102,7 @@ export interface PrintLabelResult {
 }
 
 export const printOfficialLabel = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data }): Promise<PrintLabelResult> => {
     const session = await requireSuperAdmin()
     const actorId = session.user.id
@@ -212,7 +212,7 @@ export interface ScanMatchResult {
 }
 
 export const verifyShipmentByQr = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ token: z.string().min(1) }).parse(input))
+  .validator((input: unknown) => z.object({ token: z.string().min(1) }).parse(input))
   .handler(async ({ data }): Promise<ScanMatchResult> => {
     await requireSuperAdmin()
 
@@ -303,7 +303,7 @@ export interface ConfirmReceptionResult {
 }
 
 export const confirmShipmentReceived = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data }): Promise<ConfirmReceptionResult> => {
     const session = await requireSuperAdmin()
 

@@ -53,7 +53,7 @@ export const getMyNotifications = createServerFn({ method: 'GET' }).handler(
 )
 
 export const markNotificationRead = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }): Promise<{ success: boolean }> => {

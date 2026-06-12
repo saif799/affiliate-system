@@ -269,7 +269,7 @@ async function fetchAffiliateStats(
 }
 
 export const blockAffiliate = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ affiliateProfileId: z.string() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -309,7 +309,7 @@ export const blockAffiliate = createServerFn({ method: 'POST' })
   })
 
 export const unblockAffiliate = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ affiliateProfileId: z.string() }).parse(input),
   )
   .handler(async ({ data }) => {

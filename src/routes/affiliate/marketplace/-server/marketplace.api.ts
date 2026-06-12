@@ -137,7 +137,7 @@ const CreateLinkSchema = z.object({
 })
 
 export const createTrackingLink = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => CreateLinkSchema.parse(input))
+  .validator((input: unknown) => CreateLinkSchema.parse(input))
   .handler(async ({ data }): Promise<GeneratedLink> => {
     const { profileId } = await requireAffiliate()
     const subId = data.subId && data.subId.length > 0 ? data.subId : null

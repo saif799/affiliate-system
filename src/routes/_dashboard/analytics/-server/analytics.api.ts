@@ -9,7 +9,7 @@ import {
   users,
 } from '#/server/db/schema'
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm'
-import { getSession } from '#/lib/session'
+import { requireSuperAdmin } from '#/server/auth/guards'
 import type {
   AnalyticsData,
   DateRange,
@@ -20,18 +20,6 @@ import type {
   WilayaStat,
   DeliveryTiming,
 } from '../-analytics.types'
-
-// ── Auth guard ────────────────────────────────────────────────
-
-async function requireSuperAdmin() {
-  const session = await getSession()
-  if (!session || session.user.role !== 'super_admin') {
-    const err = new Error('Unauthorized')
-    ;(err as any).statusCode = 401
-    throw err
-  }
-  return session
-}
 
 function getRangeWindow(range: DateRange): {
   from: Date
@@ -460,7 +448,7 @@ const AnalyticsInput = z.object({
 })
 
 export const getAnalytics = createServerFn({ method: 'GET' })
-  .inputValidator((input: unknown) => AnalyticsInput.parse(input))
+  .validator((input: unknown) => AnalyticsInput.parse(input))
   .handler(async ({ data }): Promise<AnalyticsData> => {
     await requireSuperAdmin()
 

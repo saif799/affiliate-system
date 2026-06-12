@@ -73,12 +73,11 @@ function MerchantDashboardPage() {
       </div>
 
       {/* ─── KPI Cards ─── */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatsCard
           title="الأرباح الصافية"
           value={`${stats.netRevenue.toLocaleString('ar-DZ')} DZD`}
           icon="💰"
-          trend={{ value: 12, label: 'vs الشهر الماضي' }}
         />
 
         {/* ← قابل للنقر — يأخذك لـ orders */}
@@ -99,14 +98,12 @@ function MerchantDashboardPage() {
           title="معدل التوصيل"
           value={`${stats.deliveryRate}%`}
           icon="🚚"
-          trend={{ value: 3, label: 'vs الشهر الماضي' }}
         />
         <StatsCard
           title="معدل الروتور"
           value={`${stats.returnRate}%`}
           icon="⚠️"
           alert={stats.returnRate > 20}
-          trend={{ value: -stats.returnRate, label: 'vs الشهر الماضي' }}
         />
       </div>
 
@@ -114,7 +111,7 @@ function MerchantDashboardPage() {
       <OverviewChart data={chartData} range={dateRange} />
 
       {/* ─── Bottom Row ─── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <RecentOrders orders={recentOrders} />
         <LowStockAlerts products={lowStockProducts} />
         <TopProducts products={topProducts} />

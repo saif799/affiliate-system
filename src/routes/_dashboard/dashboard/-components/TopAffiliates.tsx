@@ -12,6 +12,18 @@ export function TopAffiliates({ affiliates }: TopAffiliatesProps) {
     conv:    a.conversions,
   }))
 
+  if (affiliates.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-4 text-sm font-semibold text-gray-900">أفضل المسوّقين</h2>
+        <div className="flex h-44 flex-col items-center justify-center text-gray-400">
+          <p className="mb-1 text-2xl">📊</p>
+          <p className="text-xs">لا بيانات بعد — تظهر القائمة بعد أول طلبية مُسلَّمة</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-semibold text-gray-900">أفضل المسوّقين</h2>

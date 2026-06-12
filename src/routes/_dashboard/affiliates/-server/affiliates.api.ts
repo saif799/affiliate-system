@@ -277,7 +277,7 @@ export const getAffiliatesData = createServerFn({ method: 'GET' }).handler(
 // ============================================================
 
 export const acceptAffiliateRequest = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ userId: z.string().min(1) }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -324,7 +324,7 @@ export const acceptAffiliateRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const rejectAffiliateRequest = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ userId: z.string().min(1) }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -341,7 +341,7 @@ export const rejectAffiliateRequest = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const updateAffiliateStatus = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         affiliateId: z.string().uuid(),
@@ -369,7 +369,7 @@ export const updateAffiliateStatus = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const sendAffiliateWarning = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         affiliateId: z.string().uuid(),
@@ -415,7 +415,7 @@ export const sendAffiliateWarning = createServerFn({ method: 'POST' })
 // ============================================================
 
 export const deleteAffiliate = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ affiliateId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -454,7 +454,7 @@ const InviteAffiliateSchema = z.object({
 export type InviteAffiliateInput = z.infer<typeof InviteAffiliateSchema>
 
 export const inviteAffiliate = createServerFn({ method: 'POST' })
-  .inputValidator((input: unknown) => InviteAffiliateSchema.parse(input))
+  .validator((input: unknown) => InviteAffiliateSchema.parse(input))
   .handler(async ({ data }) => {
     await requireSuperAdmin()
 

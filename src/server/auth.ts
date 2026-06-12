@@ -157,6 +157,18 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  // في التطوير فقط: تُقبل أصول localhost أيّاً كان المنفذ (خوادم المعاينة تعمل
+  // على منافذ عشوائية). في الإنتاج يبقى فحص الأصل الافتراضي (baseURL) كما هو.
+  ...(process.env.NODE_ENV === 'development'
+    ? {
+        // قد تُستدعى بلا request عند إنشاء سياق auth خارج طلب HTTP
+        trustedOrigins: (request?: Request) => {
+          const origin = request?.headers.get('origin') ?? ''
+          return /^https?:\/\/localhost(:\d+)?$/.test(origin) ? [origin] : []
+        },
+      }
+    : {}),
+
   // الحد من المعدّل — يمنع تخمين كلمة المرور والإغراق على نقاط الدخول
   rateLimit: {
     enabled: true,
