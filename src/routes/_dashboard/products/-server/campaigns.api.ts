@@ -2,6 +2,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db }             from '#/server/db'
 import { getSession }     from '#/lib/session'
+import { requireSuperAdmin } from '#/server/auth/guards'
+import { notify }            from '#/server/notify'
 import {
   products,
   merchantProfiles,
@@ -9,6 +11,7 @@ import {
   orders,
 } from '#/server/db/schema'
 import { eq, and, isNull, sql, desc } from 'drizzle-orm'
+import { z } from 'zod'
 import type { ProductsData, Product, ProductStats } from '../-campaigns.types'
 import { ORDER_STATUS, HIGH_RETURN_THRESHOLD }      from '../-campaigns.constants'
 
@@ -193,3 +196,115 @@ export const getProductsData = createServerFn({ method: 'GET' }).handler(
     return { stats, products: productsList }
   },
 )
+
+// ============================================================
+// إجراءات الأدمن على المنتج: إيقاف/تفعيل + حذف ناعم
+// ============================================================
+
+// تفعيل/إيقاف منتج — يُشعِر التاجر بالتغيير
+export const setProductActive = createServerFn({ method: 'POST' })
+  .validator((input: unknown) =>
+    z.object({ productId: z.string().uuid(), isActive: z.boolean() }).parse(input),
+  )
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    await requireSuperAdmin()
+
+    const [product] = await db
+      .select({
+        id: products.id,
+        name: products.name,
+        merchantId: products.merchant_id,
+      })
+      .from(products)
+      .where(and(eq(products.id, data.productId), isNull(products.deleted_at)))
+      .limit(1)
+    if (!product) throw new Error('المنتج غير موجود')
+
+    await db
+      .update(products)
+      .set({ is_active: data.isActive })
+      .where(eq(products.id, product.id))
+
+    // إشعار التاجر صاحب المنتج
+    const [merchant] = await db
+      .select({ userId: merchantProfiles.user_id })
+      .from(merchantProfiles)
+      .where(eq(merchantProfiles.id, product.merchantId))
+      .limit(1)
+    if (merchant) {
+      await notify({
+        userId: merchant.userId,
+        type: 'system',
+        title: data.isActive ? 'تم تفعيل منتجك' : 'تم إيقاف منتجك',
+        body: data.isActive
+          ? `أعادت الإدارة تفعيل «${product.name}» — أصبح متاحاً للمسوّقين.`
+          : `أوقفت الإدارة عرض «${product.name}» مؤقتاً. تواصل معنا للمزيد.`,
+        link: '/merchant/products',
+      })
+    }
+
+    return { success: true }
+  })
+
+// حذف ناعم لمنتج (deleted_at) — يختفي من المنصّة دون فقدان السجلّات المرتبطة
+export const softDeleteProduct = createServerFn({ method: 'POST' })
+  .validator((input: unknown) =>
+    z.object({ productId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    await requireSuperAdmin()
+
+    const [product] = await db
+      .select({
+        id: products.id,
+        name: products.name,
+        merchantId: products.merchant_id,
+      })
+      .from(products)
+      .where(and(eq(products.id, data.productId), isNull(products.deleted_at)))
+      .limit(1)
+    if (!product) throw new Error('المنتج غير موجود')
+
+    // امنع الحذف إن كانت هناك طلبيات نشِطة (لم تُسلَّم/تُرتجَع بعد) مرتبطة به
+    const [{ activeCount }] = await db
+      .select({ activeCount: sql<number>`COUNT(*)` })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.product_id, product.id),
+          notInArrayActive(),
+        ),
+      )
+    if (Number(activeCount) > 0) {
+      throw new Error(
+        'لا يمكن حذف منتج عليه طلبيات قيد المعالجة — أوقفه بدل حذفه أو انتظر إنهاء طلبياته',
+      )
+    }
+
+    await db
+      .update(products)
+      .set({ deleted_at: new Date(), is_active: false })
+      .where(eq(products.id, product.id))
+
+    const [merchant] = await db
+      .select({ userId: merchantProfiles.user_id })
+      .from(merchantProfiles)
+      .where(eq(merchantProfiles.id, product.merchantId))
+      .limit(1)
+    if (merchant) {
+      await notify({
+        userId: merchant.userId,
+        type: 'system',
+        title: 'تم حذف أحد منتجاتك',
+        body: `حذفت الإدارة «${product.name}» من المنصّة.`,
+        link: '/merchant/products',
+      })
+    }
+
+    return { success: true }
+  })
+
+// الطلبيات «النشِطة» = ليست في حالة نهائية (مُسلَّمة/مُرتجَعة/ملغاة)
+function notInArrayActive() {
+  return sql`${orders.status} NOT IN ('delivered', 'returned', 'cancelled')`
+}

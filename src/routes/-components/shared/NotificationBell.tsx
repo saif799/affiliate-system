@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from '@tanstack/react-router'
 import { Bell } from 'lucide-react'
 import {
@@ -29,12 +30,17 @@ function timeAgo(iso: string): string {
   return `منذ ${Math.floor(h / 24)} ي`
 }
 
-export function NotificationBell() {
+export function NotificationBell({ seeAllHref }: { seeAllHref?: string } = {}) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Item[]>([])
   const [unread, setUnread] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  // إحداثيات ثابتة محسوبة من موضع الجرس — كي تُعرَض اللوحة عبر بوابة (portal)
+  // فوق كل شيء دون أن يقصّها حاوي التمرير (overflow) في الشريط الجانبي الضيّق.
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
 
   async function load() {
     try {
@@ -54,11 +60,45 @@ export function NotificationBell() {
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      // استثنِ زرّ الجرس واللوحة المنبثقة (صارت خارج ref بسبب الـ portal)
+      if (
+        ref.current &&
+        !ref.current.contains(t) &&
+        (!panelRef.current || !panelRef.current.contains(t))
+      )
+        setOpen(false)
     }
     document.addEventListener('mousedown', onClick)
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
+
+  // احسب موضع اللوحة المنبثقة من مستطيل الجرس (RTL: محاذاة لليمين، تنمو يساراً)
+  useEffect(() => {
+    if (!open) {
+      setPos(null)
+      return
+    }
+    function update() {
+      const el = btnRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const PANEL_W = 288 // w-72
+      // محاذاة يسار اللوحة لحافة الجرس، ثم اقلب إن تجاوزت حافّة الشاشة اليمنى
+      // (يعمل سواء كان الشريط الجانبي يساراً أو يميناً) مع تثبيت داخل الإطار.
+      let left = r.left
+      if (left + PANEL_W > window.innerWidth - 8) left = r.right - PANEL_W
+      left = Math.min(Math.max(8, left), Math.max(8, window.innerWidth - PANEL_W - 8))
+      setPos({ top: r.bottom + 8, left })
+    }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, true) // capture: يلتقط تمرير الشريط الجانبي
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update, true)
+    }
+  }, [open])
 
   async function handleClick(item: Item) {
     if (!item.readAt) {
@@ -85,21 +125,29 @@ export function NotificationBell() {
   return (
     <div className="relative" ref={ref} dir="rtl">
       <button
+        ref={btnRef}
         onClick={() => setOpen((o) => !o)}
         className="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
         aria-label="الإشعارات"
       >
         <Bell size={16} />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
-            {unread > 9 ? '9+' : unread}
+          <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+            {unread > 99 ? '99+' : unread}
           </span>
         )}
       </button>
 
-      {open && (
-        <div className="absolute left-0 top-10 z-50 w-72 rounded-xl border border-gray-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2.5">
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={panelRef}
+            dir="rtl"
+            style={{ position: 'fixed', top: pos.top, left: pos.left }}
+            className="z-[1000] w-72 max-w-[calc(100vw-1rem)] rounded-xl border border-gray-200 bg-white shadow-lg"
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2.5">
             <span className="text-sm font-semibold text-gray-900">الإشعارات</span>
             {unread > 0 && (
               <button
@@ -114,7 +162,7 @@ export function NotificationBell() {
           <div className="max-h-80 overflow-y-auto">
             {items.length === 0 ? (
               <p className="px-3 py-8 text-center text-xs text-gray-400">
-                لا توجد إشعارات
+                لا إشعارات غير مقروءة
               </p>
             ) : (
               items.map((i) => (
@@ -147,8 +195,21 @@ export function NotificationBell() {
               ))
             )}
           </div>
-        </div>
-      )}
+
+          {seeAllHref && (
+            <button
+              onClick={() => {
+                setOpen(false)
+                router.navigate({ to: seeAllHref as '/' })
+              }}
+              className="block w-full border-t border-gray-100 px-3 py-2.5 text-center text-xs font-medium text-blue-600 hover:bg-gray-50"
+            >
+              عرض كل الإشعارات
+            </button>
+          )}
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }

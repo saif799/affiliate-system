@@ -128,7 +128,7 @@ export default function ProfileTab({ data }: Props) {
           </p>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 col-span-2">
             <label className="text-xs font-medium text-gray-600">الولاية</label>
             <select
               value={form.pickup.wilaya}
@@ -141,17 +141,6 @@ export default function ProfileTab({ data }: Props) {
                 </option>
               ))}
             </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-gray-600">
-              البلدية
-            </label>
-            <input
-              type="text"
-              value={form.pickup.commune}
-              onChange={(e) => update('pickup', 'commune', e.target.value)}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-gray-400 transition-colors"
-            />
           </div>
           <div className="flex flex-col gap-1.5 col-span-2">
             <label className="text-xs font-medium text-gray-600">

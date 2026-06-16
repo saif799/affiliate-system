@@ -14,9 +14,18 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { db } from '#/server/db'
-import { orders, merchantProfiles, deliveryOffices, labelPrintAudit } from '#/server/db/schema'
-import { and, eq, isNull, inArray, desc } from 'drizzle-orm'
+import {
+  orders,
+  merchantProfiles,
+  affiliateProfiles,
+  products,
+  orderStatusHistory,
+  deliveryOffices,
+  labelPrintAudit,
+} from '#/server/db/schema'
+import { and, eq, isNull, inArray, desc, sql } from 'drizzle-orm'
 import { requireSuperAdmin } from '#/server/auth/guards'
+import { notify } from '#/server/notify'
 import { verifyLabelToken } from '#/server/delivery/label'
 import { getEcotrackClient, ecotrackStatusLabel } from '#/server/services/ecotrack.service'
 import { syncOrderTracking } from '#/server/delivery/ecotrack-sync'
@@ -73,6 +82,146 @@ export const getShipments = createServerFn({ method: 'GET' }).handler(
     }))
   },
 )
+
+// ============================================================
+// DELETE SHIPMENT (الأدمن) — حذف الطلبية لدى شركة التوصيل قبل الالتقاط فقط.
+//
+// قاعدة DHD/ECOTRACK: delete/order ينجح فقط ما دامت الشحنة «جاهزة للإرسال»
+// (prete_a_expedier) — أي لم تُصدَّق/تُلتقَط بعد. بمجرّد دخولها «في انتظار
+// الالتقاط» (en_ramassage) أو ما بعده، يرفض المزوّد الحذف. نحترم هذه القاعدة:
+//   1) حارس محلّي سريع على آخر حالة معروفة (delivery_status).
+//   2) الحَكَم النهائي = نداء deleteOrder نفسه (يرفضه المزوّد إن التُقطت).
+// عند النجاح: نلغي الطلبية محليّاً، نُعيد المخزون، ونُشعِر التاجر والمسوّق.
+// ============================================================
+
+// حالات المزوّد التي ما زالت «قابلة للحذف» (قبل الالتقاط)
+const DELETABLE_DELIVERY_STATUSES = new Set([
+  'pending', // لم تُزامَن بعد (أُنشئت للتوّ)
+  'prete_a_expedier', // جاهزة للإرسال
+  'order_information_received_by_carrier', // سُجِّلت لدى الناقل (قبل الالتقاط)
+])
+
+export const deleteShipmentOrder = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    await requireSuperAdmin()
+
+    const [order] = await db
+      .select({
+        id: orders.id,
+        status: orders.status,
+        tracking: orders.tracking_number,
+        accountId: orders.ecotrack_account_id,
+        deliveryStatus: orders.delivery_status,
+        quantity: orders.quantity,
+        productId: orders.product_id,
+        merchantId: orders.merchant_id,
+        affiliateId: orders.affiliate_id,
+      })
+      .from(orders)
+      .where(eq(orders.id, data.orderId))
+      .limit(1)
+
+    if (!order) throw new Error('الطلبية غير موجودة')
+
+    // 1) حارس على حالة المنصّة: لا حذف إلا للطلبيات «المشحونة» الجاهزة للإرسال.
+    //    (at_wilaya/delivered/returned = التُقطت/انتهت ⇒ لا حذف)
+    if (order.status !== 'shipped') {
+      throw new Error(
+        'لا يمكن الحذف إلا لطلبية جاهزة للإرسال لم تلتقطها شركة التوصيل بعد',
+      )
+    }
+    if (!order.tracking) {
+      throw new Error('هذه الطلبية لم تُسجَّل لدى شركة التوصيل (لا رقم تتبّع)')
+    }
+
+    // 2) حارس محلّي سريع على آخر حالة معروفة من المزوّد
+    const ds = (order.deliveryStatus ?? 'pending').toLowerCase()
+    if (!DELETABLE_DELIVERY_STATUSES.has(ds)) {
+      throw new Error(
+        'الطلبية تجاوزت مرحلة «الجاهزة للإرسال» (التقطتها شركة التوصيل) — لا يمكن حذفها',
+      )
+    }
+
+    // 3) الحَكَم النهائي: احذفها لدى المزوّد (يرفض إن التُقطت فعليّاً)
+    const client = await getEcotrackClient(order.accountId ?? undefined)
+    let deleted
+    try {
+      deleted = await client.deleteOrder(order.tracking)
+    } catch {
+      throw new Error(
+        'رفضت شركة التوصيل حذف الشحنة — على الأرجح التقطتها بالفعل (لا حذف بعد الالتقاط)',
+      )
+    }
+    if (!deleted.success) {
+      throw new Error(
+        'رفضت شركة التوصيل حذف الشحنة — قد تكون التقطتها بالفعل',
+      )
+    }
+
+    // 4) ألغِ الطلبية محليّاً + أعِد المخزون + سجّل + أشعِر (معاملة ذرّية)
+    await db.transaction(async (tx) => {
+      await tx
+        .update(orders)
+        .set({
+          status: 'cancelled',
+          tracking_number: null,
+          internal_shipment_id: null,
+          qr_token: null,
+          delivery_status: 'annule',
+        })
+        .where(eq(orders.id, order.id))
+
+      // أعِد الكمية للمخزون (خُصِمت عند تأكيد المسوّق)
+      await tx
+        .update(products)
+        .set({ stock_qty: sql`${products.stock_qty} + ${order.quantity}` })
+        .where(eq(products.id, order.productId))
+
+      await tx.insert(orderStatusHistory).values({
+        order_id: order.id,
+        from_status: 'shipped',
+        to_status: 'cancelled',
+        occurred_at: new Date(),
+        source: 'admin',
+        note: 'حذف الأدمن للشحنة قبل الالتقاط لدى شركة التوصيل',
+      })
+    })
+
+    // إشعارات best-effort للطرفين
+    const [merchant] = await db
+      .select({ userId: merchantProfiles.user_id })
+      .from(merchantProfiles)
+      .where(eq(merchantProfiles.id, order.merchantId))
+      .limit(1)
+    if (merchant) {
+      await notify({
+        userId: merchant.userId,
+        type: 'order_status',
+        title: 'أُلغيت شحنة من الإدارة',
+        body: 'حذفت الإدارة شحنة لم تلتقطها شركة التوصيل بعد، وأُعيد المخزون.',
+        link: '/merchant/orders',
+      })
+    }
+    if (order.affiliateId) {
+      const [aff] = await db
+        .select({ userId: affiliateProfiles.user_id })
+        .from(affiliateProfiles)
+        .where(eq(affiliateProfiles.id, order.affiliateId))
+        .limit(1)
+      if (aff) {
+        await notify({
+          userId: aff.userId,
+          type: 'order_status',
+          title: 'أُلغيت طلبيتك من الإدارة',
+          body: 'أُلغيت طلبية قبل التقاطها من شركة التوصيل.',
+          link: '/affiliate/orders',
+        })
+      }
+    }
+
+    return { success: true }
+  })
 
 type AuditResult =
   | 'success'

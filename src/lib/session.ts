@@ -10,9 +10,10 @@ export const getSession = createServerFn({ method: 'GET' }).handler(async () => 
     return session ?? null
   } catch (err) {
     // عطل بنية تحتية (قاعدة بيانات غير متاحة مثلاً) ليس "غياب جلسة".
-    // نُسجّل الخطأ ونُعيده ليُعرض كخطأ خادم — لا نُرجِع null كي لا
-    // يُطرَد كل المستخدمين إلى صفحة الدخول عند انقطاع مؤقت.
-    console.error('[getSession] فشل قراءة الجلسة:', err)
+    // نُعيده ليُعرض كخطأ خادم — لا نُرجِع null كي لا يُطرَد كل المستخدمين
+    // إلى صفحة الدخول عند انقطاع مؤقت. نُسجّل سطراً مختصراً فقط.
+    const msg = err instanceof Error ? err.message : String(err)
+    console.warn('[getSession] فشل قراءة الجلسة:', msg.split('\n')[0].slice(0, 200))
     throw err
   }
 })

@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { getWalletData, createWithdrawalRequest } from './-server/wallet.api'
 import { BalanceCards } from './-components/BalanceCards'
 import { WithdrawCTA } from './-components/WithdrawCTA'
@@ -27,6 +27,7 @@ export const Route = createFileRoute('/affiliate/wallet/')({
 // ─── Page Component ──────────────────────────────────────────
 function WalletPage() {
   const data = Route.useLoaderData()
+  const router = useRouter()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -39,6 +40,8 @@ function WalletPage() {
     const result = await createWithdrawalRequest({ data: formData })
     // نضيف الطلب الجديد في أعلى القائمة
     setLocalWithdrawals((prev) => [result, ...prev])
+    // أعِد تحميل بيانات المحفظة كي يعكس الرصيد المتاح الخصمَ فوراً
+    await router.invalidate()
   }
 
   return (

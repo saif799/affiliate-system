@@ -36,6 +36,7 @@ async function fetchCardsStats(): Promise<PlatformStats> {
   const { thisStart, nextStart, lastStart } = getMonthRanges()
 
   const [
+    merchantsTotal, activeAffiliatesTotal,
     merchantsThis, merchantsLast,
     affiliatesThis, affiliatesLast,
     gmvThis,        gmvLast,
@@ -43,6 +44,12 @@ async function fetchCardsStats(): Promise<PlatformStats> {
     convsThis,      convsLast,
     pendingComm,
   ] = await Promise.all([
+    // العدد الإجمالي (يطابق التسميتين: «المتاجر المسجّلة» و«المسوّقون النشطون»)
+    db.select({ c: sql<number>`COUNT(*)` }).from(users)
+      .where(and(eq(users.role, 'merchant'), isNull(users.deleted_at))),
+    db.select({ c: sql<number>`COUNT(*)` }).from(users)
+      .where(and(eq(users.role, 'affiliate'), eq(users.status, 'active'), isNull(users.deleted_at))),
+
     db.select({ c: sql<number>`COUNT(*)` }).from(users)
       .where(and(eq(users.role, 'merchant'), isNull(users.deleted_at), gte(users.createdAt, thisStart), lt(users.createdAt, nextStart))),
     db.select({ c: sql<number>`COUNT(*)` }).from(users)
@@ -75,8 +82,8 @@ async function fetchCardsStats(): Promise<PlatformStats> {
   const n = (v: any) => Number(v ?? 0)
 
   return {
-    totalMerchants:     { value: n(merchantsThis[0]?.c),  growth: growthRate(n(merchantsThis[0]?.c),  n(merchantsLast[0]?.c)),  sparkline: [] },
-    activeAffiliates:   { value: n(affiliatesThis[0]?.c), growth: growthRate(n(affiliatesThis[0]?.c), n(affiliatesLast[0]?.c)), sparkline: [] },
+    totalMerchants:     { value: n(merchantsTotal[0]?.c),       growth: growthRate(n(merchantsThis[0]?.c),  n(merchantsLast[0]?.c)),  sparkline: [] },
+    activeAffiliates:   { value: n(activeAffiliatesTotal[0]?.c), growth: growthRate(n(affiliatesThis[0]?.c), n(affiliatesLast[0]?.c)), sparkline: [] },
     totalGMV:           { value: n(gmvThis[0]?.s),        growth: growthRate(n(gmvThis[0]?.s),        n(gmvLast[0]?.s)),        sparkline: [] },
     platformRevenue:    { value: n(revenueThis[0]?.s),    growth: growthRate(n(revenueThis[0]?.s),    n(revenueLast[0]?.s)),    sparkline: [] },
     totalConversions:   { value: n(convsThis[0]?.c),      growth: growthRate(n(convsThis[0]?.c),      n(convsLast[0]?.c)),      sparkline: [] },

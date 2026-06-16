@@ -62,10 +62,25 @@ export const withdrawalStatusEnum = pgEnum('withdrawal_status', [
   'paid',
 ])
 
+
+
 export const payoutMethodEnum = pgEnum('payout_method', ['CCP', 'BaridiMob'])
 
 // نوع التوصيل: منزلي أو مكتب (stop-desk) — Phase 1
 export const deliveryTypeEnum = pgEnum('delivery_type', ['home', 'office'])
+
+
+
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'order_new',          // طلبية جديدة جاهزة للتجهيز (للتاجر)
+  'order_status',       // تغيّر حالة طلبية
+  'commission_earned',  // عمولة جديدة (للمسوّق)
+  'earning_received',   // أرباح جديدة (للتاجر)
+  'withdrawal_request', // طلب سحب جديد (للأدمن)
+  'withdrawal_update',  // تحديث طلب سحب (للمستخدم)
+  'low_stock',          // مخزون منخفض / نافد
+  'system',             // إشعار عام
+])
 
 // ============================================================
 // USERS
@@ -564,6 +579,57 @@ export const orderTrackingEvents = pgTable(
 )
 
 // ============================================================
+// ORDER COMMENTS — خيط محادثة لكل طلبية (مسوّق/تاجر/أدمن)
+// يسمح للمسوّق بإضافة ملاحظات/تعليقات ومتابعتها على طلبيته.
+// ============================================================
+
+export const orderComments = pgTable(
+  'order_comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    order_id: uuid('order_id')
+      .notNull()
+      .references(() => orders.id, { onDelete: 'cascade' }),
+    author_user_id: text('author_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    author_role: userRoleEnum('author_role').notNull(),
+    body: text('body').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_order_comments_order').on(table.order_id, table.created_at),
+  ],
+)
+
+// ============================================================
+// WARNING REPLIES — ردود التاجر/المسوّق على تنبيهات الإدارة (محادثة ثنائية)
+// التنبيه نفسه مُخزَّن في verifications (identifier=warning:<userId>)؛ هذا الجدول
+// يحمل الردود المرتبطة به (warning_id = verifications.id) من الطرفين.
+// ============================================================
+
+export const warningReplies = pgTable(
+  'warning_replies',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    warning_id: text('warning_id').notNull(), // = verifications.id للتنبيه الأصلي
+    target_user_id: text('target_user_id') // صاحب الخيط (التاجر/المسوّق المُنذَر)
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    author_user_id: text('author_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    author_role: userRoleEnum('author_role').notNull(),
+    body: text('body').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_warning_replies_warning').on(table.warning_id, table.created_at),
+    index('idx_warning_replies_target').on(table.target_user_id),
+  ],
+)
+
+// ============================================================
 // WALLETS
 // ============================================================
 
@@ -657,16 +723,7 @@ export const withdrawalRequests = pgTable(
 // NOTIFICATIONS — لكل مستخدم (مسوّق/تاجر/أدمن)
 // ============================================================
 
-export const notificationTypeEnum = pgEnum('notification_type', [
-  'order_new',          // طلبية جديدة جاهزة للتجهيز (للتاجر)
-  'order_status',       // تغيّر حالة طلبية
-  'commission_earned',  // عمولة جديدة (للمسوّق)
-  'earning_received',   // أرباح جديدة (للتاجر)
-  'withdrawal_request', // طلب سحب جديد (للأدمن)
-  'withdrawal_update',  // تحديث طلب سحب (للمستخدم)
-  'low_stock',          // مخزون منخفض / نافد
-  'system',             // إشعار عام
-])
+
 
 export const notifications = pgTable(
   'notifications',

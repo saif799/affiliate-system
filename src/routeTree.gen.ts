@@ -23,11 +23,13 @@ import { Route as MerchantWalletIndexRouteImport } from './routes/merchant/walle
 import { Route as MerchantSettingsIndexRouteImport } from './routes/merchant/settings/index'
 import { Route as MerchantProductsIndexRouteImport } from './routes/merchant/products/index'
 import { Route as MerchantOrdersIndexRouteImport } from './routes/merchant/orders/index'
+import { Route as MerchantNotificationsIndexRouteImport } from './routes/merchant/notifications/index'
 import { Route as MerchantDashboardIndexRouteImport } from './routes/merchant/dashboard/index'
 import { Route as MerchantAffiliatesIndexRouteImport } from './routes/merchant/affiliates/index'
 import { Route as AffiliateWalletIndexRouteImport } from './routes/affiliate/wallet/index'
 import { Route as AffiliateSettingsIndexRouteImport } from './routes/affiliate/settings/index'
 import { Route as AffiliateOrdersIndexRouteImport } from './routes/affiliate/orders/index'
+import { Route as AffiliateNotificationsIndexRouteImport } from './routes/affiliate/notifications/index'
 import { Route as AffiliateMarketplaceIndexRouteImport } from './routes/affiliate/marketplace/index'
 import { Route as AffiliateDashboardIndexRouteImport } from './routes/affiliate/dashboard/index'
 import { Route as DashboardShipmentsIndexRouteImport } from './routes/_dashboard/shipments/index'
@@ -114,6 +116,12 @@ const MerchantOrdersIndexRoute = MerchantOrdersIndexRouteImport.update({
   path: '/orders/',
   getParentRoute: () => MerchantRoute,
 } as any)
+const MerchantNotificationsIndexRoute =
+  MerchantNotificationsIndexRouteImport.update({
+    id: '/notifications/',
+    path: '/notifications/',
+    getParentRoute: () => MerchantRoute,
+  } as any)
 const MerchantDashboardIndexRoute = MerchantDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
@@ -139,6 +147,12 @@ const AffiliateOrdersIndexRoute = AffiliateOrdersIndexRouteImport.update({
   path: '/orders/',
   getParentRoute: () => AffiliateRoute,
 } as any)
+const AffiliateNotificationsIndexRoute =
+  AffiliateNotificationsIndexRouteImport.update({
+    id: '/notifications/',
+    path: '/notifications/',
+    getParentRoute: () => AffiliateRoute,
+  } as any)
 const AffiliateMarketplaceIndexRoute =
   AffiliateMarketplaceIndexRouteImport.update({
     id: '/marketplace/',
@@ -255,11 +269,13 @@ export interface FileRoutesByFullPath {
   '/shipments/': typeof DashboardShipmentsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
+  '/affiliate/notifications/': typeof AffiliateNotificationsIndexRoute
   '/affiliate/orders/': typeof AffiliateOrdersIndexRoute
   '/affiliate/settings/': typeof AffiliateSettingsIndexRoute
   '/affiliate/wallet/': typeof AffiliateWalletIndexRoute
   '/merchant/affiliates/': typeof MerchantAffiliatesIndexRoute
   '/merchant/dashboard/': typeof MerchantDashboardIndexRoute
+  '/merchant/notifications/': typeof MerchantNotificationsIndexRoute
   '/merchant/orders/': typeof MerchantOrdersIndexRoute
   '/merchant/products/': typeof MerchantProductsIndexRoute
   '/merchant/settings/': typeof MerchantSettingsIndexRoute
@@ -291,11 +307,13 @@ export interface FileRoutesByTo {
   '/shipments': typeof DashboardShipmentsIndexRoute
   '/affiliate/dashboard': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace': typeof AffiliateMarketplaceIndexRoute
+  '/affiliate/notifications': typeof AffiliateNotificationsIndexRoute
   '/affiliate/orders': typeof AffiliateOrdersIndexRoute
   '/affiliate/settings': typeof AffiliateSettingsIndexRoute
   '/affiliate/wallet': typeof AffiliateWalletIndexRoute
   '/merchant/affiliates': typeof MerchantAffiliatesIndexRoute
   '/merchant/dashboard': typeof MerchantDashboardIndexRoute
+  '/merchant/notifications': typeof MerchantNotificationsIndexRoute
   '/merchant/orders': typeof MerchantOrdersIndexRoute
   '/merchant/products': typeof MerchantProductsIndexRoute
   '/merchant/settings': typeof MerchantSettingsIndexRoute
@@ -330,11 +348,13 @@ export interface FileRoutesById {
   '/_dashboard/shipments/': typeof DashboardShipmentsIndexRoute
   '/affiliate/dashboard/': typeof AffiliateDashboardIndexRoute
   '/affiliate/marketplace/': typeof AffiliateMarketplaceIndexRoute
+  '/affiliate/notifications/': typeof AffiliateNotificationsIndexRoute
   '/affiliate/orders/': typeof AffiliateOrdersIndexRoute
   '/affiliate/settings/': typeof AffiliateSettingsIndexRoute
   '/affiliate/wallet/': typeof AffiliateWalletIndexRoute
   '/merchant/affiliates/': typeof MerchantAffiliatesIndexRoute
   '/merchant/dashboard/': typeof MerchantDashboardIndexRoute
+  '/merchant/notifications/': typeof MerchantNotificationsIndexRoute
   '/merchant/orders/': typeof MerchantOrdersIndexRoute
   '/merchant/products/': typeof MerchantProductsIndexRoute
   '/merchant/settings/': typeof MerchantSettingsIndexRoute
@@ -368,11 +388,13 @@ export interface FileRouteTypes {
     | '/shipments/'
     | '/affiliate/dashboard/'
     | '/affiliate/marketplace/'
+    | '/affiliate/notifications/'
     | '/affiliate/orders/'
     | '/affiliate/settings/'
     | '/affiliate/wallet/'
     | '/merchant/affiliates/'
     | '/merchant/dashboard/'
+    | '/merchant/notifications/'
     | '/merchant/orders/'
     | '/merchant/products/'
     | '/merchant/settings/'
@@ -404,11 +426,13 @@ export interface FileRouteTypes {
     | '/shipments'
     | '/affiliate/dashboard'
     | '/affiliate/marketplace'
+    | '/affiliate/notifications'
     | '/affiliate/orders'
     | '/affiliate/settings'
     | '/affiliate/wallet'
     | '/merchant/affiliates'
     | '/merchant/dashboard'
+    | '/merchant/notifications'
     | '/merchant/orders'
     | '/merchant/products'
     | '/merchant/settings'
@@ -442,11 +466,13 @@ export interface FileRouteTypes {
     | '/_dashboard/shipments/'
     | '/affiliate/dashboard/'
     | '/affiliate/marketplace/'
+    | '/affiliate/notifications/'
     | '/affiliate/orders/'
     | '/affiliate/settings/'
     | '/affiliate/wallet/'
     | '/merchant/affiliates/'
     | '/merchant/dashboard/'
+    | '/merchant/notifications/'
     | '/merchant/orders/'
     | '/merchant/products/'
     | '/merchant/settings/'
@@ -569,6 +595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MerchantOrdersIndexRouteImport
       parentRoute: typeof MerchantRoute
     }
+    '/merchant/notifications/': {
+      id: '/merchant/notifications/'
+      path: '/notifications'
+      fullPath: '/merchant/notifications/'
+      preLoaderRoute: typeof MerchantNotificationsIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
     '/merchant/dashboard/': {
       id: '/merchant/dashboard/'
       path: '/dashboard'
@@ -602,6 +635,13 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/affiliate/orders/'
       preLoaderRoute: typeof AffiliateOrdersIndexRouteImport
+      parentRoute: typeof AffiliateRoute
+    }
+    '/affiliate/notifications/': {
+      id: '/affiliate/notifications/'
+      path: '/notifications'
+      fullPath: '/affiliate/notifications/'
+      preLoaderRoute: typeof AffiliateNotificationsIndexRouteImport
       parentRoute: typeof AffiliateRoute
     }
     '/affiliate/marketplace/': {
@@ -771,6 +811,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 interface AffiliateRouteChildren {
   AffiliateDashboardIndexRoute: typeof AffiliateDashboardIndexRoute
   AffiliateMarketplaceIndexRoute: typeof AffiliateMarketplaceIndexRoute
+  AffiliateNotificationsIndexRoute: typeof AffiliateNotificationsIndexRoute
   AffiliateOrdersIndexRoute: typeof AffiliateOrdersIndexRoute
   AffiliateSettingsIndexRoute: typeof AffiliateSettingsIndexRoute
   AffiliateWalletIndexRoute: typeof AffiliateWalletIndexRoute
@@ -779,6 +820,7 @@ interface AffiliateRouteChildren {
 const AffiliateRouteChildren: AffiliateRouteChildren = {
   AffiliateDashboardIndexRoute: AffiliateDashboardIndexRoute,
   AffiliateMarketplaceIndexRoute: AffiliateMarketplaceIndexRoute,
+  AffiliateNotificationsIndexRoute: AffiliateNotificationsIndexRoute,
   AffiliateOrdersIndexRoute: AffiliateOrdersIndexRoute,
   AffiliateSettingsIndexRoute: AffiliateSettingsIndexRoute,
   AffiliateWalletIndexRoute: AffiliateWalletIndexRoute,
@@ -791,6 +833,7 @@ const AffiliateRouteWithChildren = AffiliateRoute._addFileChildren(
 interface MerchantRouteChildren {
   MerchantAffiliatesIndexRoute: typeof MerchantAffiliatesIndexRoute
   MerchantDashboardIndexRoute: typeof MerchantDashboardIndexRoute
+  MerchantNotificationsIndexRoute: typeof MerchantNotificationsIndexRoute
   MerchantOrdersIndexRoute: typeof MerchantOrdersIndexRoute
   MerchantProductsIndexRoute: typeof MerchantProductsIndexRoute
   MerchantSettingsIndexRoute: typeof MerchantSettingsIndexRoute
@@ -800,6 +843,7 @@ interface MerchantRouteChildren {
 const MerchantRouteChildren: MerchantRouteChildren = {
   MerchantAffiliatesIndexRoute: MerchantAffiliatesIndexRoute,
   MerchantDashboardIndexRoute: MerchantDashboardIndexRoute,
+  MerchantNotificationsIndexRoute: MerchantNotificationsIndexRoute,
   MerchantOrdersIndexRoute: MerchantOrdersIndexRoute,
   MerchantProductsIndexRoute: MerchantProductsIndexRoute,
   MerchantSettingsIndexRoute: MerchantSettingsIndexRoute,

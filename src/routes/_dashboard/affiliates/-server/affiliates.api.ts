@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
 import { auth, setInviteType } from '#/server/auth'
 import { requireSuperAdmin } from '#/server/auth/guards'
+import { notify } from '#/server/notify'
 import { z } from 'zod'
 import {
   users,
@@ -90,9 +91,11 @@ async function fetchAffiliates(): Promise<Affiliate[]> {
       .select({
         affiliateId: orders.affiliate_id,
         totalOrders: sql<number>`COUNT(*)`.as('total_orders'),
+        // العمولة تُكتسب فقط عند التسليم — نحسب المُسلَّمة فقط (لا المؤكَّدة/قيد الشحن)
+        // كي تطابق ما يراه المسوّق في بوابته ولا نعرض عمولة على طلب لم يُسلَّم بعد.
         totalCommissions: sql<number>`COALESCE(SUM(
         GREATEST((${orders.unit_affiliate_price_dzd} - ${orders.unit_merchant_price_dzd}) * ${orders.quantity} - ${orders.platform_fee_affiliate_dzd} - ${orders.shipping_fee_dzd}, 0)
-      ), 0)`.as('total_commissions'),
+      ) FILTER (WHERE ${orders.status} = 'delivered'), 0)`.as('total_commissions'),
       })
       .from(orders)
       .where(
@@ -400,6 +403,15 @@ export const sendAffiliateWarning = createServerFn({ method: 'POST' })
         id: verifications.id,
         createdAt: verifications.createdAt,
       })
+
+    // إشعار المسوّق فعلياً بالتحذير (وإلا بقي مخزّناً للأدمن فقط ولم يصله شيء)
+    await notify({
+      userId: profile.userId,
+      type: 'system',
+      title: '⚠️ تنبيه من إدارة المنصّة',
+      body: data.message.trim(),
+      link: '/affiliate/notifications',
+    })
 
     return {
       success: true,

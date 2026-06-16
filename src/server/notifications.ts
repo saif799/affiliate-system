@@ -15,6 +15,7 @@ import { getSession } from '#/lib/session'
 import { notifications } from '#/server/db/schema'
 import { eq, desc, and, isNull, sql } from 'drizzle-orm'
 
+// جرس الإشعارات: يعرض غير المقروءة فقط (القائمة الكاملة في صفحة الإشعارات).
 export const getMyNotifications = createServerFn({ method: 'GET' }).handler(
   async () => {
     const session = await getSession()
@@ -23,7 +24,12 @@ export const getMyNotifications = createServerFn({ method: 'GET' }).handler(
     const items = await db
       .select()
       .from(notifications)
-      .where(eq(notifications.user_id, session.user.id))
+      .where(
+        and(
+          eq(notifications.user_id, session.user.id),
+          isNull(notifications.read_at),
+        ),
+      )
       .orderBy(desc(notifications.created_at))
       .limit(30)
 
@@ -49,6 +55,31 @@ export const getMyNotifications = createServerFn({ method: 'GET' }).handler(
         createdAt: n.created_at.toISOString(),
       })),
     }
+  },
+)
+
+// القائمة الكاملة لصفحة الإشعارات المخصّصة (أكبر من قائمة الجرس المختصرة)
+export const getMyNotificationsPage = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const session = await getSession()
+    if (!session) throw new Error('Unauthorized')
+
+    const items = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.user_id, session.user.id))
+      .orderBy(desc(notifications.created_at))
+      .limit(100)
+
+    return items.map((n) => ({
+      id: n.id,
+      type: n.type,
+      title: n.title,
+      body: n.body,
+      link: n.link,
+      readAt: n.read_at?.toISOString() ?? null,
+      createdAt: n.created_at.toISOString(),
+    }))
   },
 )
 

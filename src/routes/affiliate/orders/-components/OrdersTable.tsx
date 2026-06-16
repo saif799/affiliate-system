@@ -39,8 +39,9 @@ export function OrdersTable({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50 text-right">
             <th className="px-4 py-3 text-xs font-medium text-gray-500">رقم الطلبية</th>
@@ -154,6 +155,7 @@ export function OrdersTable({
           })}
         </tbody>
       </table>
+      </div>
 
       {/* Pagination */}
       <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">

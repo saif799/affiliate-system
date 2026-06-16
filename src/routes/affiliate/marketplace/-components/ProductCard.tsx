@@ -53,7 +53,9 @@ export function ProductCard({ product, onOpenModal }: Props) {
           <p className="mt-0.5 text-lg font-bold text-violet-700">
             {product.basePrice.toLocaleString('ar-DZ')} د.ج
           </p>
-          <p className="text-xs text-violet-400">بِع بأي سعر — ربحك = سعرك − الجملة</p>
+          <p className="text-xs text-violet-400">
+            بِع بأي سعر — ربحك = سعرك − الجملة − التوصيل − رسوم المنصة
+          </p>
         </div>
 
         {/* Rates */}

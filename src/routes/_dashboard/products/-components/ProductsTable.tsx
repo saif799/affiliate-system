@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useRouter } from '@tanstack/react-router'
 import type { Product } from '../-campaigns.types'
+import { setProductActive, softDeleteProduct } from '../-server/campaigns.api'
 
 interface Props {
   products: Product[]
@@ -63,9 +65,15 @@ const FILTERS: { label: string; value: FilterKey }[] = [
 function ProductDrawer({
   product,
   onClose,
+  onToggle,
+  onDelete,
+  busy,
 }: {
   product: Product
   onClose: () => void
+  onToggle: (p: Product) => void
+  onDelete: (p: Product) => void
+  busy: boolean
 }) {
   const rows: [string, string][] = [
     ['التاجر',         product.merchantName],
@@ -145,23 +153,29 @@ function ProductDrawer({
           {product.isActive ? (
             <button
               type="button"
-              className="flex-1 rounded-lg bg-yellow-100 py-2 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
+              disabled={busy}
+              onClick={() => onToggle(product)}
+              className="flex-1 rounded-lg bg-yellow-100 py-2 text-xs font-medium text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
             >
               إيقاف المنتج
             </button>
           ) : (
             <button
               type="button"
-              className="flex-1 rounded-lg bg-green-100 py-2 text-xs font-medium text-green-700 hover:bg-green-200"
+              disabled={busy}
+              onClick={() => onToggle(product)}
+              className="flex-1 rounded-lg bg-green-100 py-2 text-xs font-medium text-green-700 hover:bg-green-200 disabled:opacity-50"
             >
               تفعيل المنتج
             </button>
           )}
           <button
             type="button"
-            className="flex-1 rounded-lg bg-red-100 py-2 text-xs font-medium text-red-700 hover:bg-red-200"
+            disabled={busy}
+            onClick={() => onDelete(product)}
+            className="flex-1 rounded-lg bg-red-100 py-2 text-xs font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
           >
-            حذف نهائي
+            حذف
           </button>
         </div>
       </div>
@@ -174,10 +188,47 @@ function ProductDrawer({
 const PAGE_SIZE = 10
 
 export function ProductsTable({ products }: Props) {
+  const router = useRouter()
   const [search,     setSearch]     = useState('')
   const [filter,     setFilter]     = useState<FilterKey>('all')
   const [selected,   setSelected]   = useState<Product | null>(null)
   const [page,       setPage]       = useState(1)
+  const [busyId,     setBusyId]     = useState<string | null>(null)
+  const [error,      setError]      = useState<string | null>(null)
+
+  async function handleToggle(p: Product) {
+    setError(null)
+    setBusyId(p.id)
+    try {
+      await setProductActive({ data: { productId: p.id, isActive: !p.isActive } })
+      setSelected(null)
+      await router.invalidate()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'تعذّر تنفيذ العملية')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function handleDelete(p: Product) {
+    if (
+      !window.confirm(
+        `حذف المنتج «${p.name}» نهائياً من المنصّة؟ لا يمكن التراجع عن هذا.`,
+      )
+    )
+      return
+    setError(null)
+    setBusyId(p.id)
+    try {
+      await softDeleteProduct({ data: { productId: p.id } })
+      setSelected(null)
+      await router.invalidate()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'تعذّر حذف المنتج')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   // ── filtering ──
   const filtered = products.filter((p) => {
@@ -246,9 +297,16 @@ export function ProductsTable({ products }: Props) {
         </div>
       </div>
 
+      {/* ─── error banner ──────────────────────────── */}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* ─── table ─────────────────────────────────── */}
-      <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-        <table className="w-full border-collapse text-sm">
+      <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+        <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50 text-right">
               <th className="px-4 py-3 text-xs font-medium text-gray-400">المنتج / التاجر</th>
@@ -334,21 +392,27 @@ export function ProductsTable({ products }: Props) {
                       {p.isActive ? (
                         <button
                           type="button"
-                          className="rounded-md bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
+                          disabled={busyId === p.id}
+                          onClick={() => handleToggle(p)}
+                          className="rounded-md bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
                         >
                           إيقاف
                         </button>
                       ) : (
                         <button
                           type="button"
-                          className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+                          disabled={busyId === p.id}
+                          onClick={() => handleToggle(p)}
+                          className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 hover:bg-green-200 disabled:opacity-50"
                         >
                           تفعيل
                         </button>
                       )}
                       <button
                         type="button"
-                        className="rounded-md bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
+                        disabled={busyId === p.id}
+                        onClick={() => handleDelete(p)}
+                        className="rounded-md bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
                       >
                         حذف
                       </button>
@@ -406,7 +470,13 @@ export function ProductsTable({ products }: Props) {
 
       {/* ─── detail drawer ─────────────────────────── */}
       {selected && (
-        <ProductDrawer product={selected} onClose={() => setSelected(null)} />
+        <ProductDrawer
+          product={selected}
+          onClose={() => setSelected(null)}
+          onToggle={handleToggle}
+          onDelete={handleDelete}
+          busy={busyId === selected.id}
+        />
       )}
     </>
   )

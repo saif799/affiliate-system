@@ -24,8 +24,9 @@ export function UserTable<T extends { id: string }>({
   totalLabel = '',
 }: Props<T>) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50/60">
             {columns.map((col) => (
@@ -57,7 +58,8 @@ export function UserTable<T extends { id: string }>({
                   </td>
                 ))}
                 <td className="px-4 py-4">
-                  <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* تظهر الإجراءات دائماً على الجوّال (لا hover للمس) وتُكشف بالـ hover على سطح المكتب */}
+                  <div className="flex items-center gap-1.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
                     {renderActions(row)}
                   </div>
                 </td>
@@ -66,6 +68,7 @@ export function UserTable<T extends { id: string }>({
           )}
         </tbody>
       </table>
+      </div>
 
       <div className="border-t border-slate-100 px-4 py-3">
         <p className="text-xs text-slate-400">

@@ -122,6 +122,7 @@ function AffiliatesPage() {
           : prev,
       )
       showToast('تم إرسال الإنذار بنجاح')
+      setWarnFor(null) // أغلق النافذة بعد الإرسال الناجح
     } catch {
       showToast('حدث خطأ أثناء إرسال الإنذار', 'error')
     } finally {

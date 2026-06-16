@@ -1,5 +1,5 @@
 // src/routes/_dashboard.tsx
-import { createFileRoute, Outlet, Link, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import {
   LayoutDashboard,
   Users,
@@ -9,12 +9,11 @@ import {
   Code2,
   Settings,
   Zap,
-  User,
   Store,
   ListOrdered,
-  Truck
+  Truck,
 } from 'lucide-react'
-import { NotificationBell } from './-components/shared/NotificationBell'
+import { PortalShell } from './-components/shared/PortalShell'
 
 export const Route = createFileRoute('/_dashboard')({
   beforeLoad: ({ context }) => {
@@ -45,51 +44,17 @@ function DashboardLayout() {
   const userName = session?.user.name ?? 'مدير المنصّة'
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      <aside className="flex w-56 flex-col justify-between border-r border-gray-200 bg-white px-3 py-5">
-        <div>
-          <div className="mb-5 flex items-center justify-between px-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                <Zap size={16} strokeWidth={2.5} />
-              </div>
-              <span className="text-sm font-semibold text-gray-900">
-                لوحة الإدارة
-              </span>
-            </div>
-            <NotificationBell />
-          </div>
-          <div className="mb-4 flex items-center gap-2.5 rounded-lg bg-gray-100 px-3 py-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-200 text-gray-500">
-              <User size={14} />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-800">{userName}</p>
-              <p className="text-xs text-gray-500">مدير المنصّة</p>
-            </div>
-          </div>
-          <nav className="flex flex-col gap-0.5">
-            {navItems.map(({ label, to, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                activeProps={{
-                  className:
-                    'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm bg-gray-100 font-medium text-gray-900',
-                }}
-              >
-                <Icon size={16} strokeWidth={1.8} />
-                {label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-      </aside>
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
-    </div>
+    <PortalShell
+      brand={{ label: 'لوحة الإدارة', icon: Zap, colorClass: 'bg-blue-600' }}
+      navItems={navItems}
+      user={{
+        name: userName,
+        roleLabel: 'مدير المنصّة',
+        avatarBg: 'bg-gray-200',
+        avatarFg: 'text-gray-500',
+      }}
+    >
+      <Outlet />
+    </PortalShell>
   )
 }

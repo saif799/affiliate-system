@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '#/server/db'
 import { auth, setInviteType } from '#/server/auth'
 import { requireSuperAdmin } from '#/server/auth/guards'
+import { notify } from '#/server/notify'
 import { z } from 'zod'
 import {
   users,
@@ -418,6 +419,16 @@ export const sendMerchantWarning = createServerFn({ method: 'POST' })
         id: verifications.id,
         createdAt: verifications.createdAt,
       })
+
+    // إشعار التاجر فعلياً بالتحذير (وإلا بقي مخزّناً للأدمن فقط ولم يصله شيء)
+    await notify({
+      userId: profile.userId,
+      type: 'system',
+      title: '⚠️ تنبيه من إدارة المنصّة',
+      body: data.message.trim(),
+      link: '/merchant/notifications',
+    })
+
     return {
       success: true,
       warning: {

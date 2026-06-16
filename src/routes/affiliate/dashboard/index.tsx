@@ -37,11 +37,11 @@ function AffiliateDashboard() {
       <StatsCards stats={data.stats} />
 
       {/* Bottom Grid */}
-      <div className="grid grid-cols-5 gap-4">
-        <div className="col-span-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <div className="lg:col-span-3">
           <TopMerchants merchants={data.topMerchants} />
         </div>
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           <RecentActivity orders={data.recentOrders} />
         </div>
       </div>

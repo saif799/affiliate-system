@@ -1,4 +1,4 @@
-import { Loader2, Printer, CheckCircle2 } from 'lucide-react'
+import { Loader2, Printer, CheckCircle2, Trash2 } from 'lucide-react'
 import type { ShipmentView } from '../-server/shipments.api'
 
 const STATUS: Record<string, { label: string; cls: string }> = {
@@ -14,7 +14,9 @@ interface Props {
   onToggle: (id: string) => void
   onToggleAll: (ids: string[]) => void
   onPrint: (id: string) => void
+  onDelete: (id: string) => void
   busyId: string | null
+  deletingId: string | null
 }
 
 export function ShipmentsTable({
@@ -23,11 +25,13 @@ export function ShipmentsTable({
   onToggle,
   onToggleAll,
   onPrint,
+  onDelete,
   busyId,
+  deletingId,
 }: Props) {
-  // الطباعة الجماعية لا تشمل المطبوعة سلفاً
-  const printableIds = shipments.filter((s) => !s.labelPrintedAt).map((s) => s.id)
-  const allSelected = printableIds.length > 0 && printableIds.every((id) => selectedIds.has(id))
+  // تحديد الكل يشمل كل الصفوف الظاهرة (المعالِجات تُصفّي المؤهّلين لكل عملية)
+  const allIds = shipments.map((s) => s.id)
+  const allSelected = allIds.length > 0 && allIds.every((id) => selectedIds.has(id))
 
   if (shipments.length === 0) {
     return (
@@ -38,15 +42,15 @@ export function ShipmentsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50 text-right text-xs font-medium text-gray-500">
             <th className="w-10 px-4 py-3">
               <input
                 type="checkbox"
                 checked={allSelected}
-                onChange={() => onToggleAll(allSelected ? [] : printableIds)}
+                onChange={() => onToggleAll(allSelected ? [] : allIds)}
                 className="h-3.5 w-3.5 cursor-pointer rounded"
               />
             </th>
@@ -70,9 +74,8 @@ export function ShipmentsTable({
                   <input
                     type="checkbox"
                     checked={selectedIds.has(s.id)}
-                    disabled={printed}
                     onChange={() => onToggle(s.id)}
-                    className="h-3.5 w-3.5 cursor-pointer rounded disabled:opacity-40"
+                    className="h-3.5 w-3.5 cursor-pointer rounded"
                   />
                 </td>
                 <td className="px-4 py-3 font-mono text-xs text-gray-800">
@@ -98,15 +101,33 @@ export function ShipmentsTable({
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <button
-                    onClick={() => onPrint(s.id)}
-                    disabled={busy || printed}
-                    title={printed ? 'طُبع مسبقاً (استخدام واحد)' : 'طباعة الملصق الرسمي'}
-                    className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-100 disabled:opacity-40"
-                  >
-                    {busy ? <Loader2 size={13} className="animate-spin" /> : <Printer size={13} />}
-                    طباعة
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => onPrint(s.id)}
+                      disabled={busy || printed}
+                      title={printed ? 'طُبع مسبقاً (استخدام واحد)' : 'طباعة الملصق الرسمي'}
+                      className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-100 disabled:opacity-40"
+                    >
+                      {busy ? <Loader2 size={13} className="animate-spin" /> : <Printer size={13} />}
+                      طباعة
+                    </button>
+                    {/* حذف متاح فقط قبل الالتقاط (الحالة «مشحونة») — الخادم يفرض القاعدة */}
+                    {s.status === 'shipped' && (
+                      <button
+                        onClick={() => onDelete(s.id)}
+                        disabled={deletingId === s.id}
+                        title="حذف الشحنة (قبل التقاط شركة التوصيل فقط)"
+                        className="flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-40"
+                      >
+                        {deletingId === s.id ? (
+                          <Loader2 size={13} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={13} />
+                        )}
+                        حذف
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             )

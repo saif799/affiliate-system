@@ -142,7 +142,48 @@ async function sendInviteEmail(
 
 // ── auth ──────────────────────────────────────────────────────
 
+// يسلسل خطأً (مع سلسلة cause) إلى نصّ مختصر للكشف عن أعطال الشبكة/القاعدة.
+function errToString(e: unknown, depth = 0): string {
+  if (depth > 4) return ''
+  if (e instanceof Error) {
+    const code = (e as { code?: string }).code
+    const cause = (e as { cause?: unknown }).cause
+    return `${e.name}${code ? ` ${code}` : ''} ${e.message}${
+      cause ? ` ${errToString(cause, depth + 1)}` : ''
+    }`
+  }
+  if (typeof e === 'string') return e
+  try {
+    return JSON.stringify(e)
+  } catch {
+    return String(e)
+  }
+}
+
+// أعطال بنية تحتية عابرة (Neon نائمة/شبكة) — نختصرها لسطر واحد بدل تتبّع مكدّس
+// ضخم يُغرِق الطرفية، مع تمرير الأخطاء الحقيقية كما هي.
+const INFRA_ERR =
+  /ETIMEDOUT|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|CONNECT_TIMEOUT|ECONNRESET|EPIPE/i
+
 export const auth = betterAuth({
+  logger: {
+    log(level, message, ...args) {
+      const blob = [message, ...args.map((a) => errToString(a))].join(' ')
+      if (INFRA_ERR.test(blob)) {
+        console.warn(
+          '[auth] تعذّر الوصول لقاعدة البيانات مؤقتاً (شبكة/Neon نائمة) — يُعاد تلقائياً',
+        )
+        return
+      }
+      const fn =
+        level === 'error'
+          ? console.error
+          : level === 'warn'
+            ? console.warn
+            : console.log
+      fn(`[better-auth] ${message}`, ...args)
+    },
+  },
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: {

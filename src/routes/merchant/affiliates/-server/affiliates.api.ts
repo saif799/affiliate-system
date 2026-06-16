@@ -291,19 +291,26 @@ export const blockAffiliate = createServerFn({ method: 'POST' })
 
     if (!link) throw new Error('المسوق غير مرتبط بمنتجاتك')
 
-    // resolve the user_id from the affiliate profile
-    const [aff] = await db
-      .select({ userId: affiliateProfiles.user_id })
-      .from(affiliateProfiles)
-      .where(eq(affiliateProfiles.id, data.affiliateProfileId))
-      .limit(1)
-
-    if (!aff) throw new Error('المسوق غير موجود')
-
+    // الحظر مقصور على علاقة هذا التاجر فقط — نُعطّل روابط تتبّع هذا المسوّق
+    // لمنتجات هذا التاجر، دون المساس بحالة حساب المسوّق العامّة (لا نُعلّق دخوله
+    // للمنصّة ولا نقطعه عن تجّار آخرين — ذلك قرار أدمن).
     await db
-      .update(users)
-      .set({ status: 'suspended' })
-      .where(eq(users.id, aff.userId))
+      .update(trackingLinks)
+      .set({ is_active: false })
+      .where(
+        and(
+          eq(trackingLinks.affiliate_id, data.affiliateProfileId),
+          inArray(
+            trackingLinks.product_id,
+            db
+              .select({ id: products.id })
+              .from(products)
+              .where(
+                and(eq(products.merchant_id, profileId), isNull(products.deleted_at)),
+              ),
+          ),
+        ),
+      )
 
     return { success: true }
   })
@@ -330,18 +337,25 @@ export const unblockAffiliate = createServerFn({ method: 'POST' })
 
     if (!link) throw new Error('المسوق غير مرتبط بمنتجاتك')
 
-    const [aff] = await db
-      .select({ userId: affiliateProfiles.user_id })
-      .from(affiliateProfiles)
-      .where(eq(affiliateProfiles.id, data.affiliateProfileId))
-      .limit(1)
-
-    if (!aff) throw new Error('المسوق غير موجود')
-
+    // فكّ الحظر مقصور على علاقة هذا التاجر — نُعيد تفعيل روابط تتبّع المسوّق
+    // لمنتجات هذا التاجر فقط (لا نلمس حالة حسابه العامّة).
     await db
-      .update(users)
-      .set({ status: 'active' })
-      .where(eq(users.id, aff.userId))
+      .update(trackingLinks)
+      .set({ is_active: true })
+      .where(
+        and(
+          eq(trackingLinks.affiliate_id, data.affiliateProfileId),
+          inArray(
+            trackingLinks.product_id,
+            db
+              .select({ id: products.id })
+              .from(products)
+              .where(
+                and(eq(products.merchant_id, profileId), isNull(products.deleted_at)),
+              ),
+          ),
+        ),
+      )
 
     return { success: true }
   })

@@ -25,13 +25,14 @@ function Toggle({
     <button
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${
         checked ? 'bg-gray-900' : 'bg-gray-200'
       } ${disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'}`}
     >
+      {/* مثبّت بإحداثيات صريحة (left + translate) لتفادي غموض اتجاه RTL في Tailwind */}
       <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-          checked ? 'translate-x-1' : '-translate-x-6.5'
+        className={`absolute left-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+          checked ? 'translate-x-4' : 'translate-x-0'
         }`}
       />
     </button>

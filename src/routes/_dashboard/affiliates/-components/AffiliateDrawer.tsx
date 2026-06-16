@@ -1,6 +1,7 @@
 // src/routes/_dashboard/affiliates/-components/AffiliateDrawer.tsx
 import { useState } from 'react'
 import type { Affiliate, AffiliateStatus } from '../-affiliates.types'
+import { WarningThreadModal } from '#/routes/-components/shared/WarningThreadModal'
 
 function fmt(n: number) {
   return new Intl.NumberFormat('ar-DZ').format(n)
@@ -30,6 +31,7 @@ interface Props {
 export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, onWarn, onDelete }: Props) {
   const [tab,        setTab]        = useState<'overview' | 'warnings'>('overview')
   const [confirmDel, setConfirmDel] = useState(false)
+  const [openWarningId, setOpenWarningId] = useState<string | null>(null)
 
   return (
     <div className="fixed inset-0 z-40 flex" dir="rtl">
@@ -210,7 +212,12 @@ export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, o
               {affiliate.warnings.length === 0 ? (
                 <div className="text-center py-12 text-slate-400 text-sm">لا توجد إنذارات</div>
               ) : affiliate.warnings.map(w => (
-                <div key={w.id} className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                <button
+                  key={w.id}
+                  type="button"
+                  onClick={() => setOpenWarningId(w.id)}
+                  className="w-full text-right bg-amber-50 border border-amber-100 rounded-xl p-4 transition-colors hover:bg-amber-100/60"
+                >
                   <div className="flex items-start gap-2">
                     <span className="text-amber-500 mt-0.5 shrink-0">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -218,18 +225,25 @@ export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, o
                         <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                       </svg>
                     </span>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm text-amber-900 leading-relaxed">{w.message}</p>
-                      <p className="text-xs text-amber-400 mt-1">{w.sentAt}</p>
+                      <p className="text-xs text-amber-500 mt-1.5 font-medium">عرض المحادثة والرد ←</p>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
 
         </div>
       </div>
+
+      {openWarningId && (
+        <WarningThreadModal
+          warningId={openWarningId}
+          onClose={() => setOpenWarningId(null)}
+        />
+      )}
     </div>
   )
 }
