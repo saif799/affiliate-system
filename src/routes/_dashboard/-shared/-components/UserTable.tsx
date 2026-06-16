@@ -58,8 +58,8 @@ export function UserTable<T extends { id: string }>({
                   </td>
                 ))}
                 <td className="px-4 py-4">
-                  {/* تظهر الإجراءات دائماً على الجوّال (لا hover للمس) وتُكشف بالـ hover على سطح المكتب */}
-                  <div className="flex items-center gap-1.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
+                  {/* الإجراءات ظاهرة دائماً — أوضح للمستخدم من إخفائها خلف hover */}
+                  <div className="flex items-center gap-1.5">
                     {renderActions(row)}
                   </div>
                 </td>

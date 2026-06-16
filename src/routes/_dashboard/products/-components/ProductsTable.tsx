@@ -77,7 +77,6 @@ function ProductDrawer({
 }) {
   const rows: [string, string][] = [
     ['التاجر',         product.merchantName],
-    ['الولاية',        product.merchantWilaya],
     ['الفئة',          product.category ?? '—'],
     ['السعر',          `${product.priceDzd.toLocaleString('fr-DZ')} DZD`],
     ['المخزون',        `${product.stockQty} وحدة`],
@@ -237,7 +236,6 @@ export function ProductsTable({ products }: Props) {
       !q ||
       p.name.includes(q) ||
       p.merchantName.toLowerCase().includes(q) ||
-      (p.merchantWilaya?.toLowerCase().includes(q) ?? false) ||
       (p.category?.toLowerCase().includes(q) ?? false)
 
     const matchFilter =
@@ -340,7 +338,7 @@ export function ProductsTable({ products }: Props) {
                       <div>
                         <div className="font-medium text-gray-800">{p.name}</div>
                         <div className="text-xs text-gray-400">
-                          {p.merchantName} — {p.merchantWilaya}
+                          {p.merchantName}
                         </div>
                       </div>
                     </div>

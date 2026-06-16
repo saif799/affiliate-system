@@ -141,22 +141,24 @@ export function CommissionStatsCard({
             value={`${fmt(breakdown.totalPaid)} دج`}
             color="#1D9E75"
           />
+          {/* عند انعدام أي مبلغ (paid=0 && pending=0) كان شريط «قيد الحجز» يُعرض ممتلئاً
+              بسبب 100 - 0؛ نُصفّره بشكل صريح. */}
           <BarRow
             label="قيد الحجز"
-            fill={100 - paidPct}
+            fill={total > 0 ? 100 - paidPct : 0}
             value={`${fmt(breakdown.totalPending)} دج`}
             color="#EF9F27"
           />
           <hr className="my-3 border-gray-100" />
           <BarRow
             label="التجار"
-            fill={mPaidPct}
+            fill={mTotal > 0 ? mPaidPct : 0}
             value={`${fmt(breakdown.merchantPaid)} / ${fmt(breakdown.merchantPending)}`}
             color="#60a5fa"
           />
           <BarRow
             label="المسوّقون"
-            fill={aPaidPct}
+            fill={aTotal > 0 ? aPaidPct : 0}
             value={`${fmt(breakdown.affiliatePaid)} / ${fmt(breakdown.affiliatePending)}`}
             color="#a78bfa"
           />

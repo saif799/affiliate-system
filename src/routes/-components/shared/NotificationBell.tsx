@@ -127,12 +127,16 @@ export function NotificationBell({ seeAllHref }: { seeAllHref?: string } = {}) {
       <button
         ref={btnRef}
         onClick={() => setOpen((o) => !o)}
-        className="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
         aria-label="الإشعارات"
       >
-        <Bell size={16} />
+        <Bell size={17} />
         {unread > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+          // شارة بارزة: حجم متّسق، حدّ أبيض للفصل عن الخلفية، تموضع مريح خارج الجرس
+          <span
+            className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold leading-none text-white shadow-sm"
+            dir="ltr"
+          >
             {unread > 99 ? '99+' : unread}
           </span>
         )}

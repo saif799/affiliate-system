@@ -107,10 +107,12 @@ async function fetchMerchants(
       .select({
         merchantId: orders.merchant_id,
         totalOrders: sql<number>`COUNT(*)`.as('total_orders'),
+        // الإيرادات تُكتسب فقط عند التسليم — نطابق صيغة لوحة التاجر:
+        // (سعر الجملة × الكمية − رسوم المنصة)، floored at 0، delivered-only.
         totalRevenue:
-          sql<number>`COALESCE(SUM(${orders.unit_affiliate_price_dzd} * ${orders.quantity}), 0)`.as(
-            'total_revenue',
-          ),
+          sql<number>`COALESCE(SUM(
+            GREATEST(${orders.unit_merchant_price_dzd} * ${orders.quantity} - ${orders.platform_fee_merchant_dzd}, 0)
+          ) FILTER (WHERE ${orders.status} = 'delivered'), 0)`.as('total_revenue'),
       })
       .from(orders)
       .where(
