@@ -95,6 +95,8 @@ function MerchantProductsPage() {
       lowStockThreshold: data.lowStockThreshold,
       basePrice: data.basePrice,
       images: data.images,
+      videoUrl: data.videoUrl,
+      links: data.links,
     }
     if (editProduct) {
       await updateProduct({ data: { ...payload, productId: editProduct.id } })

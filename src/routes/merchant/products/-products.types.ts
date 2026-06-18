@@ -9,6 +9,8 @@ export interface Product {
   name: string
   category: ProductCategory
   images: string[] // روابط الصور (أقصى 5) — الأولى هي الصورة المعروضة
+  videoUrl: string // رابط الفيديو الرئيسي ('' إن لم يوجد)
+  links: string[] // روابط إضافية (فيديوهات/صفحات)
   stockQuantity: number
   lowStockThreshold: number // عتبة التحذير البرتقالي
   basePrice: number // سعر الجملة — ما يقبضه التاجر (merchant_price_dzd)
@@ -39,6 +41,8 @@ export interface ProductFormData {
   lowStockThreshold: number
   basePrice: number
   images: string[] // روابط الصور بعد الرفع
+  videoUrl: string // رابط فيديو رئيسي (اختياري)
+  links: string[] // روابط إضافية (فيديوهات/صفحات)
 }
 
 export type ProductStatusFilter = 'all' | ProductStatus

@@ -48,11 +48,13 @@ export const uploadProductImages = createServerFn({ method: 'POST' })
       .getAll('images')
       .filter((f): f is File => f instanceof File)
 
+    if (files.length === 0) throw new Error('لا توجد صور')
     if (files.length > 5) throw new Error('الحد الأقصى 5 صور')
 
     // التخزين معزول خلف saveImage — يدعم القرص المحلي والسحابي (STORAGE_DRIVER)
     const urls: string[] = []
     for (const file of files) {
+      if (!file.type.startsWith('image/')) throw new Error('الملف يجب أن يكون صورة')
       urls.push(await saveImage(file))
     }
 
@@ -74,6 +76,8 @@ export const getMerchantProducts = createServerFn({ method: 'GET' }).handler(
         category: products.category,
         thumbnailUrl: products.thumbnail_url,
         imageUrls: products.image_urls,
+        videoUrl: products.video_url,
+        links: products.links,
         stockQty: products.stock_qty,
         lowStockThreshold: products.low_stock_threshold,
         merchantPrice: products.merchant_price_dzd,
@@ -101,6 +105,8 @@ export const getMerchantProducts = createServerFn({ method: 'GET' }).handler(
         name: r.name,
         category: toCategory(r.category),
         images,
+        videoUrl: r.videoUrl ?? '',
+        links: (r.links ?? []).filter(Boolean),
         stockQuantity: r.stockQty,
         lowStockThreshold: r.lowStockThreshold,
         basePrice: r.merchantPrice,
@@ -139,10 +145,18 @@ export const getMerchantProducts = createServerFn({ method: 'GET' }).handler(
 // ADD PRODUCT
 // ============================================================
 
+// رابط فيديو/خارجي صالح فقط (http/https) — يمنع حقن javascript: أو data:
+const externalUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .url()
+  .refine((u) => /^https?:\/\//i.test(u), 'رابط غير صالح')
+
 const AddProductSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-  category: z.string().min(1),
+  name: z.string().trim().min(1).max(160),
+  description: z.string().trim().max(2000).optional(),
+  category: z.string().min(1).max(60),
   stockQuantity: z.number().int().min(0),
   lowStockThreshold: z.number().int().min(1).default(10),
   basePrice: z.number().int().min(0),
@@ -151,6 +165,10 @@ const AddProductSchema = z.object({
     .array(z.string().regex(/^\/uploads\/products\/[\w.-]+$/))
     .max(5)
     .default([]),
+  // رابط فيديو رئيسي (اختياري) — '' يعني المسح
+  videoUrl: z.union([externalUrl, z.literal('')]).optional(),
+  // روابط إضافية (فيديوهات/صفحات) — حتى 6
+  links: z.array(externalUrl).max(6).default([]),
 })
 
 export const addProduct = createServerFn({ method: 'POST' })
@@ -167,6 +185,8 @@ export const addProduct = createServerFn({ method: 'POST' })
         category: data.category,
         thumbnail_url: data.images[0] ?? null,
         image_urls: data.images,
+        video_url: data.videoUrl ? data.videoUrl : null,
+        links: data.links,
         merchant_price_dzd: data.basePrice,
         stock_qty: data.stockQuantity,
         low_stock_threshold: data.lowStockThreshold,
@@ -228,6 +248,8 @@ export const updateProduct = createServerFn({ method: 'POST' })
         category: data.category,
         thumbnail_url: data.images[0] ?? null,
         image_urls: data.images,
+        video_url: data.videoUrl ? data.videoUrl : null,
+        links: data.links,
         merchant_price_dzd: data.basePrice,
         stock_qty: data.stockQuantity,
         low_stock_threshold: data.lowStockThreshold,

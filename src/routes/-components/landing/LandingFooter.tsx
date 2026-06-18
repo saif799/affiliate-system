@@ -43,7 +43,8 @@ export function LandingFooter() {
         {/* Bottom */}
         <div className="flex items-center justify-between border-t border-white/10 pt-6">
           <span className="text-xs">
-            © 2024 DzDrop. جميع الحقوق محفوظة · التجارة الإلكترونية في الجزائر
+            © {new Date().getFullYear()} DzDrop. جميع الحقوق محفوظة · التجارة الإلكترونية في
+            الجزائر
           </span>
           <span className="rounded-full border border-violet-500/50 bg-violet-900/30 px-3 py-1 text-[11px] font-bold text-violet-400">
             Made in Algeria 🇩🇿

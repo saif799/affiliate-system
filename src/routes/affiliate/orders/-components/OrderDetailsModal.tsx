@@ -173,7 +173,7 @@ export function OrderDetailsModal({ order, onClose, onConfirm, onReject, busy }:
   const TABS: { key: Tab; label: string; icon: typeof User }[] = [
     { key: 'overview', label: 'نظرة عامة', icon: ClipboardList },
     { key: 'delivery', label: 'التوصيل والتتبّع', icon: Truck },
-    { key: 'comments', label: `التعليقات${comments.length ? ` (${comments.length})` : ''}`, icon: MessageSquare },
+    { key: 'comments', label: `الملاحظات${comments.length ? ` (${comments.length})` : ''}`, icon: MessageSquare },
   ]
 
   return (
@@ -228,7 +228,7 @@ export function OrderDetailsModal({ order, onClose, onConfirm, onReject, busy }:
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+        <div className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-5">
           {/* ───────────── نظرة عامة ───────────── */}
           {tab === 'overview' && (
             <div className="flex flex-col gap-3">
@@ -391,25 +391,16 @@ export function OrderDetailsModal({ order, onClose, onConfirm, onReject, busy }:
                 </InfoCard>
               </div>
 
-              {/* ملاحظات عامل التوصيل / المكتب — من سجلّ شركة التوصيل */}
+              {/* تلميح: ملاحظات شركة التوصيل صارت تُعرض في تبويب «الملاحظات» مع تعليقاتك */}
               {delivery && delivery.carrierNotes.length > 0 && (
-                <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-                  <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
-                    <MessageSquare size={13} className="text-violet-500" />
-                    ملاحظات عامل التوصيل
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    {delivery.carrierNotes.map((n, i) => (
-                      <div key={i} className="rounded-lg border border-violet-50 bg-violet-50/50 px-3 py-2">
-                        <p className="whitespace-pre-wrap text-sm text-gray-800">{n.text}</p>
-                        <p className="mt-1 flex items-center gap-2 text-[10px] text-gray-400">
-                          {n.by && <span>{n.by}</span>}
-                          {n.at && <span>{fmtDateTime(n.at)}</span>}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setTab('comments')}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-violet-100 bg-violet-50/60 px-4 py-2.5 text-xs font-medium text-violet-700 transition-colors hover:bg-violet-100"
+                >
+                  <MessageSquare size={13} />
+                  لديك {delivery.carrierNotes.length} ملاحظة من شركة التوصيل — اعرضها في تبويب الملاحظات
+                </button>
               )}
 
               {/* أحداث شركة التوصيل (ECOTRACK) */}
@@ -424,12 +415,40 @@ export function OrderDetailsModal({ order, onClose, onConfirm, onReject, busy }:
             </div>
           )}
 
-          {/* ───────────── التعليقات ───────────── */}
+          {/* ───────────── الملاحظات (شركة التوصيل + تعليقاتك) ───────────── */}
           {tab === 'comments' && (
             <div className="flex flex-col gap-3">
+              {/* ملاحظات شركة التوصيل — للقراءة فقط، من سجلّ نشاط ECOTRACK */}
+              {delivery && delivery.carrierNotes.length > 0 && (
+                <div className="rounded-xl border border-violet-100 bg-white p-4 shadow-sm">
+                  <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                    <Headset size={13} className="text-violet-500" />
+                    ملاحظات شركة التوصيل
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {delivery.carrierNotes.map((nt, i) => (
+                      <div
+                        key={i}
+                        className="rounded-xl border border-violet-100 bg-violet-50/60 px-3 py-2"
+                      >
+                        <p className="whitespace-pre-wrap text-sm text-gray-800">{nt.text}</p>
+                        <p className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
+                          <span className="rounded-full bg-white px-1.5 py-0.5 font-medium text-violet-600">
+                            شركة التوصيل
+                          </span>
+                          {nt.by && <span>{nt.by}</span>}
+                          {nt.at && <span>{fmtDateTime(nt.at)}</span>}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* خيط ملاحظاتك وتعليقاتك */}
               <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
-                  <MessageSquare size={13} /> تعليقاتك وملاحظاتك على الطلبية
+                  <MessageSquare size={13} /> ملاحظاتك وتعليقاتك على الطلبية
                 </p>
                 <div className="flex flex-col gap-2">
                   {comments.length === 0 ? (

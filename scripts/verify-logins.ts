@@ -14,12 +14,19 @@ for (const rawLine of readFileSync('.env', 'utf8').split('\n')) {
   if (/^[A-Za-z0-9_]+$/.test(key) && process.env[key] === undefined) process.env[key] = val
 }
 
-const PASSWORD = 'wakilo123@'
-const ACCOUNTS = [
-  'abdelwakilbenmoussa@gmail.com',
-  'abdelwakilbenmoussa+1@gmail.com',
-  'abdelwakilbenmoussa+2@gmail.com',
-]
+// لا تُكتب كلمة المرور بثبات في كود متعقَّب بـ git — تُقرأ من البيئة (.env غير متعقَّب)
+const PASSWORD = process.env.SEED_PASSWORD ?? ''
+const ACCOUNTS = (process.env.SEED_ACCOUNTS ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+
+if (!PASSWORD || ACCOUNTS.length === 0) {
+  console.error(
+    'حدّد SEED_PASSWORD و SEED_ACCOUNTS (قائمة بريد مفصولة بفواصل) في .env قبل التشغيل.',
+  )
+  process.exit(1)
+}
 
 async function main() {
   const { auth } = await import('#/server/auth')

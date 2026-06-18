@@ -1,7 +1,7 @@
 // merchant/products/-components/AddProductDrawer.tsx
 
 import { useState, useEffect } from 'react'
-import { X, ChevronLeft, ChevronRight, Upload, Trash2 } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Upload, Trash2, Link2, Plus, Info } from 'lucide-react'
 import { uploadProductImages } from '../-server/products.api'
 import type { Product, ProductFormData, ProductCategory } from '../-products.types'
 
@@ -15,10 +15,13 @@ const EMPTY_FORM: ProductFormData = {
   lowStockThreshold: 10,
   basePrice: 0,
   images: [],
+  videoUrl: '',
+  links: [],
 }
 
-const steps = ['المعلومات الأساسية', 'التسعير والمخزون', 'الصور']
+const steps = ['المعلومات الأساسية', 'التسعير والمخزون', 'الصور والروابط']
 const MAX_IMAGES = 5
+const MAX_LINKS = 6
 
 interface AddProductDrawerProps {
   isOpen: boolean
@@ -51,6 +54,8 @@ export function AddProductDrawer({
         lowStockThreshold: editData.lowStockThreshold,
         basePrice: editData.basePrice,
         images: editData.images,
+        videoUrl: editData.videoUrl ?? '',
+        links: editData.links ?? [],
       })
       setExistingImages(editData.images)
     } else {
@@ -64,6 +69,18 @@ export function AddProductDrawer({
 
   const set = (field: keyof ProductFormData, value: string | number) =>
     setForm((prev) => ({ ...prev, [field]: value }))
+
+  const setLink = (idx: number, value: string) =>
+    setForm((prev) => ({
+      ...prev,
+      links: prev.links.map((l, i) => (i === idx ? value : l)),
+    }))
+  const addLink = () =>
+    setForm((prev) =>
+      prev.links.length < MAX_LINKS ? { ...prev, links: [...prev.links, ''] } : prev,
+    )
+  const removeLink = (idx: number) =>
+    setForm((prev) => ({ ...prev, links: prev.links.filter((_, i) => i !== idx) }))
 
   const totalImages = existingImages.length + files.length
 
@@ -111,7 +128,8 @@ export function AddProductDrawer({
         uploadedUrls = res.urls
       }
       const images = [...existingImages, ...uploadedUrls].slice(0, MAX_IMAGES)
-      await onSubmit({ ...form, images })
+      const links = form.links.map((l) => l.trim()).filter(Boolean)
+      await onSubmit({ ...form, images, videoUrl: form.videoUrl.trim(), links })
       handleClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل حفظ المنتج')
@@ -312,6 +330,72 @@ export function AddProductDrawer({
                 <p className="mt-1.5 text-xs text-gray-400">
                   {totalImages}/{MAX_IMAGES} صور • أقل من 5MB لكل صورة
                 </p>
+              </div>
+
+              {/* تنويه: روابط فقط — لا رفع فيديو على المنصة */}
+              <div className="flex items-start gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+                <Info size={14} className="mt-0.5 shrink-0 text-blue-500" />
+                <p className="text-xs leading-relaxed text-blue-800">
+                  تنويه: المنصة لا تستضيف رفع الفيديوهات — تضع <strong>روابط فقط</strong>{' '}
+                  (يوتيوب، فيسبوك، تيكتوك…) لفيديوهات أو صفحات لها علاقة بهذا المنتج.
+                </p>
+              </div>
+
+              {/* رابط الفيديو الرئيسي (رابط خارجي فقط) */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-600">
+                  رابط الفيديو الرئيسي للمنتج (اختياري)
+                </label>
+                <input
+                  type="url"
+                  dir="ltr"
+                  value={form.videoUrl}
+                  onChange={(e) => set('videoUrl', e.target.value)}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 outline-none focus:border-gray-400"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  رابط فقط — يظهر للمسوّق كزرّ «مشاهدة الفيديو» البارز في صفحة المنتج.
+                </p>
+              </div>
+
+              {/* روابط أخرى ذات صلة */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-600">
+                  روابط أخرى ذات صلة بالمنتج — حتى {MAX_LINKS}
+                </label>
+                <div className="space-y-2">
+                  {form.links.map((link, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Link2 size={13} className="shrink-0 text-gray-400" />
+                      <input
+                        type="url"
+                        dir="ltr"
+                        value={link}
+                        onChange={(e) => setLink(idx, e.target.value)}
+                        placeholder="https://..."
+                        className="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 outline-none focus:border-gray-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeLink(idx)}
+                        className="shrink-0 rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                        aria-label="حذف الرابط"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                  {form.links.length < MAX_LINKS && (
+                    <button
+                      type="button"
+                      onClick={addLink}
+                      className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 transition-colors hover:border-gray-400 hover:bg-gray-50"
+                    >
+                      <Plus size={13} /> إضافة رابط
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* ملخص قبل الحفظ */}

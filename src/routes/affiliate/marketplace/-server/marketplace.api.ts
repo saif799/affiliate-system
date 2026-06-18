@@ -47,6 +47,7 @@ export const getMarketplaceData = createServerFn({ method: 'GET' }).handler(
         thumbnailUrl: products.thumbnail_url,
         imageUrls: products.image_urls,
         videoUrl: products.video_url,
+        links: products.links,
         basePrice: products.merchant_price_dzd,
         stockQty: products.stock_qty,
         lowStockThreshold: products.low_stock_threshold,
@@ -101,6 +102,7 @@ export const getMarketplaceData = createServerFn({ method: 'GET' }).handler(
         thumbnail,
         images,
         videoUrl: r.videoUrl,
+        links: (r.links ?? []).filter(Boolean),
         basePrice: r.basePrice,
         stockQty: r.stockQty,
         deliveredRate:

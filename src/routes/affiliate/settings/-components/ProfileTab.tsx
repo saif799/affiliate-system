@@ -70,7 +70,10 @@ export function ProfileTab({ profile }: Props) {
     setTimeout(() => setSaved(false), 2500)
   }
 
-  const affiliateLink = `https://affili.dz/p/${form.username}`
+  // النطاق من إعداد المنصة (لا نطاق ثابت)؛ والروابط الفعلية للبيع تُولَّد لكل
+  // منتج من سوق المنتجات (كود/رابط التتبّع) — هذا رابط عام للمشاركة فقط.
+  const appBase = (import.meta.env.VITE_APP_URL ?? '').replace(/\/+$/, '')
+  const affiliateLink = `${appBase}/p/${form.username}`
 
   return (
     <div className="space-y-4">
@@ -93,7 +96,7 @@ export function ProfileTab({ profile }: Props) {
           </a>
         </div>
         <p className="mt-1.5 text-xs text-gray-400">
-          تغيير اسم المستخدم أدناه سيغير هذا الرابط
+          للبيع الفعلي، ولّد رابطاً أو كوداً لكل منتج من «سوق المنتجات».
         </p>
       </div>
 

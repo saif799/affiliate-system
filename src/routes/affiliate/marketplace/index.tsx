@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { getMarketplaceData } from './-server/marketplace.api'
 import { ProductCard } from './-components/ProductCard'
 import { QuickViewModal } from './-components/QuickViewModal'
+import { StoreConnectModal } from './-components/StoreConnectModal'
 import { MarketplaceFiltersBar } from './-components/MarketplaceFiltersBar'
 import type { Product, MarketplaceFilters } from './-marketplace.types'
 import { AddLeadModal } from '../orders/-components/AddLeadModal'
@@ -26,6 +27,7 @@ function MarketplacePage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [leadProduct, setLeadProduct] = useState<LeadProduct | null>(null)
   const [leadDone, setLeadDone] = useState(false)
+  const [connectOpen, setConnectOpen] = useState(false)
   const [filters, setFilters] = useState<MarketplaceFilters>({
     search: '',
     category: 'الكل',
@@ -97,6 +99,12 @@ function MarketplacePage() {
           <p className="text-sm text-gray-500">اختر المنتج وولّد رابطك في ثوانٍ</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setConnectOpen(true)}
+            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            🔌 ربط متجري الخارجي
+          </button>
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-center">
             <p className="text-xs text-gray-400">متوسط سعر الجملة</p>
             <p className="text-sm font-bold text-gray-900">{data.stats.avgBasePrice.toLocaleString("ar-DZ")} د.ج</p>
@@ -150,6 +158,9 @@ function MarketplacePage() {
         products={leadProduct ? [leadProduct] : []}
         initialProductId={leadProduct?.id}
       />
+
+      {/* ربط المتجر الخارجي (مفتاح المسوّق) */}
+      <StoreConnectModal open={connectOpen} onClose={() => setConnectOpen(false)} />
     </div>
   )
 }

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useRouter } from '@tanstack/react-router'
 import type { Product } from '../-campaigns.types'
 import { setProductActive, softDeleteProduct } from '../-server/campaigns.api'
+import { Toast, type ToastMessage } from '#/routes/-components/shared/Toast'
+import { ConfirmDialog } from '#/routes/-components/shared/ConfirmDialog'
 
 interface Props {
   products: Product[]
@@ -192,38 +194,46 @@ export function ProductsTable({ products }: Props) {
   const [filter,     setFilter]     = useState<FilterKey>('all')
   const [selected,   setSelected]   = useState<Product | null>(null)
   const [page,       setPage]       = useState(1)
-  const [busyId,     setBusyId]     = useState<string | null>(null)
-  const [error,      setError]      = useState<string | null>(null)
+  const [busyId,        setBusyId]        = useState<string | null>(null)
+  const [toast,         setToast]         = useState<ToastMessage | null>(null)
+  const [confirmTarget, setConfirmTarget] = useState<Product | null>(null)
 
   async function handleToggle(p: Product) {
-    setError(null)
     setBusyId(p.id)
     try {
       await setProductActive({ data: { productId: p.id, isActive: !p.isActive } })
       setSelected(null)
       await router.invalidate()
+      setToast({
+        type: 'success',
+        message: p.isActive ? `تم إيقاف «${p.name}»` : `تم تفعيل «${p.name}»`,
+      })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'تعذّر تنفيذ العملية')
+      setToast({ type: 'error', message: e instanceof Error ? e.message : 'تعذّر تنفيذ العملية' })
     } finally {
       setBusyId(null)
     }
   }
 
-  async function handleDelete(p: Product) {
-    if (
-      !window.confirm(
-        `حذف المنتج «${p.name}» نهائياً من المنصّة؟ لا يمكن التراجع عن هذا.`,
-      )
-    )
-      return
-    setError(null)
+  // فتح نافذة تأكيد عصرية بدل window.confirm
+  function handleDelete(p: Product) {
+    setConfirmTarget(p)
+  }
+
+  // تنفيذ الحذف الفعلي بعد التأكيد — الفشل (طلبيات قيد المعالجة) يظهر كإشعار واضح
+  async function doDelete() {
+    const p = confirmTarget
+    if (!p) return
     setBusyId(p.id)
     try {
       await softDeleteProduct({ data: { productId: p.id } })
+      setConfirmTarget(null)
       setSelected(null)
       await router.invalidate()
+      setToast({ type: 'success', message: `تم حذف «${p.name}» من المنصّة` })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'تعذّر حذف المنتج')
+      setConfirmTarget(null)
+      setToast({ type: 'error', message: e instanceof Error ? e.message : 'تعذّر حذف المنتج' })
     } finally {
       setBusyId(null)
     }
@@ -294,13 +304,6 @@ export function ProductsTable({ products }: Props) {
           ))}
         </div>
       </div>
-
-      {/* ─── error banner ──────────────────────────── */}
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700">
-          {error}
-        </div>
-      )}
 
       {/* ─── table ─────────────────────────────────── */}
       <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
@@ -476,6 +479,37 @@ export function ProductsTable({ products }: Props) {
           busy={busyId === selected.id}
         />
       )}
+
+      {/* ─── تأكيد الحذف (عصري بدل window.confirm) ─── */}
+      <ConfirmDialog
+        open={!!confirmTarget}
+        variant="danger"
+        title="حذف المنتج نهائياً؟"
+        message={
+          confirmTarget ? (
+            <>
+              سيُحذف «
+              <span className="font-semibold text-gray-700">{confirmTarget.name}</span>
+              » من المنصّة ولن يظهر للمسوّقين بعد الآن.
+              <br />
+              <span className="mt-1 block text-gray-400">
+                ملاحظة: المنتجات التي عليها طلبيات قيد المعالجة لا يمكن حذفها — أوقِفها بدل
+                حذفها.
+              </span>
+            </>
+          ) : (
+            ''
+          )
+        }
+        confirmLabel="نعم، احذف"
+        cancelLabel="إلغاء"
+        loading={!!confirmTarget && busyId === confirmTarget.id}
+        onConfirm={doDelete}
+        onCancel={() => setConfirmTarget(null)}
+      />
+
+      {/* ─── إشعار النتيجة (نجاح/فشل) ─── */}
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </>
   )
 }

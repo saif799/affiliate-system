@@ -8,6 +8,29 @@
     color: #22163d;
   }
 
+  /* شريط تمرير نحيف وعصري موحّد عبر كل المنصة (نفس مظهر بطاقة تتبّع الطلبية) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+    background-clip: padding-box;
+  }
+
   select, input[type="text"], input[type="number"], input[type="email"], input[type="password"], textarea {
     @apply appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition-all;
   }
@@ -19,19 +42,29 @@
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar — شريط تمرير نحيف وعصري (Webkit + Firefox) */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  width: 7px;
+  height: 7px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+  margin-block: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+  background: #cbd5e1;
   border-radius: 999px;
+  /* حدّ شفاف يصنع هامشاً بصريّاً فيبدو الإبهام أنحف وأكثر أناقة */
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
+  background: #94a3b8;
+  background-clip: padding-box;
 }
 
 /* inputs عادية (فاتحة) */
@@ -99,4 +132,11 @@ select {
 }
 .qv-overlay { animation: qv-overlay-in 0.18s ease-out; }
 .qv-card { animation: qv-card-in 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Toast entrance — انزلاق من الأعلى */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.toast-in { animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
 

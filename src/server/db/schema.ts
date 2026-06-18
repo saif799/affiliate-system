@@ -203,12 +203,18 @@ export const affiliateProfiles = pgTable(
       .notNull()
       .default('0'),
     fraud_flag: boolean('fraud_flag').notNull().default(false),
+    // مفتاح استيراد الطلبيات الخارجية (extension على متجر المسوّق: WooCommerce/Shopify…).
+    // يُولّد عند الطلب ويُرسَل في ترويسة x-api-key لمصادقة نقطة /api/ingest/order.
+    ingest_api_key: text('ingest_api_key'),
     deleted_at: timestamp('deleted_at'),
   },
   (table) => [
     uniqueIndex('idx_affiliate_referral_active')
       .on(table.referral_code)
       .where(sql`${table.deleted_at} IS NULL`),
+    uniqueIndex('idx_affiliate_ingest_key')
+      .on(table.ingest_api_key)
+      .where(sql`${table.ingest_api_key} IS NOT NULL`),
     sql`CONSTRAINT chk_refusal_rate_range
         CHECK (${table.refusal_rate} >= 0 AND ${table.refusal_rate} <= 100)`,
   ],
@@ -245,6 +251,8 @@ export const products = pgTable(
     thumbnail_url: text('thumbnail_url'),
     image_urls: text('image_urls').array(),
     video_url: text('video_url'),
+    // روابط إضافية يضيفها التاجر (فيديوهات إعلانية، صفحات هبوط…) — تُعرض للمسوّق
+    links: text('links').array(),
     merchant_price_dzd: integer('merchant_price_dzd').notNull(),
     wholesale_price_dzd: integer('wholesale_price_dzd'),
     stock_qty: integer('stock_qty').notNull().default(0),
@@ -292,6 +300,18 @@ export const trackingLinks = pgTable(
     is_active: boolean('is_active').notNull().default(true),
     expires_at: timestamp('expires_at'),
     created_at: timestamp('created_at').notNull().defaultNow(),
+
+    // ── إعدادات صفحة بيع المسوّق (Landing) — تُملأ عند نشر صفحة مخصّصة لهذا الرابط ──
+    // المسوّق يضبط سعر المنتج (لكل قطعة)؛ التوصيل يُحسب حسب الولاية على صفحة الهبوط.
+    landing_enabled: boolean('landing_enabled').notNull().default(false),
+    sale_price_dzd: integer('sale_price_dzd'), // سعر المنتج الذي حدّده المسوّق
+    landing_title: text('landing_title'),
+    landing_description: text('landing_description'),
+    landing_images: text('landing_images').array(), // صور مختارة/مضافة من المسوّق
+    // التوصيل مجاني (يتحمّله المسوّق من ربحه) لكل نوع
+    free_office_delivery: boolean('free_office_delivery').notNull().default(false),
+    free_home_delivery: boolean('free_home_delivery').notNull().default(false),
+    accent_color: text('accent_color'), // لون التمييز (hex) لتخصيص الصفحة
   },
   (table) => [
     uniqueIndex('idx_tracking_slug_active')
@@ -390,9 +410,10 @@ export const orders = pgTable(
     index('idx_orders_tracking_link_id').on(table.tracking_link_id),
     index('idx_orders_customer_wilaya').on(table.customer_wilaya),
     index('idx_orders_status_created').on(table.status, table.created_at),
-    // منع استيراد نفس الطلبية الخارجية مرتين (idempotency)
+    // منع استيراد نفس الطلبية الخارجية مرتين (idempotency) — بنطاق المسوّق كي لا
+    // تتصادم طلبات متجرَي مسوّقَين مختلفَين تحملان نفس (source, external_order_id).
     uniqueIndex('idx_orders_external_unique')
-      .on(table.external_source, table.external_order_id)
+      .on(table.affiliate_id, table.external_source, table.external_order_id)
       .where(sql`${table.external_order_id} IS NOT NULL`),
     // مرجع الشحنة الداخلي فريد (Phase 5) — جزئي لأنّه يُملأ عند الشحن فقط
     uniqueIndex('idx_orders_internal_shipment')

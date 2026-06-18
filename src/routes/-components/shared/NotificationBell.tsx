@@ -132,10 +132,13 @@ export function NotificationBell({ seeAllHref }: { seeAllHref?: string } = {}) {
       >
         <Bell size={17} />
         {unread > 0 && (
-          // شارة بارزة: حجم متّسق، حدّ أبيض للفصل عن الخلفية، تموضع مريح خارج الجرس
+          // شارة العدّاد: دائرة صغيرة متناسقة، حلقة بيضاء للفصل، أرقام جدوليّة.
+          // مُثبّتة داخل حدود الزرّ (top-0) كي لا يقصّها حاوي التمرير في الشريط الجانبي
+          // (overflow-y-auto يقصّ المحورين معاً، فالإزاحة السالبة للأعلى كانت تبتر الرقم).
           <span
-            className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold leading-none text-white shadow-sm"
+            className="pointer-events-none absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white shadow-sm ring-2 ring-white tabular-nums"
             dir="ltr"
+            aria-label={`${unread} إشعار غير مقروء`}
           >
             {unread > 99 ? '99+' : unread}
           </span>

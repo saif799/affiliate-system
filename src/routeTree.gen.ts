@@ -17,6 +17,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PSlugRouteImport } from './routes/p/$slug'
 import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as MerchantWalletIndexRouteImport } from './routes/merchant/wallet/index'
@@ -43,6 +44,7 @@ import { Route as DashboardCommissionsIndexRouteImport } from './routes/_dashboa
 import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard/analytics/index'
 import { Route as DashboardAffiliatesIndexRouteImport } from './routes/_dashboard/affiliates/index'
 import { Route as ApiWebhooksEcotrackRouteImport } from './routes/api/webhooks/ecotrack'
+import { Route as ApiIngestOrderRouteImport } from './routes/api/ingest/order'
 import { Route as ApiCronSyncTrackingRouteImport } from './routes/api/cron/sync-tracking'
 import { Route as ApiCronSyncCatalogRouteImport } from './routes/api/cron/sync-catalog'
 import { Route as ApiCronReleaseFundsRouteImport } from './routes/api/cron/release-funds'
@@ -84,6 +86,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PSlugRoute = PSlugRouteImport.update({
+  id: '/p/$slug',
+  path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
@@ -222,6 +229,11 @@ const ApiWebhooksEcotrackRoute = ApiWebhooksEcotrackRouteImport.update({
   path: '/api/webhooks/ecotrack',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiIngestOrderRoute = ApiIngestOrderRouteImport.update({
+  id: '/api/ingest/order',
+  path: '/api/ingest/order',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronSyncTrackingRoute = ApiCronSyncTrackingRouteImport.update({
   id: '/api/cron/sync-tracking',
   path: '/api/cron/sync-tracking',
@@ -252,10 +264,12 @@ export interface FileRoutesByFullPath {
   '/set-password': typeof SetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/p/$slug': typeof PSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
   '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
   '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
+  '/api/ingest/order': typeof ApiIngestOrderRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/analytics/': typeof DashboardAnalyticsIndexRoute
@@ -290,10 +304,12 @@ export interface FileRoutesByTo {
   '/set-password': typeof SetPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/p/$slug': typeof PSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
   '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
   '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
+  '/api/ingest/order': typeof ApiIngestOrderRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/affiliates': typeof DashboardAffiliatesIndexRoute
   '/analytics': typeof DashboardAnalyticsIndexRoute
@@ -331,10 +347,12 @@ export interface FileRoutesById {
   '/set-password': typeof SetPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/p/$slug': typeof PSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
   '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
   '/api/cron/sync-tracking': typeof ApiCronSyncTrackingRoute
+  '/api/ingest/order': typeof ApiIngestOrderRoute
   '/api/webhooks/ecotrack': typeof ApiWebhooksEcotrackRoute
   '/_dashboard/affiliates/': typeof DashboardAffiliatesIndexRoute
   '/_dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
@@ -371,10 +389,12 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/login'
     | '/register'
+    | '/p/$slug'
     | '/api/auth/$'
     | '/api/cron/release-funds'
     | '/api/cron/sync-catalog'
     | '/api/cron/sync-tracking'
+    | '/api/ingest/order'
     | '/api/webhooks/ecotrack'
     | '/affiliates/'
     | '/analytics/'
@@ -409,10 +429,12 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/login'
     | '/register'
+    | '/p/$slug'
     | '/api/auth/$'
     | '/api/cron/release-funds'
     | '/api/cron/sync-catalog'
     | '/api/cron/sync-tracking'
+    | '/api/ingest/order'
     | '/api/webhooks/ecotrack'
     | '/affiliates'
     | '/analytics'
@@ -449,10 +471,12 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/_auth/login'
     | '/_auth/register'
+    | '/p/$slug'
     | '/api/auth/$'
     | '/api/cron/release-funds'
     | '/api/cron/sync-catalog'
     | '/api/cron/sync-tracking'
+    | '/api/ingest/order'
     | '/api/webhooks/ecotrack'
     | '/_dashboard/affiliates/'
     | '/_dashboard/analytics/'
@@ -488,10 +512,12 @@ export interface RootRouteChildren {
   MerchantRoute: typeof MerchantRouteWithChildren
   PendingApprovalRoute: typeof PendingApprovalRoute
   SetPasswordRoute: typeof SetPasswordRoute
+  PSlugRoute: typeof PSlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronReleaseFundsRoute: typeof ApiCronReleaseFundsRoute
   ApiCronSyncCatalogRoute: typeof ApiCronSyncCatalogRoute
   ApiCronSyncTrackingRoute: typeof ApiCronSyncTrackingRoute
+  ApiIngestOrderRoute: typeof ApiIngestOrderRoute
   ApiWebhooksEcotrackRoute: typeof ApiWebhooksEcotrackRoute
 }
 
@@ -551,6 +577,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$slug': {
+      id: '/p/$slug'
+      path: '/p/$slug'
+      fullPath: '/p/$slug'
+      preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/register': {
@@ -735,6 +768,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksEcotrackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ingest/order': {
+      id: '/api/ingest/order'
+      path: '/api/ingest/order'
+      fullPath: '/api/ingest/order'
+      preLoaderRoute: typeof ApiIngestOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/sync-tracking': {
       id: '/api/cron/sync-tracking'
       path: '/api/cron/sync-tracking'
@@ -863,10 +903,12 @@ const rootRouteChildren: RootRouteChildren = {
   MerchantRoute: MerchantRouteWithChildren,
   PendingApprovalRoute: PendingApprovalRoute,
   SetPasswordRoute: SetPasswordRoute,
+  PSlugRoute: PSlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronReleaseFundsRoute: ApiCronReleaseFundsRoute,
   ApiCronSyncCatalogRoute: ApiCronSyncCatalogRoute,
   ApiCronSyncTrackingRoute: ApiCronSyncTrackingRoute,
+  ApiIngestOrderRoute: ApiIngestOrderRoute,
   ApiWebhooksEcotrackRoute: ApiWebhooksEcotrackRoute,
 }
 export const routeTree = rootRouteImport

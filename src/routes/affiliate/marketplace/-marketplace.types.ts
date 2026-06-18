@@ -12,6 +12,7 @@ export interface Product {
   thumbnail: string // رابط الصورة الرئيسية (قد يكون فارغاً)
   images: string[] // روابط الصور
   videoUrl: string | null
+  links: string[] // روابط إضافية (فيديوهات/صفحات) يضيفها التاجر
   basePrice: number // سعر الجملة (التكلفة على المسوّق) — يبيع بأي سعر أعلى
   stockQty: number
   deliveredRate: number

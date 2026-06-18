@@ -297,7 +297,9 @@ export const shipOrder = createServerFn({ method: 'POST' })
       tracking = res.tracking
     } catch (err) {
       await releaseShipClaim(order.id) // حرّر المطالبة ⇒ تبقى confirmed وقابلة لإعادة الشحن
-      throw err
+      // لا نُسرّب رسائل DHD الخام (Laravel/أسماء حقول) للتاجر — نسجّلها داخلياً فقط
+      console.error('[ship] ECOTRACK createOrder failed:', err)
+      throw new Error('تعذّر إنشاء الشحنة لدى شركة التوصيل — تحقّق من بيانات التوصيل وحاول مجدداً')
     }
 
     if (!tracking) {

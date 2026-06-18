@@ -71,6 +71,34 @@
       "when": 1780950928488,
       "tag": "0009_fk_policies_and_txn_index",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1781694334455,
+      "tag": "0010_ingest_and_product_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1781720247376,
+      "tag": "0011_landing_pages",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1781732996399,
+      "tag": "0012_move_ingest_key_to_affiliate",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1781738256770,
+      "tag": "0013_scope_external_idempotency",
+      "breakpoints": true
     }
   ]
 }
