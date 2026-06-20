@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.577.0",
+    "nitro": "3.0.260610-beta",
     "nodemailer": "^8.0.7",
     "postgres": "^3.4.9",
     "qrcode": "^1.5.4",
