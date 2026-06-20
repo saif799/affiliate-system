@@ -49,6 +49,7 @@ import { Route as ApiCronSyncTrackingRouteImport } from './routes/api/cron/sync-
 import { Route as ApiCronSyncCatalogRouteImport } from './routes/api/cron/sync-catalog'
 import { Route as ApiCronReleaseFundsRouteImport } from './routes/api/cron/release-funds'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAttributionOrderRouteImport } from './routes/api/attribution/order'
 
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
@@ -254,6 +255,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAttributionOrderRoute = ApiAttributionOrderRouteImport.update({
+  id: '/api/attribution/order',
+  path: '/api/attribution/order',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/p/$slug': typeof PSlugRoute
+  '/api/attribution/order': typeof ApiAttributionOrderRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
   '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
@@ -305,6 +312,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/p/$slug': typeof PSlugRoute
+  '/api/attribution/order': typeof ApiAttributionOrderRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
   '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/p/$slug': typeof PSlugRoute
+  '/api/attribution/order': typeof ApiAttributionOrderRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/release-funds': typeof ApiCronReleaseFundsRoute
   '/api/cron/sync-catalog': typeof ApiCronSyncCatalogRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/p/$slug'
+    | '/api/attribution/order'
     | '/api/auth/$'
     | '/api/cron/release-funds'
     | '/api/cron/sync-catalog'
@@ -430,6 +440,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/p/$slug'
+    | '/api/attribution/order'
     | '/api/auth/$'
     | '/api/cron/release-funds'
     | '/api/cron/sync-catalog'
@@ -472,6 +483,7 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/register'
     | '/p/$slug'
+    | '/api/attribution/order'
     | '/api/auth/$'
     | '/api/cron/release-funds'
     | '/api/cron/sync-catalog'
@@ -513,6 +525,7 @@ export interface RootRouteChildren {
   PendingApprovalRoute: typeof PendingApprovalRoute
   SetPasswordRoute: typeof SetPasswordRoute
   PSlugRoute: typeof PSlugRoute
+  ApiAttributionOrderRoute: typeof ApiAttributionOrderRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronReleaseFundsRoute: typeof ApiCronReleaseFundsRoute
   ApiCronSyncCatalogRoute: typeof ApiCronSyncCatalogRoute
@@ -803,6 +816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/attribution/order': {
+      id: '/api/attribution/order'
+      path: '/api/attribution/order'
+      fullPath: '/api/attribution/order'
+      preLoaderRoute: typeof ApiAttributionOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -904,6 +924,7 @@ const rootRouteChildren: RootRouteChildren = {
   PendingApprovalRoute: PendingApprovalRoute,
   SetPasswordRoute: SetPasswordRoute,
   PSlugRoute: PSlugRoute,
+  ApiAttributionOrderRoute: ApiAttributionOrderRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronReleaseFundsRoute: ApiCronReleaseFundsRoute,
   ApiCronSyncCatalogRoute: ApiCronSyncCatalogRoute,

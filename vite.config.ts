@@ -17,6 +17,7 @@ const config = defineConfig({
     viteReact(),
   ],
   server: {
+    allowedHosts: ['.trycloudflare.com'],
     // يحترم متغيّر PORT (تعيين تلقائي من أدوات المعاينة) ويبقى 3000 افتراضياً
     port: process.env.PORT ? Number(process.env.PORT) : 3000,
     watch: {
