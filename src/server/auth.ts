@@ -170,8 +170,10 @@ export const auth = betterAuth({
     log(level, message, ...args) {
       const blob = [message, ...args.map((a) => errToString(a))].join(' ')
       if (INFRA_ERR.test(blob)) {
-        console.warn(
-          '[auth] تعذّر الوصول لقاعدة البيانات مؤقتاً (شبكة/Neon نائمة) — يُعاد تلقائياً',
+        // نطبع البلوب الكامل (لا نُخفيه) كي يظهر السبب الحقيقي في سجلّات Vercel.
+        console.error(
+          '[auth] تعذّر الوصول لقاعدة البيانات (شبكة/Neon) — التفاصيل:',
+          blob,
         )
         return
       }

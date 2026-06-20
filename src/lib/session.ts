@@ -3,6 +3,24 @@ import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { auth } from '#/server/auth'
 
+// يُسلسل الخطأ مع سلسلة cause + رمز pg (مثل 28P01, ENOTFOUND) لتشخيص دقيق.
+function describeError(e: unknown, depth = 0): string {
+  if (depth > 5 || e == null) return ''
+  if (e instanceof Error) {
+    const code = (e as { code?: string }).code
+    const cause = (e as { cause?: unknown }).cause
+    return (
+      `${e.name}${code ? `(${code})` : ''}: ${e.message}` +
+      (cause ? ` ⤷ ${describeError(cause, depth + 1)}` : '')
+    )
+  }
+  try {
+    return JSON.stringify(e)
+  } catch {
+    return String(e)
+  }
+}
+
 export const getSession = createServerFn({ method: 'GET' }).handler(async () => {
   const request = getRequest()
   try {
@@ -11,9 +29,11 @@ export const getSession = createServerFn({ method: 'GET' }).handler(async () => 
   } catch (err) {
     // عطل بنية تحتية (قاعدة بيانات غير متاحة مثلاً) ليس "غياب جلسة".
     // نُعيده ليُعرض كخطأ خادم — لا نُرجِع null كي لا يُطرَد كل المستخدمين
-    // إلى صفحة الدخول عند انقطاع مؤقت. نُسجّل سطراً مختصراً فقط.
-    const msg = err instanceof Error ? err.message : String(err)
-    console.warn('[getSession] فشل قراءة الجلسة:', msg.split('\n')[0].slice(0, 200))
-    throw err
+    // إلى صفحة الدخول عند انقطاع مؤقت. نُسجّل السبب الكامل في سجلّات Vercel.
+    const detail = describeError(err)
+    console.error('[getSession] فشل قراءة الجلسة:', detail)
+    // مؤقّتاً للتشخيص: نمرّر السبب الحقيقي في الرسالة كي يظهر في الواجهة.
+    // أزِله بعد تأكيد الإصلاح.
+    throw new Error(`getSession failed: ${detail}`)
   }
 })
