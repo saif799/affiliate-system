@@ -1,15 +1,18 @@
 // src/routes/api/ingest/order.ts
 //
-// نقطة استيراد الطلبيات الخارجية (extension على متجر المسوّق: WooCommerce/Shopify…).
+// نقطة استيراد الطلبيات الخارجية (إضافة WooCommerce على متجر المسوّق).
 // المتجر الخارجي يخصّ المسوّق (لا التاجر — التاجر مورّد بالجملة فقط). التدفّق:
 //   1) المسوّق يولّد «كود ربط» للمنتج (= tracking_links.slug) ويضعه في إضافة متجره.
-//   2) الزبون يطلب على متجر المسوّق الخارجي؛ تلتقط الـextension الكودَ من الطلب.
-//   3) الـextension تستدعي هذه النقطة (POST) بمفتاح المسوّق + الكود + بيانات الطلب.
-//   4) نصادق المسوّق بمفتاحه، ونتحقّق أنّ الكود يخصّه، ثم نُنشئ طلبية «pending»
-//      مربوطة به وبتاجر المنتج — مع منع التكرار (idempotency).
+//   2) الزبون يطلب على متجر المسوّق؛ تلتقط الإضافة الكودَ من الطلب.
+//   3) الإضافة تستدعي هذه النقطة (POST) بالكود + بيانات الطلب.
+//   4) نحلّ الكود ← المسوّق + المنتج (ومنه التاجر)، ثم نُنشئ طلبية «pending»
+//      مع منع التكرار (idempotency).
 //
-// المصادقة: ترويسة  x-api-key: <affiliate_profiles.ingest_api_key>
-// الاستجابة: JSON. الأخطاء لا تُسرّب تفاصيل داخلية.
+// لا مصادقة حالياً (بطلب صريح). المسوّق يُشتقّ من الكود مباشرةً.
+// الجسم يطابق ما ترسله إضافة WooCommerce فعلاً (انظر BodySchema أدناه):
+//   { platform_product_id, wc_order_id, client_name, phone, address, amount, … }
+// الحقول الفارغة (client_name/phone/address) تُقبَل وتُستبدَل بقيم افتراضية —
+// تُملأ لاحقاً عند مراجعة الطلبية أو عندما ترسلها الإضافة.
 
 import { createFileRoute } from '@tanstack/react-router'
 import { db } from '#/server/db'
@@ -19,31 +22,31 @@ import {
   products,
   orders,
   settings,
-  deliveryPricing,
 } from '#/server/db/schema'
 import { and, eq, isNull, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { notify } from '#/server/notify'
+import { normalizeDzPhone } from '#/server/attribution/order-forward'
 
+// شكل الجسم كما ترسله إضافة WooCommerce فعلاً. متساهل: القيم الفارغة مقبولة.
 const BodySchema = z.object({
-  code: z.string().trim().min(4).max(64), // كود الربط (slug)
-  externalOrderId: z.string().trim().min(1).max(120), // معرّف الطلب في المتجر الخارجي
-  source: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9_-]{2,32}$/)
-    .optional(), // woocommerce/shopify/...
-  customer: z.object({
-    name: z.string().trim().min(1).max(120),
-    // هاتف جزائري صالح (نفس تحقّق صفحة البيع والطلبية اليدوية)
-    phone: z.string().trim().regex(/^0[5-7][0-9]{8}$/),
-    wilaya: z.string().trim().min(1).max(60),
-    wilayaCode: z.number().int().min(1).max(58).optional(),
-    commune: z.string().trim().max(80).optional(),
-    address: z.string().trim().max(255).optional(),
-  }),
-  salePrice: z.number().int().positive().max(10_000_000),
-  quantity: z.number().int().min(1).max(1000).default(1),
+  // كود الربط (slug) — يُحدّد المسوّق والمنتج معاً
+  platform_product_id: z.string().trim().min(4).max(64),
+  // معرّف الطلب في WooCommerce — أساس منع التكرار
+  wc_order_id: z.coerce.string().trim().min(1).max(120),
+  wc_order_number: z.coerce.string().trim().max(120).optional(),
+  // مُتجاهَل — المسوّق يُشتقّ من الكود، لا من هذه القيمة
+  affiliate_id: z.string().trim().optional(),
+  product_name: z.string().optional(),
+  client_name: z.string().trim().max(120).optional(),
+  phone: z.string().trim().max(40).optional(),
+  email: z.string().trim().max(160).optional(),
+  address: z.string().trim().max(255).optional(),
+  amount: z.coerce.number().int().nonnegative().max(10_000_000).optional(),
+  currency: z.string().optional(),
+  order_note: z.string().trim().max(1000).optional(),
+  submitted_at: z.string().optional(),
+  source_site: z.string().optional(),
 })
 
 function json(body: unknown, status = 200): Response {
@@ -69,10 +72,6 @@ export const Route = createFileRoute('/api/ingest/order')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // ملاحظة: لا مصادقة حالياً (بطلب صريح) — المسوّق يُشتقّ من الكود (slug)
-        // مباشرةً، فالـ slug يخصّ مسوّقاً واحداً أصلاً. يمكن إعادة مفتاح x-api-key
-        // لاحقاً دون تغيير منطق النسب.
-
         // 1) قراءة وتحقّق الجسم
         let raw: unknown
         try {
@@ -88,7 +87,11 @@ export const Route = createFileRoute('/api/ingest/order')({
           )
         }
         const data = parsed.data
-        const source = data.source ?? 'external'
+
+        const code = data.platform_product_id
+        const source = 'woocommerce'
+        // فريد لكل (طلب WooCommerce + منتج): يسمح بعدّة منتجات في طلب واحد
+        const externalOrderId = `${data.wc_order_id}:${code}`.slice(0, 120)
 
         // 2) حلّ الكود ← رابط التتبّع (ومنه المسوّق + المنتج + مستخدم المسوّق للإشعار)
         const [link] = await db
@@ -105,27 +108,24 @@ export const Route = createFileRoute('/api/ingest/order')({
           )
           .where(
             and(
-              eq(trackingLinks.slug, data.code),
+              eq(trackingLinks.slug, code),
               eq(trackingLinks.is_active, true),
               isNull(affiliateProfiles.deleted_at),
             ),
           )
           .limit(1)
-        // كود غير موجود — رسالة موحّدة كي لا تُسرّب وجود الـ slug
         if (!link) {
           return json({ success: false, error: 'invalid_code' }, 404)
         }
-        // المسوّق المنسوب إليه (من الكود)
         const affiliate = { id: link.affiliateId, userId: link.affiliateUserId }
 
-        // 4) المنتج يجب أن يكون متاحاً ومتوفّراً (التاجر يُشتقّ من المنتج للربط)
+        // 3) المنتج (التاجر يُشتقّ منه). نقبل حتى لو نفد المخزون — الطلب حدث فعلاً.
         const [product] = await db
           .select({
             id: products.id,
             merchantId: products.merchant_id,
             merchantPrice: products.merchant_price_dzd,
             isActive: products.is_active,
-            stockQty: products.stock_qty,
             name: products.name,
           })
           .from(products)
@@ -134,30 +134,20 @@ export const Route = createFileRoute('/api/ingest/order')({
         if (!product || !product.isActive) {
           return json({ success: false, error: 'product_unavailable' }, 409)
         }
-        if (product.stockQty < data.quantity) {
-          return json({ success: false, error: 'out_of_stock' }, 409)
-        }
-
-        // 5) السعر: لا نثق بقيمة العميل إلا كسعر بيع، والحدّ الأدنى = سعر الجملة
-        if (data.salePrice < product.merchantPrice) {
-          return json({ success: false, error: 'sale_price_below_cost' }, 422)
-        }
 
         const fees = await getPlatformFees()
 
-        // سعر التوصيل (لقطة) من التعرفة المحلّية إن توفّر رمز الولاية — وإلا 0
-        // (يُكمل المسوّق تفاصيل التوصيل عند مراجعة/تأكيد الطلبية).
-        let shipping = 0
-        if (data.customer.wilayaCode) {
-          const [pricing] = await db
-            .select({ home: deliveryPricing.home_price_dzd })
-            .from(deliveryPricing)
-            .where(eq(deliveryPricing.wilaya_id, data.customer.wilayaCode))
-            .limit(1)
-          if (pricing) shipping = pricing.home
-        }
+        // السعر: قيمة amount إن كانت موجبة، وإلا سعر الجملة كحدٍّ أدنى آمن.
+        const salePrice =
+          data.amount && data.amount > 0 ? data.amount : product.merchantPrice
 
-        // 6) إنشاء الطلبية — idempotent عبر (external_source, external_order_id)
+        // بيانات الزبون متساهلة: الإضافة قد ترسلها فارغة حالياً.
+        const phone = normalizeDzPhone(data.phone)
+        const name = data.client_name && data.client_name.length > 0 ? data.client_name : 'زبون'
+        const address = data.address && data.address.length > 0 ? data.address : null
+        const note = data.order_note && data.order_note.length > 0 ? data.order_note : null
+
+        // 4) إنشاء الطلبية — idempotent عبر (affiliate_id, external_source, external_order_id)
         const inserted = await db
           .insert(orders)
           .values({
@@ -165,32 +155,33 @@ export const Route = createFileRoute('/api/ingest/order')({
             affiliate_id: affiliate.id,
             merchant_id: product.merchantId,
             tracking_link_id: link.id,
-            customer_name: data.customer.name,
-            customer_phone: data.customer.phone,
-            customer_wilaya: data.customer.wilaya,
-            customer_wilaya_code: data.customer.wilayaCode ?? null,
-            customer_commune: data.customer.commune ?? null,
-            customer_address: data.customer.address ?? null,
-            quantity: data.quantity,
-            unit_affiliate_price_dzd: data.salePrice,
+            customer_name: name,
+            customer_phone: phone ?? 'غير متوفّر',
+            customer_wilaya: 'غير محدد', // الإضافة لا ترسل الولاية بعد
+            customer_wilaya_code: null,
+            customer_commune: null,
+            customer_address: address,
+            customer_note: note,
+            quantity: 1,
+            unit_affiliate_price_dzd: salePrice,
             unit_merchant_price_dzd: product.merchantPrice,
             platform_fee_merchant_dzd: fees.merchant,
             platform_fee_affiliate_dzd: fees.affiliate,
             platform_fee_dzd: fees.merchant + fees.affiliate,
-            shipping_fee_dzd: shipping,
+            shipping_fee_dzd: 0,
             status: 'pending',
             external_source: source,
-            external_order_id: data.externalOrderId,
+            external_order_id: externalOrderId,
           })
           .onConflictDoNothing()
           .returning({ id: orders.id })
 
-        // تكرار: نفس الطلب الخارجي وصل سابقاً — استجابة ناجحة بلا تأثير
+        // تكرار: نفس الطلب وصل سابقاً — استجابة ناجحة بلا تأثير
         if (inserted.length === 0) {
           return json({ success: true, duplicate: true })
         }
 
-        // 7) إشعار المسوّق صاحب المتجر (best-effort)
+        // 5) إشعار المسوّق صاحب المتجر (best-effort)
         await notify({
           userId: affiliate.userId,
           type: 'order_new',
