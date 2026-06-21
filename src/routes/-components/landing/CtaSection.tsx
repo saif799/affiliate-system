@@ -3,7 +3,7 @@
 export function CtaSection() {
   return (
     <div className="px-4 pb-0 sm:px-6 lg:px-12">
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-900 via-violet-700 to-violet-500 px-6 py-14 text-center sm:px-10 sm:py-16 lg:px-16 lg:py-[72px]">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-900 via-violet-700 to-violet-500 px-6 py-14 text-center sm:px-10 sm:py-16 lg:px-16 lg:py-[72px] mb-5">
 
         {/* Decoration circles */}
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/5" />
