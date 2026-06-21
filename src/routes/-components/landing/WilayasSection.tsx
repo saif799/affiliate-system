@@ -17,7 +17,7 @@ export function WilayasSection() {
           نصل إلى كل ولاية<br />في الجزائر
         </h2>
         <p className="mb-9 max-w-[520px] text-[15px] leading-[1.7] text-white/60">
-          58 ولاية مغطاة بالكامل مع شركاء توصيل موثوقين في كل منطقة.
+          69 ولاية مغطّاة مع شركاء توصيل موثوقين — توصيل للمنزل أو لمكتب الشركة.
         </p>
 
         {/* Pills */}
@@ -35,7 +35,7 @@ export function WilayasSection() {
             </span>
           ))}
           <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-4 py-1.5 text-[12.5px] font-semibold text-violet-300">
-            + 38 ولاية أخرى
+            + 45 ولاية أخرى
           </span>
         </div>
 

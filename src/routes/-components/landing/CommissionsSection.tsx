@@ -1,6 +1,9 @@
 // ─── src/routes/-components/landing/CommissionsSection.tsx ───
+//
+// نموذج الربح الحقيقي للمنصّة: لا نِسَب عمولة ثابتة. التاجر يضع سعر الجملة،
+// والمسوّق يحدّد سعر بيعه ويربح الفارق بعد رسوم المنصة (هامش مفتوح).
 
-import { commissions } from '../../-data/landing.data'
+import { marketCategories, marginExample } from '../../-data/landing.data'
 
 function IconFashion() {
   return (
@@ -64,40 +67,91 @@ const iconMap: Record<string, React.ReactNode> = {
   gift:        <IconGift />,
 }
 
+const fmt = (n: number) => n.toLocaleString('ar-DZ')
+
+/** كتلة قيمة داخل معادلة الربح — تتكدّس رأسياً على الجوّال وأفقياً على الشاشات الأكبر. */
+function ValueBlock({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: number
+  tone: 'sell' | 'plain' | 'profit'
+}) {
+  const styles =
+    tone === 'profit'
+      ? 'border-transparent bg-violet-600 text-white'
+      : tone === 'sell'
+        ? 'border-violet-200 bg-violet-50 text-violet-700'
+        : 'border-gray-200 bg-white text-gray-700'
+  return (
+    <div
+      className={`flex flex-1 flex-col items-center justify-center rounded-xl border px-3 py-3 text-center ${styles}`}
+    >
+      <span
+        className={`text-[11px] font-semibold ${tone === 'profit' ? 'text-white/75' : 'text-gray-400'}`}
+      >
+        {label}
+      </span>
+      <span className="mt-0.5 text-base font-black sm:text-lg">{fmt(value)} دج</span>
+    </div>
+  )
+}
+
+function Op({ children }: { children: string }) {
+  return (
+    <span className="mx-auto flex h-7 w-7 shrink-0 items-center justify-center self-center rounded-full bg-gray-100 text-base font-black text-gray-500">
+      {children}
+    </span>
+  )
+}
+
 export function CommissionsSection() {
   return (
     <section id="features" className="mx-auto max-w-285 px-4 py-12 sm:px-6 lg:px-12 lg:py-16">
 
       <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-4 py-1.5">
         <span className="text-xs font-extrabold uppercase tracking-wide text-violet-600">
-          هيكل العمولات
+          نموذج الربح
         </span>
       </div>
       <h2 className="mb-3 text-[26px] font-black leading-tight text-gray-900 sm:text-[30px] lg:text-[34px]">
-        عمولات شفافة<br />بدون مفاجآت
+        ربحك مفتوح —<br />أنت من يحدّده
       </h2>
-      <p className="mb-10 max-w-130 text-[15px] leading-[1.7] text-gray-500">
-        كل عمولة محددة مسبقاً وظاهرة قبل بدء الترويج. لا خصومات مخفية، لا مفاجآت.
+      <p className="mb-8 max-w-150 text-[15px] leading-[1.7] text-gray-500">
+        لا عمولات ثابتة بالنسبة المئوية. التاجر يضع سعر الجملة، والمسوّق يحدّد سعر
+        بيعه ويربح الفارق بعد رسوم المنصة — كلّما أبدعت في التسويق، زاد ربحك.
       </p>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-        {commissions.map((c) => (
+      {/* معادلة الربح */}
+      <div className="mb-10 rounded-2xl border border-violet-100 bg-white p-4 shadow-[0_4px_28px_rgba(124,58,237,0.07)] sm:p-6">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch sm:gap-2.5">
+          <ValueBlock label="سعر بيعك" value={marginExample.sellPrice} tone="sell" />
+          <Op>−</Op>
+          <ValueBlock label="سعر الجملة" value={marginExample.wholesale} tone="plain" />
+          <Op>−</Op>
+          <ValueBlock label="رسوم المنصة" value={marginExample.fee} tone="plain" />
+          <Op>=</Op>
+          <ValueBlock label="ربحك الصافي" value={marginExample.profit} tone="profit" />
+        </div>
+        <p className="mt-4 text-center text-xs text-gray-400">
+          مثال توضيحي — الأرقام تتغيّر حسب سعرك واختيارك للمنتج.
+        </p>
+      </div>
+
+      {/* أصناف السوق */}
+      <p className="mb-4 text-sm font-bold text-gray-700">أصناف رائجة في سوق المنتجات</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {marketCategories.map((c) => (
           <div
-            key={c.category}
-            className="group rounded-xl border border-gray-100 bg-white p-6 text-center transition-all hover:-translate-y-1 hover:border-violet-100 hover:shadow-[0_4px_24px_rgba(124,58,237,0.1)]"
+            key={c.iconId}
+            className="group flex items-center gap-2.5 rounded-xl border border-gray-100 bg-white p-3 transition-all hover:-translate-y-0.5 hover:border-violet-100 hover:shadow-[0_4px_18px_rgba(124,58,237,0.08)]"
           >
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-violet-50 text-violet-600 transition-colors group-hover:bg-violet-100">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition-colors group-hover:bg-violet-100">
               {iconMap[c.iconId]}
             </div>
-            <div className="mb-1.5 text-sm font-extrabold text-gray-900">{c.category}</div>
-            <div className="text-[28px] font-black text-violet-600">{c.rate}</div>
-            <div className="mt-1 text-[11.5px] font-semibold text-gray-400">من سعر البيع</div>
-            <div className="mt-4 h-1 overflow-hidden rounded-full bg-violet-50">
-              <div
-                className="h-full rounded-full bg-linear-to-r from-violet-500 to-violet-400"
-                style={{ width: `${c.barPct}%` }}
-              />
-            </div>
+            <span className="min-w-0 text-[12.5px] font-semibold text-gray-700">{c.name}</span>
           </div>
         ))}
       </div>

@@ -42,7 +42,7 @@ export function DualValueSection() {
             وسّع مبيعاتك بجيش تسويقي
           </h3>
           <p className="mb-6 text-[13.5px] leading-[1.7] text-white/65">
-            لا تحتاج فريق تسويق داخلي. آلاف المسوقين يروّجون لمنتجاتك مقابل عمولة فقط عند البيع.
+            لا تحتاج فريق تسويق داخلي. شبكة من المسوّقين تروّج لمنتجاتك، ولا تدفع إلا عند البيع الفعلي.
           </p>
           <ul className="flex flex-col gap-2.5">
             {merchantFeatures.map((f) => (

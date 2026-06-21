@@ -15,7 +15,7 @@ export function HeroSection() {
           <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-yellow-200 bg-yellow-50 px-4 py-1.5">
             <span className="h-2 w-2 shrink-0 rounded-full bg-yellow-400" />
             <span className="text-xs font-bold text-yellow-800">
-              الإطلاق الرسمي في الجزائر · 58 ولاية
+              الإطلاق الرسمي في الجزائر · 69 ولاية
             </span>
           </div>
 
@@ -26,8 +26,8 @@ export function HeroSection() {
           </h1>
 
           <p className="mb-8 max-w-110 text-[15.5px] leading-[1.75] text-gray-500 lg:mb-9">
-            المنصة الأولى التي تحمي حقوقك وتمنحك الحرية الكاملة لإدارة تجارتك.
-            سواء كنت تاجراً يبحث عن التوسع، أو مسوقاً يطمح للاستقلال المالي.
+            منصّة تحمي طلباتك وحقوقك وتمنحك الحرية الكاملة لإدارة تجارتك. نضمن
+            للمسوّق نسبة طلباته وعمولته، وللتاجر سعره وأرباحه — من أوّل طلب.
           </p>
 
           {/* CTA — المسوق Primary، التاجر Secondary */}
@@ -64,7 +64,7 @@ export function HeroSection() {
           <div className="mb-5 flex items-center justify-between">
             <span className="text-xs font-semibold text-white/70">لوحة تحكم التاجر</span>
             <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white">
-              مباشر الآن
+              معاينة
             </span>
           </div>
 

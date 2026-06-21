@@ -8,6 +8,7 @@ import { TickerBanner }        from './-components/landing/TickerBanner'
 import { StatsSection }        from './-components/landing/StatsSection'
 import { StepsSection }        from './-components/landing/StepsSection'
 import { DualValueSection }    from './-components/landing/DualValueSection'
+import { ProtectionSection }   from './-components/landing/ProtectionSection'
 import { WilayasSection }      from './-components/landing/WilayasSection'
 import { CommissionsSection }  from './-components/landing/CommissionsSection'
 import { TestimonialsSection } from './-components/landing/TestimonialsSection'
@@ -44,6 +45,9 @@ function LandingPage() {
 
       {/* ── Merchant vs Affiliate ── */}
       <DualValueSection />
+
+      {/* ── Buyer/Seller Protection ── */}
+      <ProtectionSection />
 
       {/* ── Wilayas Coverage ── */}
       <WilayasSection />

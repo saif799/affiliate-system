@@ -25,11 +25,11 @@ export function LandingFooter() {
               <div className="flex flex-col gap-2">
                 {col.links.map((link) => (
                   <a
-                    key={link}
-                    href="#"
+                    key={link.label}
+                    href={link.href}
                     className="text-[12.5px] text-white/50 transition-colors hover:text-white"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 ))}
               </div>

@@ -13,17 +13,23 @@ export function CtaSection() {
           الجزائر تتحرك — هل أنت معها؟
         </h2>
         <p className="relative mx-auto mb-9 max-w-[480px] text-[15px] leading-[1.7] text-white/70">
-          انضم إلى أكثر من 20,000 مسوق و500 تاجر يبنون مستقبلهم المالي اليوم.
-          التسجيل مجاني والانطلاق فوري.
+          سجّل مجاناً كتاجر أو مسوّق وابدأ فور موافقة الإدارة — بدون رسوم اشتراك،
+          بالدفع عند الاستلام، ولوحة عربية بالكامل.
         </p>
 
-        <div className="relative flex flex-wrap justify-center gap-3.5">
-          <button className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-violet-900 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(0,0,0,0.2)]">
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3.5">
+          <a
+            href="/register?type=merchant"
+            className="rounded-full bg-white px-8 py-3.5 text-center text-sm font-bold text-violet-900 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(0,0,0,0.2)]"
+          >
             سجّل كتاجر — مجاناً ←
-          </button>
-          <button className="rounded-full border-[1.5px] border-white/30 bg-white/12 px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/20">
+          </a>
+          <a
+            href="/register?type=affiliate"
+            className="rounded-full border-[1.5px] border-white/30 bg-white/12 px-8 py-3.5 text-center text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/20"
+          >
             انضم كمسوق الآن ←
-          </button>
+          </a>
         </div>
 
       </section>
