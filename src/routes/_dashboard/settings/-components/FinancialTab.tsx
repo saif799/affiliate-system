@@ -136,7 +136,7 @@ export function FinancialTab({ data }: Props) {
         </div>
 
         {/* Save row */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+        <div className="flex flex-col gap-3 pt-2 border-t border-gray-50 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {error  && <p className="text-xs text-red-600">{error}</p>}
             {saved  && <p className="text-xs text-emerald-600">✓ تم الحفظ بنجاح</p>}
@@ -144,7 +144,7 @@ export function FinancialTab({ data }: Props) {
           <button
             onClick={handleSave}
             disabled={!isDirty || saving}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               isDirty && !saving
                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'

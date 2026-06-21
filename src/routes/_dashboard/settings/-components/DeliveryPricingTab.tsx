@@ -100,14 +100,14 @@ export function DeliveryPricingTab() {
 
   return (
     <div className="space-y-4" dir="rtl">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-base font-semibold text-gray-900">أسعار التوصيل لكل ولاية</h2>
           <p className="text-sm text-gray-500">
             تُزامَن من ECOTRACK وتُعرَض للمسوّق عند إنشاء الطلبية. يمكنك تعديل أيّ سعر يدويّاً.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => handleSync(false)}
             disabled={syncing}
@@ -136,7 +136,7 @@ export function DeliveryPricingTab() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         {loading ? (
           <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
             <Loader2 size={16} className="animate-spin" /> جارٍ التحميل...
@@ -146,7 +146,7 @@ export function DeliveryPricingTab() {
             لا توجد أسعار بعد — اضغط «مزامنة من ECOTRACK» للبدء
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50 text-right text-xs font-medium text-gray-500">
                 <th className="px-4 py-3">الولاية</th>

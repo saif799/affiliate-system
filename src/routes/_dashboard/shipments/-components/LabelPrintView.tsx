@@ -52,13 +52,13 @@ export function LabelPrintView({
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
           {urls.map((u) => (
             <div key={u.id} className="overflow-hidden rounded-xl border border-gray-200">
-              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2">
-                <span className="font-mono text-xs text-gray-600">{u.id}</span>
+              <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-4 py-2">
+                <span className="min-w-0 truncate font-mono text-xs text-gray-600">{u.id}</span>
                 <a
                   href={u.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700"
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700"
                 >
                   <Printer size={13} /> فتح / طباعة
                 </a>

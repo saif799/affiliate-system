@@ -29,22 +29,22 @@ function RequestModal({ request, onClose, onAccept, onReject }: RequestModalProp
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
         dir="rtl"
       >
         {/* header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600 text-sm">
+        <div className="flex items-center justify-between gap-2 px-6 py-4 border-b border-slate-100">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600 text-sm shrink-0">
               {request.name[0]}
             </div>
-            <div>
-              <p className="font-bold text-slate-800 text-sm">{request.businessName}</p>
-              <p className="text-xs text-slate-400">{request.name}</p>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 text-sm truncate">{request.businessName}</p>
+              <p className="text-xs text-slate-400 truncate">{request.name}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 shrink-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -52,15 +52,15 @@ function RequestModal({ request, onClose, onAccept, onReject }: RequestModalProp
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 overflow-y-auto">
           {/* حقول الطلب — أساسية + إضافية */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {allFields.map(({ label, value }) => (
-              <div key={label} className="bg-slate-50 rounded-xl p-3">
+              <div key={label} className="bg-slate-50 rounded-xl p-3 min-w-0">
                 <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">
                   {label}
                 </p>
-                <p className="text-xs font-semibold text-slate-700">{value}</p>
+                <p className="text-xs font-semibold text-slate-700 break-words">{value}</p>
               </div>
             ))}
           </div>
@@ -78,7 +78,7 @@ function RequestModal({ request, onClose, onAccept, onReject }: RequestModalProp
           )}
         </div>
 
-        <div className="px-6 pb-6 flex gap-2">
+        <div className="px-6 pb-6 pt-2 flex gap-2 shrink-0">
           {step === 'view' ? (
             <>
               <button
@@ -144,9 +144,9 @@ export function JoinRequestsSection({ requests, onAccept, onReject }: Props) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       {/* header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+      <div className="flex items-center justify-between gap-2 px-4 sm:px-5 py-4 border-b border-slate-100">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.8">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -154,14 +154,14 @@ export function JoinRequestsSection({ requests, onAccept, onReject }: Props) {
               <line x1="22" y1="11" x2="16" y2="11" />
             </svg>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-bold text-slate-800">طلبات الانضمام</p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 truncate">
               عرض {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, requests.length)} من {requests.length} طلب
             </p>
           </div>
         </div>
-        <span className="text-xs font-bold bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-bold bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap">
           {requests.length} طلب
         </span>
       </div>
@@ -171,22 +171,24 @@ export function JoinRequestsSection({ requests, onAccept, onReject }: Props) {
         {pageItems.map((r) => (
           <div
             key={r.id}
-            className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/70 transition-colors group"
+            className="flex flex-col gap-3 px-4 sm:px-5 py-4 hover:bg-slate-50/70 transition-colors group sm:flex-row sm:items-center sm:gap-4"
           >
-            <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600 text-sm shrink-0">
-              {r.name[0]}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-slate-800 text-sm">{r.businessName}</p>
-                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{r.category}</span>
+            <div className="flex items-center gap-3 min-w-0 sm:flex-1">
+              <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600 text-sm shrink-0">
+                {r.name[0]}
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">{r.name} · {r.wilaya} · {r.email}</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="font-semibold text-slate-800 text-sm truncate">{r.businessName}</p>
+                  <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full shrink-0">{r.category}</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5 truncate">{r.name} · {r.wilaya} · {r.email}</p>
+              </div>
             </div>
             <div className="text-left shrink-0 hidden md:block">
-              <p className="text-xs text-slate-400">{r.requestedAt}</p>
+              <p className="text-xs text-slate-400 whitespace-nowrap">{r.requestedAt}</p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0 ps-12 sm:ps-0">
               <button
                 onClick={() => setSelected(r)}
                 className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"

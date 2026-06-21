@@ -172,7 +172,7 @@ export function LandingBuilder({ productId, onClose }: Props) {
                 onChange={(e) => setSalePrice(Number(e.target.value))}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-violet-400"
               />
-              <div className="mt-1 flex items-center justify-between text-xs">
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
                 <span className="text-gray-400">
                   الجملة {cfg.basePrice.toLocaleString('ar-DZ')} · أدنى سعر{' '}
                   {cfg.minPrice.toLocaleString('ar-DZ')} د.ج

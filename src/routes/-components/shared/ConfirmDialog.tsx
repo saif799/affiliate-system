@@ -63,7 +63,7 @@ export function ConfirmDialog({
             <div className="mt-1 text-xs leading-relaxed text-gray-500">{message}</div>
           </div>
         </div>
-        <div className="mt-5 flex items-center justify-end gap-2">
+        <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}

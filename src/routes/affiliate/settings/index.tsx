@@ -75,22 +75,22 @@ function SettingsPage() {
   const { title, subtitle } = TAB_TITLES[activeTab]
 
   return (
-    <div className="p-6" dir='rtl'>
+    <div className="p-4 sm:p-6" dir='rtl'>
       {/* Page Header */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <h1 className="text-xl font-bold text-gray-900">الإعدادات</h1>
         <p className="text-sm text-gray-500">إدارة حسابك وتفضيلاتك</p>
       </div>
 
       {/* Layout: Sidebar + Content */}
-      <div className="flex gap-6 items-start">
-        {/* ─── Sidebar ─────────────────────────────────────── */}
-        <nav className="w-52 shrink-0 space-y-1">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+        {/* ─── Sidebar / Mobile tab bar ─────────────────────── */}
+        <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:w-52 lg:shrink-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full rounded-xl px-3 py-2.5 text-right transition-colors ${
+              className={`shrink-0 rounded-xl px-3 py-2.5 text-right transition-colors lg:w-full lg:shrink ${
                 activeTab === item.id
                   ? 'bg-gray-900 text-white'
                   : 'text-gray-600 hover:bg-gray-100'
@@ -102,7 +102,7 @@ function SettingsPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-medium">{item.label}</span>
+                    <span className="whitespace-nowrap text-xs font-medium">{item.label}</span>
                     {item.badge && (
                       <span
                         className={`rounded-full px-1.5 py-0.5 text-xs ${
@@ -116,7 +116,7 @@ function SettingsPage() {
                     )}
                   </div>
                   <p
-                    className={`mt-0.5 truncate text-xs ${
+                    className={`mt-0.5 hidden truncate text-xs lg:block ${
                       activeTab === item.id ? 'text-white/70' : 'text-gray-400'
                     }`}
                   >

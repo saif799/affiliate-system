@@ -31,13 +31,13 @@ export function StatsCard({
   }
 
   return (
-    <div className={`rounded-xl border border-gray-200 bg-white p-5 ${getBorderColor()}`}>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">{title}</span>
-        <span className="text-lg">{icon}</span>
+    <div className={`rounded-xl border border-gray-200 bg-white p-4 sm:p-5 ${getBorderColor()}`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="min-w-0 truncate text-sm text-gray-500">{title}</span>
+        <span className="shrink-0 text-lg">{icon}</span>
       </div>
 
-      <p className={`mt-2 text-2xl font-bold tracking-tight ${
+      <p className={`mt-2 text-2xl font-bold tracking-tight break-words ${
         alert  ? 'text-red-600'    :
         urgent ? 'text-orange-500' :
         'text-gray-900'

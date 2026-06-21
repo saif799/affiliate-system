@@ -33,13 +33,13 @@ export function OrdersFilters({
   ]
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
-      {/* Tabs */}
-      <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1">
+      {/* Tabs — تُمرَّر أفقيّاً على الشاشات الضيّقة بدل أن تفيض الصفحة */}
+      <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-white p-1">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => onTabChange(t.key)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs whitespace-nowrap transition-colors ${
               activeTab === t.key
                 ? 'bg-gray-900 text-white'
                 : 'text-gray-500 hover:bg-gray-50'
@@ -60,11 +60,11 @@ export function OrdersFilters({
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex w-full gap-2 sm:w-auto">
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-48 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400"
+          className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-gray-400 sm:w-48 sm:flex-none"
           placeholder="بحث بالاسم أو رقم الطلبية..."
         />
         <select

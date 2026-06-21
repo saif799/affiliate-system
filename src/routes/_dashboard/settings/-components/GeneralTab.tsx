@@ -82,8 +82,8 @@ export function GeneralTab({ data }: Props) {
 
       {/* وضع الصيانة */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
             <h2 className="text-base font-semibold text-gray-900">وضع الصيانة</h2>
             <p className="text-sm text-gray-500 mt-0.5">
               عند التفعيل يتوقف الوصول لجميع صفحات المنصة
@@ -94,7 +94,7 @@ export function GeneralTab({ data }: Props) {
             role="switch"
             aria-checked={form.maintenance_mode}
             onClick={() => set('maintenance_mode', !form.maintenance_mode)}
-            className={`relative w-12 h-6 rounded-full transition-colors ${
+            className={`relative shrink-0 w-12 h-6 rounded-full transition-colors ${
               form.maintenance_mode ? 'bg-red-500' : 'bg-gray-200'
             }`}
           >
@@ -113,7 +113,7 @@ export function GeneralTab({ data }: Props) {
       </div>
 
       {/* حفظ */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-xs">
           {error && <span className="text-red-600">{error}</span>}
           {saved && <span className="text-emerald-600">✓ تم الحفظ بنجاح</span>}
@@ -121,7 +121,7 @@ export function GeneralTab({ data }: Props) {
         <button
           onClick={handleSave}
           disabled={!dirty || saving}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             dirty && !saving
               ? 'bg-blue-600 hover:bg-blue-700 text-white'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'

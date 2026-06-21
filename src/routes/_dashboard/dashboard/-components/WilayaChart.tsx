@@ -15,10 +15,10 @@ interface WilayaChartProps {
 
 export function WilayaChart({ data }: WilayaChartProps) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-gray-900">🇩🇿 التوزيع الجغرافي</h2>
-        <span className="text-xs text-gray-400">أعلى 10 ولايات</span>
+        <span className="text-xs text-gray-400 shrink-0">أعلى 10 ولايات</span>
       </div>
 
       <ResponsiveContainer width="100%" height={240}>

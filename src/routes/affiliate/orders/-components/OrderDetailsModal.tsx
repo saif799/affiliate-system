@@ -184,7 +184,7 @@ export function OrderDetailsModal({ order, onClose, onConfirm, onReject, busy }:
     >
       <div className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-gray-50 shadow-2xl">
         {/* Header (gradient) */}
-        <div className="relative bg-gradient-to-l from-violet-700 to-violet-500 px-5 py-4 text-white">
+        <div className="relative bg-gradient-to-l from-violet-700 to-violet-500 px-5 py-4 pe-12 text-white">
           <button
             onClick={onClose}
             className="absolute left-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
@@ -207,7 +207,7 @@ export function OrderDetailsModal({ order, onClose, onConfirm, onReject, busy }:
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-gray-200 bg-white px-3 pt-2">
+        <div className="custom-scrollbar flex gap-1 overflow-x-auto border-b border-gray-200 bg-white px-3 pt-2">
           {TABS.map((t) => {
             const Icon = t.icon
             const active = tab === t.key
@@ -215,7 +215,7 @@ export function OrderDetailsModal({ order, onClose, onConfirm, onReject, busy }:
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-xs font-semibold transition-colors ${
+                className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-xs font-semibold transition-colors ${
                   active
                     ? 'border-violet-600 text-violet-700'
                     : 'border-transparent text-gray-400 hover:text-gray-600'

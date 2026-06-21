@@ -178,7 +178,7 @@ function SessionsSection({ sessions }: { sessions: ActiveSession[] }) {
 
   return (
     <section>
-      <div className="mb-4 pb-3 border-b border-gray-100 flex items-center justify-between">
+      <div className="mb-4 pb-3 border-b border-gray-100 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold text-gray-900">
             الأجهزة المتصلة
@@ -191,7 +191,7 @@ function SessionsSection({ sessions }: { sessions: ActiveSession[] }) {
           <button
             onClick={handleTerminateAll}
             disabled={terminatingAll}
-            className="text-xs text-red-600 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors disabled:opacity-50"
+            className="w-fit text-xs text-red-600 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors disabled:opacity-50"
           >
             {terminatingAll ? 'جاري...' : 'إنهاء كل الجلسات الأخرى'}
           </button>
@@ -206,13 +206,13 @@ function SessionsSection({ sessions }: { sessions: ActiveSession[] }) {
               i < list.length - 1 ? 'border-b border-gray-50' : ''
             }`}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-base">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-base shrink-0">
                 {DEVICE_ICONS[session.device]}
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-medium text-gray-900">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <p className="text-xs font-medium text-gray-900 break-words">
                     {session.browser} — {session.location}
                   </p>
                   {session.isCurrent && (
@@ -231,7 +231,7 @@ function SessionsSection({ sessions }: { sessions: ActiveSession[] }) {
               <button
                 onClick={() => handleTerminate(session.id)}
                 disabled={terminating === session.id}
-                className="text-xs text-red-500 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors disabled:opacity-40"
+                className="shrink-0 text-xs text-red-500 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors disabled:opacity-40"
               >
                 {terminating === session.id ? '...' : 'إنهاء الجلسة'}
               </button>
@@ -272,7 +272,7 @@ function DangerZone() {
             تم إرسال طلب الحذف. سيتواصل معك الفريق خلال 48 ساعة.
           </p>
         ) : confirming ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-red-700">هل أنت متأكد تماماً؟</span>
             <button
               onClick={handleRequest}

@@ -4,6 +4,7 @@
 
 import { useState } from 'react'
 import { Link, ExternalLink } from 'lucide-react'
+import { getAppBaseUrl } from '#/lib/app-url'
 import { updateProfile } from '../-server/settings.api'
 import type { AffiliateProfile, UpdateProfileForm } from '../-settings.types'
 
@@ -72,8 +73,8 @@ export function ProfileTab({ profile }: Props) {
 
   // النطاق من إعداد المنصة (لا نطاق ثابت)؛ والروابط الفعلية للبيع تُولَّد لكل
   // منتج من سوق المنتجات (كود/رابط التتبّع) — هذا رابط عام للمشاركة فقط.
-  const appBase = (import.meta.env.VITE_APP_URL ?? '').replace(/\/+$/, '')
-  const affiliateLink = `${appBase}/p/${form.username}`
+  // getAppBaseUrl يضمن رابطاً مطلقاً صحيحاً بدل سلسلة فارغة تنتج رابطاً مكسوراً.
+  const affiliateLink = `${getAppBaseUrl()}/p/${form.username}`
 
   return (
     <div className="space-y-4">
@@ -84,15 +85,20 @@ export function ProfileTab({ profile }: Props) {
         <p className="mb-2 text-xs font-medium text-gray-700">رابط الإحالة الخاص بك</p>
         <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
           <Link size={13} className="shrink-0 text-gray-400" />
-          <span className="flex-1 text-xs text-gray-500 truncate">{affiliateLink}</span>
+          <span className="min-w-0 flex-1 truncate text-xs text-gray-500">{affiliateLink}</span>
           <button
             onClick={() => navigator.clipboard.writeText(affiliateLink)}
-            className="shrink-0 rounded px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-200"
+            className="shrink-0 rounded px-2 py-1 text-xs text-gray-600 hover:bg-gray-200"
           >
             نسخ
           </button>
-          <a href={affiliateLink} target="_blank" rel="noreferrer">
-            <ExternalLink size={12} className="text-gray-400" />
+          <a
+            href={affiliateLink}
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 rounded p-1 text-gray-400 hover:bg-gray-200"
+          >
+            <ExternalLink size={12} />
           </a>
         </div>
         <p className="mt-1.5 text-xs text-gray-400">
@@ -103,7 +109,7 @@ export function ProfileTab({ profile }: Props) {
       {/* المعلومات الأساسية */}
       <div className="rounded-xl border border-gray-200 bg-white p-4">
         <p className="mb-3 text-xs font-medium text-gray-700">المعلومات الأساسية</p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-xs text-gray-500">الاسم الكامل</label>
             <input

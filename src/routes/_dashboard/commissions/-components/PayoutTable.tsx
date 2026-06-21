@@ -183,7 +183,7 @@ function SourceModal({
 
         {items && items.length > 0 && (
           <div className="max-h-80 overflow-y-auto rounded-lg border border-gray-100">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[560px] text-sm">
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
                   {['المنتج', 'الولاية', 'المبلغ', 'الحالة', 'التاريخ'].map((h) => (
@@ -361,8 +361,8 @@ export function PayoutTable({ requests }: { requests: WithdrawalRequest[] }) {
             <p className="text-gray-400 text-sm">لا توجد طلبات مطابقة</p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto bg-white rounded-xl border border-gray-100 shadow-sm">
+            <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['المستفيد', 'المبلغ', 'الوسيلة', 'تاريخ الطلب', 'الحالة', 'إجراءات'].map(

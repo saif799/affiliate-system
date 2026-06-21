@@ -74,17 +74,17 @@ const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
 
 export default function SettingsSidebar({ activeTab, onTabChange }: Props) {
   return (
-    <aside className="w-56 shrink-0 bg-gray-50 border-l border-gray-200 flex flex-col py-6">
-      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 mb-3">
+    <aside className="w-full shrink-0 border-b border-gray-200 bg-gray-50 py-4 lg:w-56 lg:flex lg:flex-col lg:border-b-0 lg:border-s lg:border-gray-200 lg:py-6">
+      <p className="hidden px-4 mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-400 lg:block">
         إعدادات الحساب
       </p>
 
-      <nav className="flex flex-col gap-0.5 px-2">
+      <nav className="flex flex-row gap-0.5 overflow-x-auto px-2 lg:flex-col lg:overflow-visible">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-right w-full ${
+            className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium transition-all text-right lg:w-full lg:shrink ${
               activeTab === tab.id
                 ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
                 : 'text-gray-500 hover:bg-white/60 hover:text-gray-700'

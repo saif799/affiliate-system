@@ -71,12 +71,14 @@ function Section({
 function WithdrawalsAlert({ amount }: { amount: number }) {
   if (amount === 0) return null
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between flex-row-reverse">
-      <div className="text-right">
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-wrap items-center justify-between gap-2 flex-row-reverse">
+      <div className="text-right min-w-0">
         <p className="text-sm font-semibold text-amber-800">طلبات سحب معلقة</p>
         <p className="text-xs text-amber-600 mt-0.5">تحتاج مراجعة ومعالجة</p>
       </div>
-      <p className="text-xl font-bold text-amber-800">{fmtDzd(amount)}</p>
+      <p className="text-lg sm:text-xl font-bold text-amber-800 whitespace-nowrap">
+        {fmtDzd(amount)}
+      </p>
     </div>
   )
 }
@@ -104,10 +106,13 @@ function AnalyticsPage() {
   } = data
 
   return (
-    <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto" dir="rtl">
+    <div
+      className="p-4 sm:p-6 flex flex-col gap-6 max-w-7xl mx-auto"
+      dir="rtl"
+    >
       {/* ── Header ── */}
-      <div className="flex justify-between items-start">
-        <div className="flex gap-2">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between sm:items-start">
+        <div className="flex flex-wrap gap-2">
           {(['this_week', 'this_month', 'this_year'] as DateRange[]).map(
             (r) => (
               <button
@@ -125,7 +130,9 @@ function AnalyticsPage() {
           )}
         </div>
         <div className="text-right">
-          <h1 className="text-2xl font-bold text-gray-900">التحليلات</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            التحليلات
+          </h1>
           <p className="text-sm text-gray-500">
             مؤشرات صحة المنصة — {RANGE_LABELS[range]}
           </p>

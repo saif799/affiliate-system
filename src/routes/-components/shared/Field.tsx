@@ -28,7 +28,7 @@ export function Field({
       </label>
       <div className="relative group">
         {icon && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none transition-colors group-focus-within:text-indigo-400">
+          <span className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none transition-colors group-focus-within:text-indigo-400">
             {icon}
           </span>
         )}
@@ -40,18 +40,18 @@ export function Field({
           disabled={disabled}
           autoFocus={autoFocus}
           className={`
-            w-full bg-white/8 border border-white/8 text-white dark-input
+            w-full min-w-0 bg-white/8 border border-white/8 text-white dark-input
             placeholder-slate-700 rounded-xl py-2.5 text-sm
             focus:outline-none focus:ring-2 focus:ring-indigo-500/40
             focus:border-indigo-500/50 focus:bg-white/6
             transition-all duration-200 disabled:opacity-40
             caret-indigo-400
-            ${icon   ? 'pr-10' : 'pr-3.5'}
-            ${suffix ? 'pl-10' : 'pl-3.5'}
+            ${icon   ? 'ps-10' : 'ps-3.5'}
+            ${suffix ? 'pe-10' : 'pe-3.5'}
           `}
         />
         {suffix && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 transition-colors group-focus-within:text-slate-400">
+          <span className="absolute end-3 top-1/2 -translate-y-1/2 text-slate-600 transition-colors group-focus-within:text-slate-400">
             {suffix}
           </span>
         )}

@@ -103,7 +103,7 @@ export function SecurityTab({ data }: Props) {
           </span>
         </div>
 
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
           <button
             onClick={handleRevokeOthers}
             disabled={revoking}
@@ -140,7 +140,7 @@ export function SecurityTab({ data }: Props) {
             </div>
           ))}
         </div>
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
           <button
             onClick={handleChangePassword}
             disabled={pwSaving || !pwCurrent || !pwNew || !pwConfirm}
@@ -158,8 +158,8 @@ export function SecurityTab({ data }: Props) {
 
       {/* Logout */}
       <div className="bg-white rounded-xl border border-red-100 shadow-sm p-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <h2 className="text-base font-semibold text-gray-900">تسجيل الخروج</h2>
             <p className="text-sm text-gray-500 mt-0.5">
               سيتم إنهاء جلستك الحالية وإعادة توجيهك لصفحة تسجيل الدخول
@@ -169,12 +169,12 @@ export function SecurityTab({ data }: Props) {
           {!showConfirm ? (
             <button
               onClick={() => setShowConfirm(true)}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
+              className="shrink-0 px-4 py-2 rounded-lg text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
             >
               تسجيل الخروج
             </button>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <button
                 onClick={() => setShowConfirm(false)}
                 className="px-3 py-1.5 rounded-lg text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"

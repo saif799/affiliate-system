@@ -68,7 +68,9 @@ export function Toast({ toast, onClose, duration = 6000 }: ToastProps) {
         role="alert"
       >
         <Icon size={18} className={`mt-0.5 shrink-0 ${c.iconCls}`} />
-        <p className={`flex-1 text-xs leading-relaxed ${c.text}`}>{toast.message}</p>
+        <p className={`min-w-0 flex-1 text-xs leading-relaxed break-words ${c.text}`}>
+          {toast.message}
+        </p>
         <button
           type="button"
           onClick={onClose}

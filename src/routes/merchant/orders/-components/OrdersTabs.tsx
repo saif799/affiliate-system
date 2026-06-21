@@ -18,7 +18,8 @@ interface OrdersTabsProps {
 
 export function OrdersTabs({ active, counts, onChange }: OrdersTabsProps) {
   return (
-    <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1 w-fit">
+    <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    <div className="flex w-max max-w-none gap-1 rounded-xl border border-gray-200 bg-white p-1 sm:w-fit">
       {tabs.map((tab) => {
         const isActive = active === tab.value
         const count = counts[tab.value]
@@ -26,7 +27,7 @@ export function OrdersTabs({ active, counts, onChange }: OrdersTabsProps) {
           <button
             key={tab.value}
             onClick={() => onChange(tab.value)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs whitespace-nowrap transition-colors ${
               isActive
                 ? 'bg-gray-900 text-white'
                 : 'text-gray-500 hover:bg-gray-100'
@@ -45,6 +46,7 @@ export function OrdersTabs({ active, counts, onChange }: OrdersTabsProps) {
           </button>
         )
       })}
+    </div>
     </div>
   )
 }

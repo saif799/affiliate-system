@@ -16,16 +16,17 @@ export function AffiliatePreviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={onClose}
+      dir="rtl"
     >
       <div
-        className="relative w-96 rounded-2xl border border-gray-200 bg-white p-6"
+        className="relative w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <div>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-purple-600">معاينة كمسوق</p>
             <p className="text-sm font-semibold text-gray-800">
               كيف يرى المسوق منتجك؟
@@ -33,7 +34,7 @@ export function AffiliatePreviewModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100"
+            className="shrink-0 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100"
           >
             <X size={16} />
           </button>
@@ -50,11 +51,11 @@ export function AffiliatePreviewModal({
                 <ImageIcon size={20} />
               )}
             </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-800">
+            <div className="min-w-0">
+              <p className="break-words text-sm font-semibold text-gray-800">
                 {product.name}
               </p>
-              <p className="text-xs text-gray-400">{product.category}</p>
+              <p className="truncate text-xs text-gray-400">{product.category}</p>
             </div>
           </div>
 

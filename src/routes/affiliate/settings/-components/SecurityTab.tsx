@@ -161,7 +161,7 @@ export function SecurityTab({ security }: Props) {
 
       {/* الأجهزة المتصلة */}
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <div className="flex flex-col gap-2 border-b border-gray-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs font-medium text-gray-700">
             الأجهزة المتصلة ({sessions.length})
           </p>
@@ -169,9 +169,9 @@ export function SecurityTab({ security }: Props) {
             <button
               onClick={handleRevokeAll}
               disabled={isRevoking}
-              className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-60"
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-60"
             >
-              <LogOut size={12} />
+              <LogOut size={12} className="shrink-0" />
               {isRevoking ? 'جارٍ...' : 'تسجيل الخروج من كل الأجهزة'}
             </button>
           )}
@@ -184,19 +184,19 @@ export function SecurityTab({ security }: Props) {
               i < sessions.length - 1 ? 'border-b border-gray-50' : ''
             } ${session.isCurrent ? 'bg-gray-50/60' : ''}`}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100">
               <DeviceIcon device={session.device} />
             </div>
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="text-xs font-medium text-gray-900">{session.device}</p>
+                <p className="truncate text-xs font-medium text-gray-900">{session.device}</p>
                 {session.isCurrent && (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
+                  <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
                     الجهاز الحالي
                   </span>
                 )}
               </div>
-              <p className="mt-0.5 text-xs text-gray-400">
+              <p className="mt-0.5 truncate text-xs text-gray-400">
                 {session.location} · {session.ip} · {timeAgo(session.lastActive)}
               </p>
             </div>
@@ -220,14 +220,14 @@ export function SecurityTab({ security }: Props) {
           شارك هذا الرمز مع مسوقين آخرين لينضموا للمنصة
         </p>
         <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
-          <span className="flex-1 font-mono text-sm font-bold text-gray-800">
+          <span className="min-w-0 flex-1 break-all font-mono text-sm font-bold text-gray-800">
             {security.referralCode}
           </span>
           <button
             onClick={copyReferral}
-            className="flex items-center gap-1 rounded px-2 py-0.5 text-xs text-gray-500 hover:bg-gray-200"
+            className="flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-200"
           >
-            <Copy size={11} />
+            <Copy size={11} className="shrink-0" />
             {referralCopied ? 'تم النسخ' : 'نسخ'}
           </button>
         </div>

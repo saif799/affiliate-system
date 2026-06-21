@@ -10,9 +10,9 @@ interface Props {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-1">
-      <span className="text-gray-400">{label}</span>
-      <span className="font-medium text-gray-800">{value}</span>
+    <div className="flex items-start justify-between gap-3 py-1">
+      <span className="shrink-0 text-gray-400">{label}</span>
+      <span className="min-w-0 break-words text-end font-medium text-gray-800">{value}</span>
     </div>
   )
 }

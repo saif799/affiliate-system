@@ -173,7 +173,7 @@ function MerchantOrdersPage() {
   }
 
   return (
-    <div className="p-6 space-y-4" dir="rtl">
+    <div className="p-4 sm:p-6 space-y-4" dir="rtl">
       {/* ─── Header ─── */}
       <div className="flex items-center justify-between">
         <div>
@@ -200,20 +200,20 @@ function MerchantOrdersPage() {
       />
 
       {/* ─── Filters ─── */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
           placeholder="بحث برقم الطلب أو المنتج..."
-          className="w-64 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 placeholder:text-gray-400 outline-none focus:border-gray-400"
+          className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 placeholder:text-gray-400 outline-none focus:border-gray-400 sm:w-64"
         />
         <select
           value={wilayaFilter}
           onChange={(e) =>
             handleFilterChange(() => setWilayaFilter(e.target.value))
           }
-          className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 outline-none"
+          className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 outline-none sm:w-auto"
         >
           <option value="all">كل الولايات</option>
           {wilayas
@@ -231,7 +231,7 @@ function MerchantOrdersPage() {
               setDateFilter(e.target.value as DateFilter),
             )
           }
-          className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 outline-none"
+          className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 outline-none sm:w-auto"
         >
           {dateFilterOptions.map((o) => (
             <option key={o.value} value={o.value}>
@@ -240,7 +240,7 @@ function MerchantOrdersPage() {
           ))}
         </select>
 
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-gray-400 sm:ms-auto">
           {filteredOrders.length} طلبية
         </span>
       </div>

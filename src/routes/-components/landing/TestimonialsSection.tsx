@@ -4,14 +4,14 @@ import { testimonials } from '../../-data/landing.data'
 
 export function TestimonialsSection() {
   return (
-    <section id="testimonials" className="mx-auto max-w-285 px-12 py-16">
+    <section id="testimonials" className="mx-auto max-w-285 px-4 py-12 sm:px-6 lg:px-12 lg:py-16">
 
       <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-4 py-1.5">
         <span className="text-xs font-extrabold uppercase tracking-wide text-violet-600">
           قصص نجاح
         </span>
       </div>
-      <h2 className="mb-10 text-[34px] font-black leading-tight text-gray-900">
+      <h2 className="mb-10 text-[26px] font-black leading-tight text-gray-900 sm:text-[30px] lg:text-[34px]">
         يثقون بنا ويشاركون<br />تجاربهم
       </h2>
 

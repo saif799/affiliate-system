@@ -7,12 +7,12 @@ import { Activity } from 'lucide-react'
 export function ApiLogsPanel() {
   return (
     <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <div>
+      <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-4 py-3">
+        <div className="min-w-0">
           <h2 className="text-sm font-semibold text-gray-800">سجل أحداث API</h2>
           <p className="text-xs text-gray-400">يظهر هنا نشاط التكاملات بعد تفعيلها</p>
         </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
           <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
           غير مُفعَّل
         </span>

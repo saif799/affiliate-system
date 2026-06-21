@@ -35,10 +35,10 @@ export function StatsCards({ stats }: Props) {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {cards.map((card) => (
-        <div key={card.label} className="rounded-xl border border-gray-200 bg-white px-4 py-3.5">
-          <p className="text-xs text-gray-500">{card.label}</p>
+        <div key={card.label} className="min-w-0 rounded-xl border border-gray-200 bg-white px-4 py-3.5">
+          <p className="truncate text-xs text-gray-500">{card.label}</p>
           <p
-            className={`mt-1.5 text-xl font-bold ${
+            className={`mt-1.5 break-words text-lg font-bold sm:text-xl ${
               card.danger ? 'text-red-600' : 'text-gray-900'
             }`}
           >

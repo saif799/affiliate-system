@@ -14,10 +14,10 @@ function formatDZD(v: number) {
 
 export function OverviewChart({ data }: OverviewChartProps) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-gray-900">نظرة عامة على الإيرادات</h2>
-        <span className="text-xs text-gray-400">بالدينار الجزائري DZD</span>
+        <span className="text-xs text-gray-400 shrink-0">بالدينار الجزائري DZD</span>
       </div>
 
       <ResponsiveContainer width="100%" height={260}>

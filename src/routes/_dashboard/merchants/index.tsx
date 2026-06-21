@@ -226,11 +226,11 @@ function MerchantsPage() {
 
   // ── JSX ────────────────────────────────────────────────────
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-50 p-6 space-y-4">
+    <div dir="rtl" className="min-h-screen bg-slate-50 p-4 sm:p-6 space-y-4">
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed top-6 left-1/2 -translate-x-1/2 z-60 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold transition-all ${
+          className={`fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-60 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold transition-all max-w-[calc(100vw-2rem)] ${
             toast.type === 'success'
               ? 'bg-emerald-600 text-white'
               : 'bg-red-600 text-white'
@@ -265,8 +265,8 @@ function MerchantsPage() {
       )}
 
       {/* header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-slate-800">التجار</h1>
           <p className="text-sm text-slate-400 mt-0.5">
             إدارة ومتابعة جميع التجار
@@ -274,7 +274,7 @@ function MerchantsPage() {
         </div>
         <button
           onClick={() => setShowInvite(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-4 py-2.5 text-sm transition-colors shadow-sm shadow-indigo-200"
+          className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-4 py-2.5 text-sm transition-colors shadow-sm shadow-indigo-200 w-full sm:w-auto shrink-0"
         >
           <svg
             width="15"

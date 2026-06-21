@@ -22,24 +22,24 @@ export function IntegrationCard({ integration: itg }: Props) {
       }`}>
         {/* top row */}
         <div className="mb-3 flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl"
               style={{ background: itg.iconBg }}
             >
               {itg.icon}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-gray-900">{itg.name}</span>
                 {itg.comingSoon && (
-                  <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                  <span className="shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">
                     قريباً
                   </span>
                 )}
               </div>
               {itg.lastSync && (
-                <span className="text-xs text-gray-400">آخر sync: {itg.lastSync}</span>
+                <span className="block truncate text-xs text-gray-400">آخر sync: {itg.lastSync}</span>
               )}
             </div>
           </div>
@@ -96,23 +96,23 @@ export function IntegrationCard({ integration: itg }: Props) {
       {/* setup modal */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={() => setShowModal(false)}
         >
           <div
-            className="w-96 rounded-xl bg-white p-6 shadow-xl"
+            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
             dir="rtl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center gap-3">
               <div
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-xl"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl"
                 style={{ background: itg.iconBg }}
               >
                 {itg.icon}
               </div>
-              <div>
-                <h3 className="text-base font-semibold text-gray-900">ربط {itg.name}</h3>
+              <div className="min-w-0">
+                <h3 className="truncate text-base font-semibold text-gray-900">ربط {itg.name}</h3>
                 <p className="text-xs text-gray-400">أدخل بيانات الاعتماد للربط</p>
               </div>
             </div>

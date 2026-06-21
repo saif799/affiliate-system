@@ -41,16 +41,16 @@ function MerchantDashboardPage() {
   const { range: dateRange } = Route.useSearch()
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6" dir="rtl">
       {/* ─── Header ─── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">لوحة التحكم</h1>
           <p className="text-sm text-gray-500">نظرة شاملة على أداء متجرك</p>
         </div>
 
-        {/* Date Range Picker */}
-        <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1">
+        {/* Date Range Picker — يُمرَّر أفقيّاً على الشاشات الضيّقة بدل أن يفيض */}
+        <div className="flex items-center gap-1 self-start overflow-x-auto rounded-lg border border-gray-200 bg-white p-1 sm:self-auto">
           {dateRangeOptions.map((option) => (
             <button
               key={option.value}

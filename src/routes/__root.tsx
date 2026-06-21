@@ -28,8 +28,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Affiliate System' },
+      {
+        name: 'viewport',
+        // يمنع التكبير التلقائي عند التركيز على الحقول في iOS مع إتاحة تكبير
+        // المستخدم اليدوي (لا نستخدم maximum-scale=1 الذي يضرّ بإمكانية الوصول).
+        content: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      },
+      { title: 'DzAffilio — منصة التسويق بالعمولة' },
+      {
+        name: 'description',
+        content: 'منصة جزائرية للتسويق بالعمولة والدفع عند الاستلام للتجّار والمسوّقين.',
+      },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
@@ -53,13 +62,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans antialiased break-words selection:bg-[rgba(79,184,178,0.24)]">
         {children}
-        <TanStackDevtools
-          config={{ position: 'bottom-right' }}
-          plugins={[
-            { name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> },
-            TanStackQueryDevtools,
-          ]}
-        />
+        {/* أدوات التطوير — لا تُشحن إلى الإنتاج (حجم + واجهة دخيلة على المستخدم). */}
+        {import.meta.env.DEV && (
+          <TanStackDevtools
+            config={{ position: 'bottom-right' }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              TanStackQueryDevtools,
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

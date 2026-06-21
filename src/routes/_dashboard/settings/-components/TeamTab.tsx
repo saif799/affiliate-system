@@ -75,8 +75,8 @@ function InviteModal({ onClose, onSuccess }: InviteModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 space-y-5" dir="rtl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 space-y-5" dir="rtl">
 
         <div className="flex items-center justify-between">
           <div>
@@ -162,18 +162,18 @@ export function TeamTab({ members: initialMembers }: Props) {
   return (
     <div className="space-y-4">
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <p className="text-sm text-gray-500">{members.length} أعضاء في الفريق</p>
         <button
           onClick={() => setShowInvite(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           + دعوة مدير
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto bg-white rounded-xl border border-gray-100 shadow-sm">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
               {['العضو', 'الدور', 'الحالة', 'تاريخ الانضمام'].map((h) => (
@@ -188,10 +188,12 @@ export function TeamTab({ members: initialMembers }: Props) {
               <tr key={m.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <Avatar name={m.name} />
-                    <div>
-                      <p className="font-medium text-gray-900">{m.name}</p>
-                      <p className="text-gray-400 text-xs">{m.email}</p>
+                    <div className="shrink-0">
+                      <Avatar name={m.name} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-gray-900">{m.name}</p>
+                      <p className="truncate text-gray-400 text-xs">{m.email}</p>
                     </div>
                   </div>
                 </td>

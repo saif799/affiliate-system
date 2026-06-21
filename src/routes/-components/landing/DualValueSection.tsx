@@ -16,24 +16,24 @@ function CheckIcon({ dark }: { dark?: boolean }) {
 
 export function DualValueSection() {
   return (
-    <section className="mx-auto max-w-285 px-12 py-16">
+    <section className="mx-auto max-w-285 px-4 py-12 sm:px-6 lg:px-12 lg:py-16">
 
       <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-4 py-1.5">
         <span className="text-xs font-extrabold uppercase tracking-wide text-violet-600">
           للجميع
         </span>
       </div>
-      <h2 className="mb-3 text-[34px] font-black leading-tight text-gray-900">
+      <h2 className="mb-3 text-[26px] font-black leading-tight text-gray-900 sm:text-[30px] lg:text-[34px]">
         منصة واحدة — قيمتان حقيقيتان
       </h2>
       <p className="mb-10 max-w-130 text-[15px] leading-[1.7] text-gray-500">
         سواء كنت تاجراً أو مسوقاً، DzAffilio مصممة لتحقق لك أقصى استفادة.
       </p>
 
-      <div className="grid grid-cols-2 gap-7">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-7">
 
         {/* ── Merchant Card ── */}
-        <div id="merchants" className="relative overflow-hidden rounded-xl bg-violet-900 p-8">
+        <div id="merchants" className="relative overflow-hidden rounded-xl bg-violet-900 p-6 sm:p-8">
           <div className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-white/5" />
           <p className="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-white/50">
             للتجار والموردين

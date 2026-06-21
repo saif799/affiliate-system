@@ -57,12 +57,12 @@ export function InviteMerchantModal({ loading, onClose, onSubmit }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
         dir="rtl"
       >
         {/* header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -90,7 +90,7 @@ export function InviteMerchantModal({ loading, onClose, onSubmit }: Props) {
         </div>
 
         {/* fields */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 overflow-y-auto">
           {fields.map(({ key, label, type, placeholder }) => (
             <div key={key}>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
@@ -135,7 +135,7 @@ export function InviteMerchantModal({ loading, onClose, onSubmit }: Props) {
         </div>
 
         {/* actions */}
-        <div className="px-6 pb-6 flex gap-2">
+        <div className="px-6 pb-6 pt-4 flex gap-2 shrink-0">
           <button
             onClick={handleSubmit}
             disabled={loading}

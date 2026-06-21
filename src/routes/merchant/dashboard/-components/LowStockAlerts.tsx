@@ -23,16 +23,16 @@ export function LowStockAlerts({ products }: LowStockAlertsProps) {
           return (
             <div
               key={product.id}
-              className={`flex items-center justify-between rounded-lg px-3 py-2.5 ${
+              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 ${
                 isCritical ? 'bg-red-50 border border-red-100' : 'bg-orange-50 border border-orange-100'
               }`}
             >
-              <span className={`text-xs font-medium ${
+              <span className={`truncate text-xs font-medium ${
                 isCritical ? 'text-red-700' : 'text-orange-700'
               }`}>
                 {product.name}
               </span>
-              <span className={`text-xs font-bold ${
+              <span className={`shrink-0 whitespace-nowrap text-xs font-bold ${
                 isCritical ? 'text-red-600' : 'text-orange-600'
               }`}>
                 {product.stockQuantity} متبقية

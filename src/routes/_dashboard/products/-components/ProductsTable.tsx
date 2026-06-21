@@ -93,25 +93,25 @@ function ProductDrawer({
       onClick={onClose}
     >
       <div
-        className="h-full w-96 overflow-y-auto bg-white p-6 shadow-xl"
+        className="h-full w-96 max-w-[90vw] overflow-y-auto bg-white p-5 shadow-xl sm:p-6"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* drawer header */}
-        <div className="mb-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="mb-5 flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-600">
               {product.name.charAt(0)}
             </div>
-            <div>
-              <h2 className="text-sm font-semibold text-gray-900">{product.name}</h2>
-              <p className="text-xs text-gray-400">{product.merchantName}</p>
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-semibold text-gray-900">{product.name}</h2>
+              <p className="truncate text-xs text-gray-400">{product.merchantName}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="shrink-0 text-gray-400 hover:text-gray-600"
           >
             ✕
           </button>
@@ -127,10 +127,10 @@ function ProductDrawer({
           {rows.map(([label, value]) => (
             <div
               key={label}
-              className="flex justify-between border-b border-gray-50 py-2.5 text-sm"
+              className="flex justify-between gap-3 border-b border-gray-50 py-2.5 text-sm"
             >
-              <span className="text-gray-400">{label}</span>
-              <span className="font-medium text-gray-800">{value}</span>
+              <span className="shrink-0 text-gray-400">{label}</span>
+              <span className="min-w-0 break-words text-end font-medium text-gray-800">{value}</span>
             </div>
           ))}
         </div>
@@ -338,7 +338,7 @@ export function ProductsTable({ products }: Props) {
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-600">
                         {p.name.charAt(0)}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <div className="font-medium text-gray-800">{p.name}</div>
                         <div className="text-xs text-gray-400">
                           {p.merchantName}
@@ -428,12 +428,12 @@ export function ProductsTable({ products }: Props) {
 
       {/* ─── pagination ────────────────────────────── */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex flex-col gap-3 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs">
             عرض {(currentPage - 1) * PAGE_SIZE + 1}–
             {Math.min(currentPage * PAGE_SIZE, filtered.length)} من {filtered.length} منتج
           </span>
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}

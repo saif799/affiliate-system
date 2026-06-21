@@ -108,14 +108,14 @@ export function DeliveryTab() {
 
   return (
     <div className="space-y-4" dir="rtl">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-base font-semibold text-gray-900">شركات التوصيل</h2>
           <p className="text-sm text-gray-500">إدارة حسابات ECOTRACK المرتبطة بالمنصّة</p>
         </div>
         <button
           onClick={() => setShowForm((s) => !s)}
-          className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 sm:w-auto"
         >
           <Plus size={15} /> إضافة حساب
         </button>
@@ -206,7 +206,7 @@ export function DeliveryTab() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
             <Loader2 size={16} className="animate-spin" /> جارٍ التحميل...
@@ -216,7 +216,7 @@ export function DeliveryTab() {
             لا توجد حسابات توصيل — أضِف حساب ECOTRACK للبدء
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50 text-right text-xs font-medium text-gray-500">
                 <th className="px-4 py-3">الاسم</th>

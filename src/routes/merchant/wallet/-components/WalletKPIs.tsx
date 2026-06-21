@@ -16,7 +16,7 @@ export function WalletKPIs({ stats }: WalletKPIsProps) {
           <span className="flex h-2 w-2 rounded-full bg-green-500 ring-4 ring-green-100" />
         </div>
         <div>
-          <p className="text-2xl font-bold tracking-tight text-gray-900">{fmt(stats.availableBalance)}</p>
+          <p className="text-2xl font-bold tracking-tight text-gray-900 break-words">{fmt(stats.availableBalance)}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">DZD</p>
         </div>
         <span className="w-fit text-[11px] font-medium text-green-700 bg-green-50 border border-green-100 rounded-lg px-2.5 py-1">
@@ -31,7 +31,7 @@ export function WalletKPIs({ stats }: WalletKPIsProps) {
           <span className="flex h-2 w-2 rounded-full bg-amber-400 ring-4 ring-amber-100" />
         </div>
         <div>
-          <p className="text-2xl font-bold tracking-tight text-gray-900">{fmt(stats.pendingBalance)}</p>
+          <p className="text-2xl font-bold tracking-tight text-gray-900 break-words">{fmt(stats.pendingBalance)}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">DZD</p>
         </div>
         <span className="w-fit text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1">
@@ -46,7 +46,7 @@ export function WalletKPIs({ stats }: WalletKPIsProps) {
           <span className="flex h-2 w-2 rounded-full bg-blue-500 ring-4 ring-blue-100" />
         </div>
         <div>
-          <p className="text-2xl font-bold tracking-tight text-gray-900">{fmt(stats.totalWithdrawn)}</p>
+          <p className="text-2xl font-bold tracking-tight text-gray-900 break-words">{fmt(stats.totalWithdrawn)}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">DZD</p>
         </div>
         <span className="w-fit text-[11px] font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1">

@@ -24,8 +24,8 @@ function SettingsSkeleton() {
         <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
         <div className="h-4 w-48 bg-gray-100 rounded animate-pulse mt-1" />
       </div>
-      <div className="flex gap-0 rounded-2xl border border-gray-200 bg-white overflow-hidden min-h-145">
-        <div className="flex-1 p-6 space-y-4">
+      <div className="flex flex-col-reverse gap-0 rounded-2xl border border-gray-200 bg-white overflow-hidden lg:flex-row lg:min-h-145">
+        <div className="flex-1 p-4 sm:p-6 space-y-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
@@ -34,7 +34,7 @@ function SettingsSkeleton() {
             />
           ))}
         </div>
-        <div className="w-56 bg-gray-50 border-l border-gray-200 p-4 space-y-2">
+        <div className="w-full border-b border-gray-200 bg-gray-50 p-4 space-y-2 lg:w-56 lg:border-b-0 lg:border-s lg:border-gray-200">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
@@ -66,9 +66,9 @@ function SettingsPage() {
       </div>
 
       {/* Main Layout */}
-      <div className="flex rounded-2xl border border-gray-200 bg-white overflow-hidden min-h-150">
+      <div className="flex flex-col-reverse rounded-2xl border border-gray-200 bg-white overflow-hidden lg:flex-row lg:min-h-150">
         {/* Content area */}
-        <div className="flex-1 p-6 overflow-hidden">
+        <div className="min-w-0 flex-1 p-4 sm:p-6">
           {activeTab === 'profile' && (
             <ProfileTab data={data.profile} />
           )}

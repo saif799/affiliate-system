@@ -56,8 +56,128 @@ export function OrdersTable({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <table className="w-full text-sm">
+    <>
+    {/* ─── عرض البطاقات على الجوّال (أقل من md) ─── */}
+    <div className="space-y-3 md:hidden">
+      {/* تحديد الكل على الجوّال */}
+      <label className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-xs text-gray-600">
+        <input
+          type="checkbox"
+          checked={allSelected}
+          ref={(el) => {
+            if (el) el.indeterminate = someSelected && !allSelected
+          }}
+          onChange={() => onToggleAll(allSelected ? [] : orders.map((o) => o.id))}
+          className="h-3.5 w-3.5 cursor-pointer rounded"
+        />
+        تحديد الكل
+      </label>
+
+      {orders.map((order) => {
+        const status = statusConfig[order.status]
+        const action = statusAction(order.dbStatus)
+        const checked = selectedIds.has(order.id)
+        return (
+          <div
+            key={order.id}
+            className={`rounded-xl border bg-white p-4 ${
+              checked ? 'border-blue-300 bg-blue-50/40' : 'border-gray-200'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => onToggle(order.id)}
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer rounded"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs font-medium text-gray-800">
+                    {shortRef(order.id)}
+                  </span>
+                  <span
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${status.className}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
+                    {status.label}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-gray-400">{order.createdAt}</p>
+                <p className="mt-2 break-words text-xs font-medium text-gray-800">
+                  {order.product.name}
+                </p>
+                {order.product.variant && (
+                  <p className="text-xs text-gray-400">{order.product.variant}</p>
+                )}
+
+                <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                  <div>
+                    <span className="text-gray-400">الولاية: </span>
+                    <span className="text-gray-700">{order.wilaya}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">التوصيل: </span>
+                    <span className="text-gray-700">
+                      {order.deliveryType === 'office' ? 'مكتب' : 'منزل'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">سعر البيع: </span>
+                    <span className="text-gray-700">
+                      {order.totalPrice.toLocaleString('ar-DZ')} DZD
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">حصتك: </span>
+                    <span className="font-semibold text-green-600">
+                      {order.merchantEarnings.toLocaleString('ar-DZ')} DZD
+                    </span>
+                  </div>
+                </div>
+
+                {order.trackingNumber && (
+                  <p className="mt-2 font-mono text-xs text-gray-400">
+                    {order.trackingNumber}
+                  </p>
+                )}
+
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                  {action && (
+                    <button
+                      onClick={() => onUpdateStatus(order.id)}
+                      disabled={isUpdating}
+                      className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      {action.label}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => onViewDetails(order)}
+                    className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-100"
+                  >
+                    تفاصيل
+                  </button>
+                  {order.trackingNumber && (
+                    <button
+                      onClick={() => onPrintLabel(order.id)}
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-100"
+                    >
+                      ملصق
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+
+    {/* ─── جدول سطح المكتب (md فأعلى) ─── */}
+    {/* overflow-x-auto بدل overflow-hidden: تُمرَّر الأعمدة أفقيّاً على الشاشات المتوسطة بدل أن تُقصّ. */}
+    <div className="hidden overflow-x-auto rounded-xl border border-gray-200 bg-white md:block">
+      <table className="w-full min-w-[900px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50 text-right">
             {/* Checkbox الكل */}
@@ -193,5 +313,6 @@ export function OrdersTable({
         </tbody>
       </table>
     </div>
+    </>
   )
 }

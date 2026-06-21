@@ -335,7 +335,7 @@ export const orders = pgTable(
     product_id: uuid('product_id')
       .notNull()
       .references(() => products.id, { onDelete: 'restrict' }),
-    affiliate_id: uuid('affiliate_id').references(() => affiliateProfiles.id, {
+    affiliate_id: uuid('affiliate_id').notNull().references(() => affiliateProfiles.id, {
       onDelete: 'restrict',
     }),
     merchant_id: uuid('merchant_id')

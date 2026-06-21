@@ -15,8 +15,8 @@ export function TimingCard({ timing }: TimingCardProps) {
   const maxH = Math.max(...stages.map((s) => s.hours), 1)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <div className="flex justify-between flex-row-reverse items-center">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 sm:p-5 flex flex-col gap-4">
+      <div className="flex justify-between flex-row-reverse items-center gap-2">
         <span className="text-sm font-semibold text-gray-700">
           متوسط وقت التوصيل
         </span>

@@ -83,7 +83,7 @@ function MarketplacePage() {
   }
 
   return (
-    <div className="space-y-5 p-6" dir="rtl">
+    <div className="space-y-5 p-4 sm:p-6" dir="rtl">
 
       {leadDone && (
         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm text-green-700">
@@ -93,23 +93,23 @@ function MarketplacePage() {
 
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-gray-900">سوق المنتجات</h1>
           <p className="text-sm text-gray-500">اختر المنتج وولّد رابطك في ثوانٍ</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             onClick={() => setConnectOpen(true)}
             className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             🔌 ربط متجري الخارجي
           </button>
-          <div className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-center">
+          <div className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-center sm:flex-none">
             <p className="text-xs text-gray-400">متوسط سعر الجملة</p>
             <p className="text-sm font-bold text-gray-900">{data.stats.avgBasePrice.toLocaleString("ar-DZ")} د.ج</p>
           </div>
-          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-center">
+          <div className="flex-1 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-center sm:flex-none">
             <p className="text-xs text-violet-400">أقل سعر جملة</p>
             <p className="text-sm font-bold text-violet-700">{data.stats.minBasePrice.toLocaleString("ar-DZ")} د.ج</p>
           </div>

@@ -22,7 +22,7 @@ export function TransactionHistory({ records }: { records: TransactionRecord[] }
         <p className="text-sm text-gray-400 text-center py-10">لا توجد معاملات مكتملة بعد</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+          <table className="w-full min-w-[640px] text-sm" style={{ tableLayout: 'fixed' }}>
             <colgroup>
               <col style={{ width: '22%' }} />
               <col style={{ width: '28%' }} />

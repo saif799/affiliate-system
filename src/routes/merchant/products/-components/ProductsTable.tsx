@@ -57,8 +57,8 @@ export function ProductsTable({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <table className="w-full min-w-[820px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50 text-right">
             <th className="w-12 px-4 py-3" />

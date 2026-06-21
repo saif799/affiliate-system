@@ -148,12 +148,12 @@ export function AddProductDrawer({
       <div className="fixed inset-0 z-40 bg-black/30" onClick={handleClose} />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 z-50 flex w-105 flex-col border-l border-gray-200 bg-white">
+      <div className="fixed inset-y-0 end-0 z-50 flex w-full max-w-[26.25rem] flex-col border-s border-gray-200 bg-white">
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <div>
-            <p className="text-sm font-semibold text-gray-800">
+        <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-4 py-4 sm:px-5">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-gray-800">
               {isEditing ? 'تعديل المنتج' : 'إضافة منتج جديد'}
             </p>
             <p className="text-xs text-gray-400">
@@ -162,37 +162,38 @@ export function AddProductDrawer({
           </div>
           <button
             onClick={handleClose}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100"
+            className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Stepper */}
-        <div className="flex items-center border-b border-gray-100 px-5 py-3">
+        <div className="flex items-center border-b border-gray-100 px-4 py-3 sm:px-5">
           {steps.map((label, i) => (
-            <div key={i} className="flex items-center">
-              <div className="flex items-center gap-2">
-                <div className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+            <div key={i} className="flex min-w-0 items-center">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-medium transition-colors ${
                   i <= step ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-400'
                 }`}>
                   {i < step ? '✓' : i + 1}
                 </div>
-                <span className={`text-xs ${
+                {/* على الجوّال نُظهر تسمية الخطوة الحاليّة فقط لتوفير العرض */}
+                <span className={`truncate text-xs ${i === step ? 'inline' : 'hidden sm:inline'} ${
                   i === step ? 'font-medium text-gray-800' : 'text-gray-400'
                 }`}>
                   {label}
                 </span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`mx-3 h-px w-8 ${i < step ? 'bg-gray-900' : 'bg-gray-200'}`} />
+                <div className={`mx-2 h-px w-4 shrink-0 sm:mx-3 sm:w-8 ${i < step ? 'bg-gray-900' : 'bg-gray-200'}`} />
               )}
             </div>
           ))}
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4 sm:px-5">
 
           {/* ─── الخطوة 1: المعلومات الأساسية ─── */}
           {step === 0 && (
@@ -293,7 +294,7 @@ export function AddProductDrawer({
                       <img src={url} alt="" className="h-full w-full object-cover" />
                       <button
                         onClick={() => removeExisting(url)}
-                        className="absolute top-1 left-1 rounded-md bg-black/50 p-1 text-white hover:bg-black/70"
+                        className="absolute top-1 start-1 rounded-md bg-black/50 p-1 text-white hover:bg-black/70"
                       >
                         <Trash2 size={11} />
                       </button>
@@ -304,7 +305,7 @@ export function AddProductDrawer({
                       <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
                       <button
                         onClick={() => removeFile(idx)}
-                        className="absolute top-1 left-1 rounded-md bg-black/50 p-1 text-white hover:bg-black/70"
+                        className="absolute top-1 start-1 rounded-md bg-black/50 p-1 text-white hover:bg-black/70"
                       >
                         <Trash2 size={11} />
                       </button>
@@ -401,9 +402,9 @@ export function AddProductDrawer({
               {/* ملخص قبل الحفظ */}
               <div className="space-y-2 rounded-xl border border-gray-100 bg-gray-50 p-4">
                 <p className="text-xs font-semibold text-gray-600">ملخص المنتج</p>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">الاسم</span>
-                  <span className="font-medium text-gray-800">{form.name || '—'}</span>
+                <div className="flex justify-between gap-3 text-xs">
+                  <span className="shrink-0 text-gray-400">الاسم</span>
+                  <span className="min-w-0 truncate font-medium text-gray-800">{form.name || '—'}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">الفئة</span>
@@ -429,7 +430,7 @@ export function AddProductDrawer({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-gray-100 px-5 py-4">
+        <div className="flex items-center justify-between gap-2 border-t border-gray-100 px-4 py-4 sm:px-5">
           <button
             onClick={() => setStep((s) => s - 1)}
             disabled={step === 0}

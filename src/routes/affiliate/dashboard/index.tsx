@@ -18,16 +18,16 @@ function AffiliateDashboard() {
   const data = Route.useLoaderData()
 
   return (
-    <div className="space-y-5 p-6" dir="rtl">
+    <div className="space-y-5 p-4 sm:p-6" dir="rtl">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-gray-900">لوحة القيادة</h1>
           <p className="text-sm text-gray-500">مرحباً، هذا ملخص نشاطك التسويقي</p>
         </div>
         <Link
           to="/affiliate/marketplace"
-          className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:bg-gray-700 transition-colors"
+          className="w-full shrink-0 rounded-lg bg-gray-900 px-4 py-2 text-center text-xs font-medium text-white hover:bg-gray-700 transition-colors sm:w-auto"
         >
           + استعراض المنتجات
         </Link>

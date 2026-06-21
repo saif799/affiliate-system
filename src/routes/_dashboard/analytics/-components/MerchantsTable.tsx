@@ -28,7 +28,7 @@ function ReturnBadge({ pct }: { pct: number }) {
 
 export function MerchantsTable({ merchants }: MerchantsTableProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="overflow-x-auto bg-white rounded-xl border border-gray-100 shadow-sm">
       <div className="p-4 border-b border-gray-50 text-right">
         <span className="text-sm font-semibold text-gray-700">
           أفضل 5 تجار — إيراداً
@@ -38,7 +38,7 @@ export function MerchantsTable({ merchants }: MerchantsTableProps) {
       {merchants.length === 0 ? (
         <p className="p-6 text-center text-sm text-gray-400">لا توجد بيانات</p>
       ) : (
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="bg-gray-50">
             <tr>
               {['#', 'التاجر', 'الطلبات', 'نسبة الرتورن', 'الإيراد'].map((h) => (

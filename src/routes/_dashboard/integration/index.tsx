@@ -119,15 +119,15 @@ const INTEGRATION_GROUPS: IntegrationGroup[] = [
 
 function IntegrationHubPage() {
   return (
-    <div className="flex flex-col gap-6 p-5" dir="rtl">
+    <div className="flex flex-col gap-6 p-4 sm:p-6" dir="rtl">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-lg font-bold text-gray-900">Integration Hub</h1>
           <p className="text-xs text-gray-400">البنية التحتية التقنية للمنصة — ربط وإدارة جميع الخدمات الخارجية</p>
         </div>
-        <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+        <span className="shrink-0 self-start rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
           قيد التطوير
         </span>
       </div>

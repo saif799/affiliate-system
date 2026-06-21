@@ -28,6 +28,62 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
 
 const TERMINAL = new Set(['delivered', 'cancelled', 'disputed'])
 
+// أزرار الإجراء — تُعاد استخدامها في الجدول (سطح المكتب) وفي البطاقات (الجوّال)
+function OrderActions({
+  order,
+  busy,
+  onResolve,
+  onFlag,
+}: {
+  order: AdminOrder
+  busy: boolean
+  onResolve: (
+    o: AdminOrder,
+    resolution: 'delivered' | 'returned' | 'cancelled',
+  ) => void
+  onFlag: (o: AdminOrder) => void
+}) {
+  if (order.status === 'disputed') {
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          onClick={() => onResolve(order, 'delivered')}
+          disabled={busy}
+          className="rounded-lg bg-green-50 px-2 py-1 text-xs font-medium text-green-600 hover:bg-green-100 disabled:opacity-40"
+        >
+          مُسلَّمة
+        </button>
+        <button
+          onClick={() => onResolve(order, 'returned')}
+          disabled={busy}
+          className="rounded-lg bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-40"
+        >
+          مرتجعة
+        </button>
+        <button
+          onClick={() => onResolve(order, 'cancelled')}
+          disabled={busy}
+          className="rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-40"
+        >
+          إلغاء
+        </button>
+      </div>
+    )
+  }
+  if (TERMINAL.has(order.status)) {
+    return <span className="text-xs text-gray-300">—</span>
+  }
+  return (
+    <button
+      onClick={() => onFlag(order)}
+      disabled={busy}
+      className="rounded-lg border border-purple-200 px-2.5 py-1 text-xs font-medium text-purple-600 hover:bg-purple-50 disabled:opacity-40"
+    >
+      فتح نزاع
+    </button>
+  )
+}
+
 function AdminOrdersPage() {
   const { orders } = Route.useLoaderData()
   const router = useRouter()
@@ -87,7 +143,7 @@ function AdminOrdersPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 p-6" dir="rtl">
+    <div className="flex flex-col gap-5 p-4 sm:p-6" dir="rtl">
       <div>
         <h1 className="text-xl font-bold text-gray-900">إدارة الطلبيات</h1>
         <p className="text-sm text-gray-500">عرض كل الطلبيات وإدارة النزاعات</p>
@@ -116,8 +172,76 @@ function AdminOrdersPage() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
+      {/* ── بطاقات الجوّال (md:hidden) ── */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-12 text-center text-sm text-gray-400">
+            لا توجد طلبيات
+          </div>
+        ) : (
+          filtered.map((o) => {
+            const st = STATUS_LABEL[o.status] ?? {
+              label: o.status,
+              cls: 'bg-gray-100 text-gray-600',
+            }
+            const busy = busyId === o.id
+            return (
+              <div
+                key={o.id}
+                className="rounded-xl border border-gray-200 bg-white p-4"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="min-w-0 flex-1 text-sm font-semibold text-gray-900 break-words">
+                    {o.productName}
+                  </p>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${st.cls}`}
+                  >
+                    {st.label}
+                  </span>
+                </div>
+
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                  <div className="min-w-0">
+                    <dt className="text-gray-400">التاجر</dt>
+                    <dd className="truncate text-gray-700">{o.merchantName}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-gray-400">المسوّق</dt>
+                    <dd className="truncate text-gray-700">
+                      {o.affiliateName ?? '—'}
+                    </dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-gray-400">الزبون</dt>
+                    <dd className="truncate text-gray-700">{o.customerName}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-gray-400">الولاية</dt>
+                    <dd className="truncate text-gray-500">{o.wilaya}</dd>
+                  </div>
+                </dl>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-gray-50 pt-3">
+                  <span className="text-sm font-semibold text-gray-900">
+                    {o.total.toLocaleString('ar-DZ')} د.ج
+                  </span>
+                  <OrderActions
+                    order={o}
+                    busy={busy}
+                    onResolve={handleResolve}
+                    onFlag={openFlag}
+                  />
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {/* ── جدول سطح المكتب (md:block) ── */}
+      <div className="hidden overflow-x-auto rounded-xl border border-gray-200 bg-white md:block">
+        <table className="w-full min-w-[820px] text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50 text-right">
               {[
@@ -187,41 +311,12 @@ function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {o.status === 'disputed' ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          <button
-                            onClick={() => handleResolve(o, 'delivered')}
-                            disabled={busy}
-                            className="rounded-lg bg-green-50 px-2 py-1 text-xs font-medium text-green-600 hover:bg-green-100 disabled:opacity-40"
-                          >
-                            مُسلَّمة
-                          </button>
-                          <button
-                            onClick={() => handleResolve(o, 'returned')}
-                            disabled={busy}
-                            className="rounded-lg bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-40"
-                          >
-                            مرتجعة
-                          </button>
-                          <button
-                            onClick={() => handleResolve(o, 'cancelled')}
-                            disabled={busy}
-                            className="rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-40"
-                          >
-                            إلغاء
-                          </button>
-                        </div>
-                      ) : TERMINAL.has(o.status) ? (
-                        <span className="text-xs text-gray-300">—</span>
-                      ) : (
-                        <button
-                          onClick={() => openFlag(o)}
-                          disabled={busy}
-                          className="rounded-lg border border-purple-200 px-2.5 py-1 text-xs font-medium text-purple-600 hover:bg-purple-50 disabled:opacity-40"
-                        >
-                          فتح نزاع
-                        </button>
-                      )}
+                      <OrderActions
+                        order={o}
+                        busy={busy}
+                        onResolve={handleResolve}
+                        onFlag={openFlag}
+                      />
                     </td>
                   </tr>
                 )
@@ -241,7 +336,7 @@ function AdminOrdersPage() {
           }
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-6"
             dir="rtl"
           >
             <div className="mb-1 flex items-center gap-2">

@@ -66,7 +66,7 @@ export const Route = createFileRoute('/_dashboard/commissions/')({
 
 function CommissionsPending() {
   return (
-    <div className="p-6 space-y-5" dir="rtl">
+    <div className="p-4 sm:p-6 space-y-5" dir="rtl">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="bg-gray-100 rounded-lg h-20 animate-pulse" />
@@ -87,9 +87,9 @@ function CommissionsPage() {
     Route.useLoaderData()
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto" dir="rtl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto" dir="rtl">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
         <div>
           <h1 className="text-xl font-medium text-gray-900">العمولات</h1>
           <p className="text-sm text-gray-400 mt-0.5">
@@ -100,7 +100,7 @@ function CommissionsPage() {
           type="button"
           onClick={() => exportWithdrawalsCsv(withdrawalRequests)}
           disabled={withdrawalRequests.length === 0}
-          className="flex items-center gap-2 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors disabled:opacity-40"
+          className="flex shrink-0 items-center justify-center gap-2 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors disabled:opacity-40"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

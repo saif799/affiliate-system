@@ -66,14 +66,14 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export function CommissionsSection() {
   return (
-    <section id="features" className="mx-auto max-w-285 px-12 py-16">
+    <section id="features" className="mx-auto max-w-285 px-4 py-12 sm:px-6 lg:px-12 lg:py-16">
 
       <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-4 py-1.5">
         <span className="text-xs font-extrabold uppercase tracking-wide text-violet-600">
           هيكل العمولات
         </span>
       </div>
-      <h2 className="mb-3 text-[34px] font-black leading-tight text-gray-900">
+      <h2 className="mb-3 text-[26px] font-black leading-tight text-gray-900 sm:text-[30px] lg:text-[34px]">
         عمولات شفافة<br />بدون مفاجآت
       </h2>
       <p className="mb-10 max-w-130 text-[15px] leading-[1.7] text-gray-500">

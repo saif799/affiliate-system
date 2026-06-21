@@ -142,13 +142,13 @@ export function WarningThreadModal({
                   }`}
                 >
                   <div className="mb-0.5 flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-gray-700">
-                      {r.authorName}
-                      <span className="mr-1 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-normal text-gray-400">
+                    <span className="flex min-w-0 items-center gap-1 text-xs font-semibold text-gray-700">
+                      <span className="truncate">{r.authorName}</span>
+                      <span className="shrink-0 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-normal text-gray-400">
                         {roleLabel(r.authorRole)}
                       </span>
                     </span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="shrink-0 text-[10px] text-gray-400">
                       {fmt(r.createdAt)}
                     </span>
                   </div>
@@ -174,7 +174,7 @@ export function WarningThreadModal({
             onChange={(e) => setText(e.target.value)}
             rows={2}
             placeholder="اكتب ردّك..."
-            className="flex-1 resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
+            className="min-w-0 flex-1 resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
           />
           <button
             type="button"

@@ -120,7 +120,7 @@ export default function NotificationsTab({ data }: Props) {
                 i < TOGGLES.length - 1 ? 'border-b border-gray-50' : ''
               }`}
             >
-              <div className="flex-1 ml-4">
+              <div className="min-w-0 flex-1 me-4">
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-medium text-gray-900">
                     {item.label}
@@ -156,7 +156,7 @@ export default function NotificationsTab({ data }: Props) {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-gray-600">
               البريد الإلكتروني

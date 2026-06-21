@@ -36,7 +36,7 @@ function ProductsPage() {
   const { stats, products } = useLoaderData({ from: '/_dashboard/products/' })
 
   return (
-    <div className="flex flex-col gap-4 p-5" dir="rtl">
+    <div className="flex flex-col gap-4 p-4 sm:p-6" dir="rtl">
 
       {/* header */}
       <div>

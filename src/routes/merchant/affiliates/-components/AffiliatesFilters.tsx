@@ -20,9 +20,9 @@ export function AffiliatesFilters({
   onSortKeyChange,
 }: Props) {
   return (
-    <div className="flex items-end gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
       {/* بحث */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-[12rem]">
         <label className="text-xs text-gray-500">بحث</label>
         <div className="relative">
           <svg
@@ -42,7 +42,7 @@ export function AffiliatesFilters({
           <input
             dir="rtl"
             type="text"
-            className="h-9 w-64 rounded-lg border border-gray-200 bg-white py-2 pr-9 pl-3 text-xs text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-0"
+            className="h-9 w-full rounded-lg border border-gray-200 bg-white py-2 pr-9 pl-3 text-xs text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-0 sm:w-64"
             placeholder="ابحث باسم المسوق أو هاتفه..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -51,11 +51,11 @@ export function AffiliatesFilters({
       </div>
 
       {/* فلتر الحالة */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 sm:w-auto">
         <label className="text-xs text-gray-500">الحالة</label>
         <select
           dir="rtl"
-          className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-900 outline-none focus:border-gray-400 appearance-none cursor-pointer"
+          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-900 outline-none focus:border-gray-400 appearance-none cursor-pointer sm:w-auto"
           style={{ paddingLeft: '2rem', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'left 8px center', backgroundSize: '14px' }}
           value={filterStatus}
           onChange={(e) => onFilterStatusChange(e.target.value as FilterStatus)}
@@ -67,11 +67,11 @@ export function AffiliatesFilters({
       </div>
 
       {/* ترتيب */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 sm:w-auto">
         <label className="text-xs text-gray-500">ترتيب حسب</label>
         <select
           dir="rtl"
-          className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-900 outline-none focus:border-gray-400 appearance-none cursor-pointer"
+          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-900 outline-none focus:border-gray-400 appearance-none cursor-pointer sm:w-auto"
           style={{ paddingLeft: '2rem', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'left 8px center', backgroundSize: '14px' }}
           value={sortKey}
           onChange={(e) => onSortKeyChange(e.target.value as SortKey)}

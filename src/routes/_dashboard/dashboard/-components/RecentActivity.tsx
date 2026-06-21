@@ -13,7 +13,7 @@ interface RecentActivityProps {
 
 export function RecentActivity({ activities }: RecentActivityProps) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-semibold text-gray-900">آخر النشاطات</h2>
 
       <ul className="space-y-3">

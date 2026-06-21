@@ -30,10 +30,10 @@ function WalletPage() {
 
   return (
     // 👇 هنا تم إضافة الهوامش p-6 و md:p-8 لترك مسافة تنفس للصفحة
-    <div className="p-6 space-y-6" dir="rtl">
-      
+    <div className="p-4 sm:p-6 space-y-6" dir="rtl">
+
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">المحفظة</h1>
           <p className="text-sm text-gray-500">إدارة أرباحك وطلبات السحب</p>
@@ -41,7 +41,7 @@ function WalletPage() {
         <button
           onClick={() => setIsPayoutModalOpen(true)}
           disabled={!canWithdraw}
-          className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed sm:w-auto sm:justify-start"
         >
           <ArrowDownToLine size={14} />
           طلب سحب أموال
@@ -65,10 +65,10 @@ function WalletPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1 w-fit">
+      <div className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-white p-1">
         <button
           onClick={() => setActiveTab('transactions')}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs transition-colors ${
             activeTab === 'transactions'
               ? 'bg-gray-900 text-white'
               : 'text-gray-600 hover:bg-gray-100'
@@ -86,7 +86,7 @@ function WalletPage() {
         </button>
         <button
           onClick={() => setActiveTab('payouts')}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs transition-colors ${
             activeTab === 'payouts'
               ? 'bg-gray-900 text-white'
               : 'text-gray-600 hover:bg-gray-100'

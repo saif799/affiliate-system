@@ -14,7 +14,7 @@ export function TopAffiliates({ affiliates }: TopAffiliatesProps) {
 
   if (affiliates.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold text-gray-900">أفضل المسوّقين</h2>
         <div className="flex h-44 flex-col items-center justify-center text-gray-400">
           <p className="mb-1 text-2xl">📊</p>
@@ -25,7 +25,7 @@ export function TopAffiliates({ affiliates }: TopAffiliatesProps) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-semibold text-gray-900">أفضل المسوّقين</h2>
 
       <ResponsiveContainer width="100%" height={180}>
@@ -47,15 +47,15 @@ export function TopAffiliates({ affiliates }: TopAffiliatesProps) {
       {/* جدول مفصّل */}
       <ul className="mt-3 divide-y divide-gray-100">
         {affiliates.map((a, i) => (
-          <li key={a.id} className="flex items-center justify-between py-2 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-4 font-bold text-gray-400">{i + 1}</span>
-              <div>
-                <p className="font-medium text-gray-800">{a.name}</p>
-                <p className="text-gray-400">{a.wilaya} · {a.conversions} تحويل</p>
+          <li key={a.id} className="flex items-center justify-between gap-2 py-2 text-xs">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="w-4 shrink-0 font-bold text-gray-400">{i + 1}</span>
+              <div className="min-w-0">
+                <p className="truncate font-medium text-gray-800">{a.name}</p>
+                <p className="truncate text-gray-400">{a.wilaya} · {a.conversions} تحويل</p>
               </div>
             </div>
-            <span className="font-semibold text-gray-900">
+            <span className="shrink-0 font-semibold text-gray-900">
               {(a.revenue / 1000).toFixed(0)}k DZD
             </span>
           </li>

@@ -23,17 +23,17 @@ export function RecentActivity({ orders }: Props) {
         {orders.map((order) => {
           const status = statusConfig[order.status]
           return (
-            <div key={order.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-              <div className="flex items-start gap-3">
+            <div key={order.id} className="flex items-center justify-between gap-2 px-4 py-3 hover:bg-gray-50 transition-colors">
+              <div className="flex min-w-0 flex-1 items-start gap-3">
                 <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500 shrink-0">
                   {order.orderId.slice(-2)}
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-900">{order.productName}</p>
-                  <p className="text-xs text-gray-400">{order.merchantName} · {order.updatedAt}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-gray-900">{order.productName}</p>
+                  <p className="truncate text-xs text-gray-400">{order.merchantName} · {order.updatedAt}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 {order.status === 'delivered' && (
                   <p className="text-xs font-semibold text-green-700">
                     +{order.commission.toLocaleString('ar-DZ')} د.ج
@@ -42,7 +42,7 @@ export function RecentActivity({ orders }: Props) {
                 {order.status === 'returned' && (
                   <p className="text-xs font-semibold text-red-500">روتور</p>
                 )}
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>
+                <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                   {status.label}
                 </span>

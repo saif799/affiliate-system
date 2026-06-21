@@ -18,8 +18,9 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { randomUUID, randomBytes } from 'node:crypto'
 import { z } from 'zod'
 import { saveImage } from '#/server/storage'
+import { getAppBaseUrl } from '#/lib/app-url'
 
-const APP_URL = (process.env.VITE_APP_URL ?? 'https://affili.dz').replace(/\/+$/, '')
+const APP_URL = getAppBaseUrl()
 
 // صورة مقبولة: مسار رفع محلّي فقط (صور التاجر أو مرفوعات المسوّق) — لا روابط
 // خارجية اعتباطية تُضمَّن على الصفحة العامّة.

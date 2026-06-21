@@ -23,13 +23,13 @@ export const affiliateColumns: ColumnDef<Affiliate>[] = [
     key: 'affiliate',
     header: 'المسوق',
     render: (a) => (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0 max-w-[220px]">
         <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600 text-sm shrink-0">
           {a.name[0]}
         </div>
-        <div>
-          <p className="font-semibold text-slate-800 leading-tight">{a.name}</p>
-          <p className="text-xs text-slate-400">{a.email}</p>
+        <div className="min-w-0">
+          <p className="font-semibold text-slate-800 leading-tight truncate">{a.name}</p>
+          <p className="text-xs text-slate-400 truncate">{a.email}</p>
         </div>
       </div>
     ),

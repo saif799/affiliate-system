@@ -6,12 +6,12 @@ interface Props {
 
 export function TopMerchants({ merchants }: Props) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
       <div className="border-b border-gray-100 px-4 py-3">
         <h2 className="text-sm font-semibold text-gray-900">لوحة الشرف — أفضل التجار</h2>
         <p className="text-xs text-gray-400 mt-0.5">بناءً على معدل الاستلام وحجم الأرباح</p>
       </div>
-      <table className="w-full text-sm">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50 text-right">
             <th className="px-4 py-3 text-xs font-medium text-gray-500">#</th>

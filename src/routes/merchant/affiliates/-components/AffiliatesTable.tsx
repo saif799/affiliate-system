@@ -28,8 +28,108 @@ export function AffiliatesTable({ affiliates, onSelect }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+    <>
+      {/* ─── Mobile card view ─── */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {affiliates.map((aff) => {
+          const isHighReturn = aff.returnRate > 20
+          const joinYear = new Date(aff.joinedAt).getFullYear()
+          const joinMonth = new Date(aff.joinedAt).toLocaleString('ar-DZ', {
+            month: 'long',
+          })
+
+          return (
+            <div
+              key={aff.id}
+              className="rounded-xl border border-gray-200 bg-white p-4"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-medium"
+                    style={{ backgroundColor: aff.avatarColor, color: '#374151' }}
+                  >
+                    {aff.initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-900">
+                      {aff.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      منذ {joinMonth} {joinYear}
+                    </p>
+                  </div>
+                </div>
+                {aff.status === 'active' ? (
+                  <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-600" />
+                    نشط
+                  </span>
+                ) : (
+                  <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-600" />
+                    محظور
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-gray-400">المستوى</span>
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${TIER_CLASSES[aff.tier]}`}
+                  >
+                    {TIER_LABELS[aff.tier]}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-gray-400">الطلبيات</span>
+                  <span className="font-medium text-gray-900">
+                    {aff.totalOrders}{' '}
+                    <span className="font-normal text-gray-400">
+                      / {aff.deliveredOrders} مُسلم
+                    </span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-gray-400">معدل الروتور</span>
+                  <span
+                    className={`font-medium ${isHighReturn ? 'text-red-600' : 'text-green-600'}`}
+                  >
+                    {aff.returnRate}%{isHighReturn && ' !'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-gray-400">المبيعات</span>
+                  <span className="break-words font-medium text-gray-700">
+                    {formatDZD(aff.totalSales)}
+                  </span>
+                </div>
+                <div className="col-span-2 flex items-center justify-between gap-2">
+                  <span className="text-gray-400">العمولات</span>
+                  <span className="break-words font-medium text-gray-700">
+                    {formatDZD(aff.totalCommissions)}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onSelect(aff)}
+                className="mt-3 w-full rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700 transition-colors hover:bg-violet-100 active:scale-95"
+              >
+                تفاصيل
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ─── Desktop table view ─── */}
+      <div className="hidden overflow-x-auto rounded-xl border border-gray-200 bg-white md:block">
+      <table
+        className="w-full min-w-[880px] text-sm"
+        style={{ tableLayout: 'fixed' }}
+      >
         {/* الأعمدة بالترتيب: المسوق · المستوى · الطلبيات · معدل الروتور ·
             إجمالي المبيعات · العمولات · الحالة · إجراءات */}
         <colgroup>
@@ -176,6 +276,7 @@ export function AffiliatesTable({ affiliates, onSelect }: Props) {
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   )
 }

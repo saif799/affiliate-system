@@ -101,7 +101,7 @@ function AffiliateOrdersPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 p-6" dir="rtl">
+    <div className="flex flex-col gap-5 p-4 sm:p-6" dir="rtl">
 
       {/* Header */}
       <div>

@@ -56,7 +56,7 @@ export function WithdrawModal({ availableBalance, onClose, onSubmit }: Props) {
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-md rounded-t-2xl bg-white p-5 sm:rounded-xl">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-5 sm:mx-4 sm:rounded-xl">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-medium text-gray-900">طلب سحب أموال</h2>
@@ -99,25 +99,25 @@ export function WithdrawModal({ availableBalance, onClose, onSubmit }: Props) {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setMethod('CCP')}
-              className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
+              className={`flex min-w-0 items-center justify-center gap-2 rounded-lg border px-2 py-2.5 text-xs transition-colors sm:px-3 ${
                 method === 'CCP'
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                   : 'border-gray-200 text-gray-500 hover:border-gray-300'
               }`}
             >
-              <CreditCard size={14} />
-              CCP — بريدي
+              <CreditCard size={14} className="shrink-0" />
+              <span className="truncate">CCP — بريدي</span>
             </button>
             <button
               onClick={() => setMethod('BaridiMob')}
-              className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
+              className={`flex min-w-0 items-center justify-center gap-2 rounded-lg border px-2 py-2.5 text-xs transition-colors sm:px-3 ${
                 method === 'BaridiMob'
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                   : 'border-gray-200 text-gray-500 hover:border-gray-300'
               }`}
             >
-              <Building2 size={14} />
-              BaridiMob
+              <Building2 size={14} className="shrink-0" />
+              <span className="truncate">BaridiMob</span>
             </button>
           </div>
         </div>

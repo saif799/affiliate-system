@@ -30,17 +30,17 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
           return (
             <div
               key={order.id}
-              className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2.5"
+              className="flex items-center justify-between gap-2 rounded-lg border border-gray-100 px-3 py-2.5"
             >
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-medium text-gray-800">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="truncate text-xs font-medium text-gray-800">
                   {order.productName}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="truncate text-xs text-gray-400">
                   {shortRef(order.id)} · {order.wilaya}
                 </span>
               </div>
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>
+              <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>
                 {status.label}
               </span>
             </div>

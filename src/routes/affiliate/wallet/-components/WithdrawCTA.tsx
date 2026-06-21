@@ -21,8 +21,8 @@ export function WithdrawCTA({ balance, onWithdraw }: Props) {
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-4 py-3.5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0">
           <p className="text-sm font-medium text-gray-900">طلب سحب أموال</p>
           <p className="mt-0.5 text-xs text-gray-500">
             الحد الأدنى للسحب {formatDZD(minWithdrawAmount)} — رصيدك الحالي{' '}
@@ -34,7 +34,7 @@ export function WithdrawCTA({ balance, onWithdraw }: Props) {
         <button
           onClick={onWithdraw}
           disabled={!canWithdraw}
-          className={`shrink-0 rounded-lg px-4 py-2 text-xs font-medium transition-colors ${
+          className={`w-full shrink-0 rounded-lg px-4 py-2 text-xs font-medium transition-colors sm:w-auto ${
             canWithdraw
               ? 'bg-emerald-600 text-white hover:bg-emerald-700'
               : 'cursor-not-allowed bg-gray-100 text-gray-400'

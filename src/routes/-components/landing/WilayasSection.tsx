@@ -4,7 +4,7 @@ import { wilayas } from '../../-data/landing.data'
 
 export function WilayasSection() {
   return (
-    <section id="coverage" className="bg-violet-900 px-12 py-16">
+    <section id="coverage" className="bg-violet-900 px-4 py-12 sm:px-6 lg:px-12 lg:py-16">
       <div className="mx-auto max-w-[1140px]">
 
         {/* Header */}
@@ -13,7 +13,7 @@ export function WilayasSection() {
             📍 التغطية الجغرافية
           </span>
         </div>
-        <h2 className="mb-3 text-[34px] font-black leading-[1.25] text-white">
+        <h2 className="mb-3 text-[26px] font-black leading-[1.25] text-white sm:text-[30px] lg:text-[34px]">
           نصل إلى كل ولاية<br />في الجزائر
         </h2>
         <p className="mb-9 max-w-[520px] text-[15px] leading-[1.7] text-white/60">

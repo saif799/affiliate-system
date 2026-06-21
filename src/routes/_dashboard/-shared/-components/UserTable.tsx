@@ -59,7 +59,7 @@ export function UserTable<T extends { id: string }>({
                 ))}
                 <td className="px-4 py-4">
                   {/* الإجراءات ظاهرة دائماً — أوضح للمستخدم من إخفائها خلف hover */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-nowrap whitespace-nowrap">
                     {renderActions(row)}
                   </div>
                 </td>

@@ -72,22 +72,22 @@ export function OrdersTable({
                 {/* المنتج */}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-50 text-base">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-base">
                       {order.productThumb}
                     </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-900 leading-tight">
+                    <div className="min-w-0 max-w-[200px]">
+                      <p className="truncate text-xs font-medium text-gray-900 leading-tight">
                         {order.product}
                       </p>
-                      <p className="text-xs text-gray-400">{order.sku}</p>
+                      <p className="truncate text-xs text-gray-400">{order.sku}</p>
                     </div>
                   </div>
                 </td>
 
                 {/* الزبون */}
                 <td className="px-4 py-3">
-                  <p className="text-xs font-medium text-gray-900">{order.customer}</p>
-                  <p className="text-xs text-gray-400">{order.phone}</p>
+                  <p className="max-w-[160px] truncate text-xs font-medium text-gray-900">{order.customer}</p>
+                  <p className="text-xs text-gray-400" dir="ltr">{order.phone}</p>
                 </td>
 
                 {/* الولاية */}
@@ -158,11 +158,11 @@ export function OrdersTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 px-4 py-3">
         <p className="text-xs text-gray-400">
           صفحة {currentPage} من {totalPages}
         </p>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap justify-end gap-1">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
             <button
               key={p}

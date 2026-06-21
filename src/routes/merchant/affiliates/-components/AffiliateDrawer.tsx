@@ -35,7 +35,7 @@ export function AffiliateDrawer({ affiliate, onClose, onBlock, onUnblock }: Prop
     <>
       <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
 
-      <div className="fixed inset-y-0 left-0 z-50 flex w-80 flex-col gap-4 overflow-y-auto bg-white p-5">
+      <div className="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[90vw] flex-col gap-4 overflow-y-auto bg-white p-5">
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -56,8 +56,8 @@ export function AffiliateDrawer({ affiliate, onClose, onBlock, onUnblock }: Prop
           >
             {affiliate.initials}
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900">{affiliate.name}</p>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-gray-900">{affiliate.name}</p>
             <p className="text-xs text-gray-400">
               انضم{' '}
               {new Date(affiliate.joinedAt).toLocaleDateString('ar-DZ', {
@@ -104,13 +104,13 @@ export function AffiliateDrawer({ affiliate, onClose, onBlock, onUnblock }: Prop
             {affiliate.topProducts.map((p) => (
               <div
                 key={p.productId}
-                className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
+                className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-3 py-2"
               >
-                <div>
-                  <p className="text-xs font-medium text-gray-900">{p.productName}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-gray-900">{p.productName}</p>
                   <p className="text-xs text-gray-400">{p.unitsSold} وحدة مُسلمة</p>
                 </div>
-                <p className="text-xs font-medium text-green-600">
+                <p className="shrink-0 text-xs font-medium text-green-600">
                   {formatDZD(p.commission)}
                 </p>
               </div>

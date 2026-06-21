@@ -8,8 +8,8 @@ export function WilayaList({ stats }: WilayaListProps) {
   const maxOrders = Math.max(...stats.map((s) => s.orders_count), 1)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-      <div className="flex justify-between flex-row-reverse mb-4">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 sm:p-5">
+      <div className="flex justify-between flex-row-reverse mb-4 gap-2">
         <span className="text-sm font-semibold text-gray-700">
           الولايات — أعلى 10 طلبات
         </span>
@@ -23,9 +23,9 @@ export function WilayaList({ stats }: WilayaListProps) {
           stats.map((s) => (
             <div
               key={s.wilaya}
-              className="flex items-center gap-3 flex-row-reverse"
+              className="flex items-center gap-2 sm:gap-3 flex-row-reverse"
             >
-              <span className="text-xs text-gray-600 w-24 text-right truncate">
+              <span className="text-xs text-gray-600 w-16 sm:w-24 text-right truncate">
                 {s.wilaya}
               </span>
               <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">

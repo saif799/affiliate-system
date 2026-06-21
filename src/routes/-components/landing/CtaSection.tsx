@@ -2,14 +2,14 @@
 
 export function CtaSection() {
   return (
-    <div className="px-12 pb-0">
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-900 via-violet-700 to-violet-500 px-16 py-[72px] text-center">
+    <div className="px-4 pb-0 sm:px-6 lg:px-12">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-900 via-violet-700 to-violet-500 px-6 py-14 text-center sm:px-10 sm:py-16 lg:px-16 lg:py-[72px]">
 
         {/* Decoration circles */}
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/5" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 h-52 w-52 rounded-full bg-white/4" />
 
-        <h2 className="relative mb-3.5 text-[38px] font-black text-white">
+        <h2 className="relative mb-3.5 text-[26px] font-black leading-tight text-white sm:text-[32px] lg:text-[38px]">
           الجزائر تتحرك — هل أنت معها؟
         </h2>
         <p className="relative mx-auto mb-9 max-w-[480px] text-[15px] leading-[1.7] text-white/70">

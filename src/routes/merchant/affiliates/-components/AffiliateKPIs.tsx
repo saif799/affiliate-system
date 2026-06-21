@@ -27,7 +27,7 @@ export function AffiliateKPIs({ stats }: Props) {
 
       <div className="rounded-xl border border-gray-200 bg-white px-4 py-3.5">
         <p className="text-xs text-gray-500">إجمالي العمولات</p>
-        <p className="mt-1.5 text-xl font-bold text-gray-900">{formatDZD(stats.totalCommissions)}</p>
+        <p className="mt-1.5 text-xl font-bold text-gray-900 break-words">{formatDZD(stats.totalCommissions)}</p>
         <p className="mt-0.5 text-xs text-gray-400">ما ربحه المسوقون منك</p>
       </div>
 

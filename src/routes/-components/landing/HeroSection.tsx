@@ -6,48 +6,48 @@ export function HeroSection() {
   return (
     <section
       id="hero"
-      className="mx-auto max-w-285 px-12 pt-16 pb-12"
+      className="mx-auto max-w-285 px-4 pt-10 pb-10 sm:px-6 sm:pt-14 lg:px-12 lg:pt-16 lg:pb-12"
     >
-      <div className="grid grid-cols-2 items-center gap-16">
+      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
 
         {/* ── النص الرئيسي ── */}
         <div>
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-yellow-200 bg-yellow-50 px-4 py-1.5">
-            <span className="h-2 w-2 rounded-full bg-yellow-400" />
+          <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-yellow-200 bg-yellow-50 px-4 py-1.5">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-yellow-400" />
             <span className="text-xs font-bold text-yellow-800">
               الإطلاق الرسمي في الجزائر · 58 ولاية
             </span>
           </div>
 
-          <h1 className="mb-5 text-[46px] font-black leading-[1.18] text-gray-900">
+          <h1 className="mb-5 text-[32px] font-black leading-[1.18] text-gray-900 sm:text-[40px] lg:text-[46px]">
             مستقبل التجارة<br />
             الإلكترونية في<br />
             <span className="text-violet-600">الجزائر بين يديك</span>
           </h1>
 
-          <p className="mb-9 max-w-110 text-[15.5px] leading-[1.75] text-gray-500">
+          <p className="mb-8 max-w-110 text-[15.5px] leading-[1.75] text-gray-500 lg:mb-9">
             المنصة الأولى التي تحمي حقوقك وتمنحك الحرية الكاملة لإدارة تجارتك.
             سواء كنت تاجراً يبحث عن التوسع، أو مسوقاً يطمح للاستقلال المالي.
           </p>
 
           {/* CTA — المسوق Primary، التاجر Secondary */}
-          <div className="mb-12 flex flex-wrap gap-3">
+          <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:mb-12">
             <a
               href="#affiliates"
-              className="flex items-center gap-2 rounded-full bg-violet-600 px-7 py-3.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(124,58,237,0.35)] transition-all hover:-translate-y-0.5 hover:bg-violet-800"
+              className="flex items-center justify-center gap-2 rounded-full bg-violet-600 px-6 py-3.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(124,58,237,0.35)] transition-all hover:-translate-y-0.5 hover:bg-violet-800 sm:px-7"
             >
               انضم كمسوق — ابدأ الربح ←
             </a>
             <a
               href="#merchants"
-              className="rounded-full border-[1.5px] border-violet-300 bg-white px-7 py-3.5 text-sm font-bold text-violet-700 transition-all hover:-translate-y-0.5 hover:border-violet-500 hover:bg-violet-50"
+              className="rounded-full border-[1.5px] border-violet-300 bg-white px-6 py-3.5 text-center text-sm font-bold text-violet-700 transition-all hover:-translate-y-0.5 hover:border-violet-500 hover:bg-violet-50 sm:px-7"
             >
               سجّل كتاجر — بع سلعتك
             </a>
           </div>
 
           {/* Stats */}
-          <div className="flex gap-8">
+          <div className="flex flex-wrap gap-6 sm:gap-8">
             {heroStats.map((stat) => (
               <div key={stat.label}>
                 <div className="text-2xl font-black text-violet-900">{stat.value}</div>
@@ -58,7 +58,7 @@ export function HeroSection() {
         </div>
 
         {/* ── Dashboard Preview ── */}
-        <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-violet-900 to-violet-600 p-7 shadow-[0_8px_48px_rgba(76,29,149,0.28)]">
+        <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-violet-900 to-violet-600 p-5 shadow-[0_8px_48px_rgba(76,29,149,0.28)] sm:p-7">
           <div className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-white/5" />
 
           <div className="mb-5 flex items-center justify-between">

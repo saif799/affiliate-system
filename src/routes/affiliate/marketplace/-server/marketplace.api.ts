@@ -12,6 +12,7 @@ import {
 import { and, eq, isNull, gt, sql, desc } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
+import { getAppBaseUrl } from '#/lib/app-url'
 import type {
   MarketplaceData,
   Product,
@@ -26,7 +27,7 @@ import type {
 const n = (v: unknown) => Number(v ?? 0)
 const round1 = (v: number) => Math.round(v * 10) / 10
 
-const APP_URL = process.env.VITE_APP_URL ?? 'https://affili.dz'
+const APP_URL = getAppBaseUrl()
 
 // ============================================================
 // GET MARKETPLACE DATA

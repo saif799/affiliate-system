@@ -29,8 +29,8 @@ export function MarketplaceFiltersBar({
     <div className="flex flex-col gap-3">
 
       {/* Row 1: Search + Sort + Toggle */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="relative w-full sm:max-w-xs sm:flex-1">
           <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             value={filters.search}

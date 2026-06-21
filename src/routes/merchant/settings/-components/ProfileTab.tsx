@@ -68,7 +68,7 @@ export default function ProfileTab({ data }: Props) {
             اسمك وبيانات التواصل الشخصية
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-gray-600">
               الاسم الكامل
@@ -127,8 +127,8 @@ export default function ProfileTab({ data }: Props) {
             العنوان الذي سيأتي إليه عامل شركة التوصيل لاستلام الطرود
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5 col-span-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-xs font-medium text-gray-600">الولاية</label>
             <select
               value={form.pickup.wilaya}
@@ -142,7 +142,7 @@ export default function ProfileTab({ data }: Props) {
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-1.5 col-span-2">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-xs font-medium text-gray-600">
               العنوان التفصيلي
             </label>

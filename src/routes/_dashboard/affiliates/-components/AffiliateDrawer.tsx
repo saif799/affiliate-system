@@ -37,20 +37,20 @@ export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, o
     <div className="fixed inset-0 z-40 flex" dir="rtl">
       <div className="flex-1 bg-black/25 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="w-full max-w-lg bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+      <div className="w-full max-w-[90vw] sm:max-w-lg bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
 
         {/* header */}
-        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600">
+        <div className="sticky top-0 bg-white border-b border-slate-100 px-4 sm:px-6 py-4 flex items-center justify-between gap-2 z-10">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-violet-600 shrink-0">
               {affiliate.name[0]}
             </div>
-            <div>
-              <p className="font-bold text-slate-800 text-sm leading-tight">{affiliate.name}</p>
-              <p className="text-xs text-slate-400">{affiliate.email}</p>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 text-sm leading-tight truncate">{affiliate.name}</p>
+              <p className="text-xs text-slate-400 truncate">{affiliate.email}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1 shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -58,11 +58,11 @@ export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, o
         </div>
 
         {/* status + actions */}
-        <div className="px-6 pt-4 pb-3 flex items-center justify-between">
+        <div className="px-4 sm:px-6 pt-4 pb-3 flex flex-wrap items-center justify-between gap-2">
           <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${statusColor(affiliate.status)}`}>
             {statusLabel(affiliate.status)}
           </span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => onWarn(affiliate)}
               disabled={loading}
@@ -101,7 +101,7 @@ export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, o
         </div>
 
         {/* tabs */}
-        <div className="px-6 pb-0">
+        <div className="px-4 sm:px-6 pb-0">
           <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
             {(['overview', 'warnings'] as const).map(t => (
               <button
@@ -118,7 +118,7 @@ export function AffiliateDrawer({ affiliate, loading, onClose, onStatusChange, o
         </div>
 
         {/* content */}
-        <div className="px-6 py-4 flex-1">
+        <div className="px-4 sm:px-6 py-4 flex-1">
 
           {tab === 'overview' && (
             <div className="space-y-4">

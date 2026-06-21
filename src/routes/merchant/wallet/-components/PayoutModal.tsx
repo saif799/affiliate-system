@@ -69,7 +69,7 @@ export function PayoutModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4">
       {/* تم تحديد العرض بـ 440px ليكون أنيقاً ومتماسكاً */}
-      <div className="w-full max-w-110 rounded-2xl bg-white shadow-xl overflow-hidden flex flex-col">
+      <div className="flex max-h-[90vh] w-full max-w-110 flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
 
         {/* ─── Header ─── */}
         <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0">
@@ -94,7 +94,7 @@ export function PayoutModal({
         </div>
 
         {/* ─── Body (مع إمكانية التمرير إذا صغرت الشاشة) ─── */}
-        <div className="px-6 py-5 space-y-4 overflow-y-auto max-h-[65vh] custom-scrollbar">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5 custom-scrollbar">
 
           {/* حقل المبلغ */}
           <div>
@@ -164,8 +164,8 @@ export function PayoutModal({
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className={`h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center transition-colors ${
                       selectedMethod === m.id ? 'border-gray-900' : 'border-gray-300'
                     }`}>
                       {selectedMethod === m.id && (
@@ -180,12 +180,12 @@ export function PayoutModal({
                       onChange={() => setSelectedMethod(m.id)}
                       className="sr-only"
                     />
-                    <div>
-                      <p className="text-xs font-semibold text-gray-800">{m.label}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{m.accountInfo}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-gray-800">{m.label}</p>
+                      <p className="truncate text-[10px] text-gray-400 mt-0.5">{m.accountInfo}</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium rounded-full px-2 py-0.5 bg-green-50 text-green-700">
+                  <span className="shrink-0 text-[10px] font-medium rounded-full px-2 py-0.5 bg-green-50 text-green-700">
                     مجاناً
                   </span>
                 </label>

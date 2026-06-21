@@ -61,7 +61,7 @@ function DashboardPage() {
     useLoaderData({ from: '/_dashboard/dashboard/' })
 
   return (
-    <div className="flex flex-col gap-4 p-5">
+    <div className="flex flex-col gap-4 p-4 sm:p-5" dir="rtl">
       {/* Header */}
       <div>
         <h1 className="text-lg font-bold text-gray-900">لوحة التحكم</h1>

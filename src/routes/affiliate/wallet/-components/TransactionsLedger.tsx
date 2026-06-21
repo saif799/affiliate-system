@@ -59,7 +59,7 @@ export function TransactionsLedger({ transactions, withdrawals }: Props) {
       <div className="flex gap-1 border-b border-gray-100 bg-gray-50 p-2">
         <button
           onClick={() => setActiveTab('transactions')}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+          className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs transition-colors ${
             activeTab === 'transactions'
               ? 'bg-gray-900 text-white'
               : 'text-gray-500 hover:text-gray-700'
@@ -76,7 +76,7 @@ export function TransactionsLedger({ transactions, withdrawals }: Props) {
         </button>
         <button
           onClick={() => setActiveTab('withdrawals')}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+          className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs transition-colors ${
             activeTab === 'withdrawals'
               ? 'bg-gray-900 text-white'
               : 'text-gray-500 hover:text-gray-700'
@@ -95,7 +95,8 @@ export function TransactionsLedger({ transactions, withdrawals }: Props) {
 
       {/* جدول المعاملات */}
       {activeTab === 'transactions' && (
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50 text-right">
               <th className="px-4 py-3 text-xs font-medium text-gray-500">التفاصيل</th>
@@ -141,11 +142,13 @@ export function TransactionsLedger({ transactions, withdrawals }: Props) {
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {/* جدول السحوبات */}
       {activeTab === 'withdrawals' && (
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50 text-right">
               <th className="px-4 py-3 text-xs font-medium text-gray-500">رقم المرجع</th>
@@ -187,6 +190,7 @@ export function TransactionsLedger({ transactions, withdrawals }: Props) {
             })}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   )

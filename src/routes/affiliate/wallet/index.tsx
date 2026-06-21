@@ -45,10 +45,10 @@ function WalletPage() {
   }
 
   return (
-    <div className="space-y-4 p-6" dir='rtl'>
+    <div className="space-y-4 p-4 sm:p-6" dir='rtl'>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-gray-900">المحفظة</h1>
           <p className="text-sm text-gray-500">إدارة أرباحك وطلبات السحب</p>
         </div>

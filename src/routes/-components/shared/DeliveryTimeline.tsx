@@ -39,15 +39,19 @@ export function DeliveryTimeline({ events }: { events: TimelineEvent[] }) {
       {events.map((e, i) => (
         <div key={e.id} className="relative flex gap-3 pb-4 last:pb-0">
           {i < events.length - 1 && (
-            <span className="absolute right-[7px] top-4 h-[calc(100%-0.5rem)] w-0.5 bg-gray-200" />
+            <span className="absolute start-[7px] top-4 h-[calc(100%-0.5rem)] w-0.5 bg-gray-200" />
           )}
           <span
             className={`z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full ${statusColor(e.status)}`}
           />
-          <div className="pt-0.5">
-            <p className="text-sm font-medium text-gray-900">{e.statusLabel}</p>
-            {e.description && <p className="text-xs text-gray-500">{e.description}</p>}
-            <p className="mt-0.5 text-[11px] text-gray-400">
+          <div className="min-w-0 flex-1 pt-0.5">
+            <p className="text-sm font-medium break-words text-gray-900">
+              {e.statusLabel}
+            </p>
+            {e.description && (
+              <p className="text-xs break-words text-gray-500">{e.description}</p>
+            )}
+            <p className="mt-0.5 text-[11px] break-words text-gray-400">
               {fmt(e.occurredAt)}
               {e.wilaya ? ` · ${e.wilaya}` : ''}
             </p>

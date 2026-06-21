@@ -43,8 +43,8 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
   const isPositive = (t: Transaction) => t.amount > 0
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <table className="w-full min-w-[720px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50 text-right">
             <th className="px-4 py-3 text-xs font-medium text-gray-500">التاريخ والمرجع</th>

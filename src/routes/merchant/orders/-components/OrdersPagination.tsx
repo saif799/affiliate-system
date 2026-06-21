@@ -21,14 +21,14 @@ export function OrdersPagination({
   const to   = Math.min(currentPage * pageSize, totalItems)
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 sm:flex-row sm:justify-between">
       {/* معلومات */}
       <span className="text-xs text-gray-400">
         عرض {from}–{to} من أصل {totalItems} طلبية
       </span>
 
       {/* أزرار التنقل */}
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center justify-center gap-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}

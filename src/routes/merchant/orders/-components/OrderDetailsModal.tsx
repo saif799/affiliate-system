@@ -41,8 +41,8 @@ export function OrderDetailsModal({ order, onClose }: Props) {
 
   const Row = ({ label, value }: { label: string; value: string }) => (
     <div className="flex items-start justify-between gap-3 py-1.5">
-      <span className="text-xs text-gray-400">{label}</span>
-      <span className="text-xs font-medium text-gray-800 text-left">{value}</span>
+      <span className="shrink-0 text-xs text-gray-400">{label}</span>
+      <span className="min-w-0 break-words text-end text-xs font-medium text-gray-800">{value}</span>
     </div>
   )
 
@@ -55,14 +55,14 @@ export function OrderDetailsModal({ order, onClose }: Props) {
     >
       <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-xl" dir="rtl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <div>
+        <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+          <div className="min-w-0">
             <h2 className="text-sm font-semibold text-gray-900">تفاصيل الطلبية</h2>
             <p className="mt-0.5 font-mono text-xs text-gray-400">{order.id}</p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg border border-gray-200 p-1.5 text-gray-400 hover:bg-gray-50"
+            className="shrink-0 rounded-lg border border-gray-200 p-1.5 text-gray-400 hover:bg-gray-50"
           >
             <X size={14} />
           </button>
