@@ -91,7 +91,7 @@ function SetPasswordPage() {
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
             </div>
-            <span className="text-white font-bold text-xl tracking-tight">DzDrop</span>
+            <span className="text-white font-bold text-xl tracking-tight">DzAffilio</span>
             <p className="text-slate-600 text-[10px] uppercase tracking-widest">منصة التسويق بالعمولة</p>
           </div>
         </div>
@@ -132,7 +132,7 @@ function SetPasswordPage() {
                 <div className="mb-5">
                   <h2 className="text-white text-[17px] font-bold">إنشاء كلمة المرور 🔐</h2>
                   <p className="text-slate-500 text-xs mt-0.5">
-                    اختر كلمة مرور لحسابك في DzDrop
+                    اختر كلمة مرور لحسابك في DzAffilio
                   </p>
                 </div>
 
@@ -244,7 +244,7 @@ function SetPasswordPage() {
         </div>
 
         <p className="text-center text-slate-700 text-[11px] mt-4">
-          DzDrop © {new Date().getFullYear()} — منصة التسويق بالعمولة
+          DzAffilio © {new Date().getFullYear()} — منصة التسويق بالعمولة
         </p>
       </div>
 

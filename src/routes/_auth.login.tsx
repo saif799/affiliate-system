@@ -100,7 +100,7 @@ function LoginPage() {
         </LoginCard>
 
         <p className="text-center text-slate-700 text-[11px] mt-4">
-          DzDrop © {new Date().getFullYear()} — منصة التسويق بالعمولة
+          DzAffilio © {new Date().getFullYear()} — منصة التسويق بالعمولة
         </p>
       </div>
 

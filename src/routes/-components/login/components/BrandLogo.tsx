@@ -14,7 +14,7 @@ export function BrandLogo() {
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
           </svg>
         </div>
-        <span className="text-white font-bold text-xl tracking-tight">DzDrop</span>
+        <span className="text-white font-bold text-xl tracking-tight">DzAffilio</span>
         <p className="text-slate-600 text-[10px] uppercase tracking-widest">منصة التسويق بالعمولة</p>
       </div>
     </div>

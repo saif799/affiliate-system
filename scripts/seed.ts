@@ -88,15 +88,15 @@ async function main() {
 
   console.log('👤 إنشاء المستخدمين…')
   const adminId = await createUser({
-    email: 'admin@dzdrop.dz', name: 'عبدالوكيل (أدمن)',
+    email: 'admin@dzaffilio.dz', name: 'عبدالوكيل (أدمن)',
     role: 'super_admin', phone: '0550000001', wilaya: 'الجزائر',
   })
   const merchantUserId = await createUser({
-    email: 'merchant@dzdrop.dz', name: 'متجر النخبة',
+    email: 'merchant@dzaffilio.dz', name: 'متجر النخبة',
     role: 'merchant', phone: '0550000002', wilaya: 'وهران',
   })
   const affiliateUserId = await createUser({
-    email: 'affiliate@dzdrop.dz', name: 'سمير المسوّق',
+    email: 'affiliate@dzaffilio.dz', name: 'سمير المسوّق',
     role: 'affiliate', phone: '0550000003', wilaya: 'قسنطينة',
   })
   void adminId
@@ -261,9 +261,9 @@ async function main() {
   }
 
   console.log('\n✅ تم! بيانات الدخول (كلمة المرور للجميع: ' + PASSWORD + ')')
-  console.log('   • أدمن:  admin@dzdrop.dz')
-  console.log('   • تاجر:  merchant@dzdrop.dz')
-  console.log('   • مسوّق: affiliate@dzdrop.dz')
+  console.log('   • أدمن:  admin@dzaffilio.dz')
+  console.log('   • تاجر:  merchant@dzaffilio.dz')
+  console.log('   • مسوّق: affiliate@dzaffilio.dz')
 
   process.exit(0)
 }

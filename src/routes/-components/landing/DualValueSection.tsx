@@ -27,7 +27,7 @@ export function DualValueSection() {
         منصة واحدة — قيمتان حقيقيتان
       </h2>
       <p className="mb-10 max-w-130 text-[15px] leading-[1.7] text-gray-500">
-        سواء كنت تاجراً أو مسوقاً، DzDrop مصممة لتحقق لك أقصى استفادة.
+        سواء كنت تاجراً أو مسوقاً، DzAffilio مصممة لتحقق لك أقصى استفادة.
       </p>
 
       <div className="grid grid-cols-2 gap-7">

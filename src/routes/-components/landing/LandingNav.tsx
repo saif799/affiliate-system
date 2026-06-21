@@ -8,7 +8,7 @@ export function LandingNav() {
 
       {/* Logo */}
       <a href="/" className="text-[22px] font-black tracking-tight text-violet-900 no-underline">
-        Dz<span className="text-violet-600">Drop</span>
+        Dz<span className="text-violet-600">Affilio</span>
       </a>
 
       {/* Links — كلها <a> حقيقية مع href مطابق لـ id كل section */}

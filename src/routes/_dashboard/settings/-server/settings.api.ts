@@ -29,10 +29,10 @@ const FINANCIAL_DEFAULTS: FinancialSettings = {
 }
 
 const GENERAL_DEFAULTS: GeneralSettings = {
-  platform_name: 'DzDrop',
-  support_email: 'support@dzdrop.dz',
-  terms_url: 'https://dzdrop.dz/terms',
-  privacy_url: 'https://dzdrop.dz/privacy',
+  platform_name: 'DzAffilio',
+  support_email: 'support@dzaffilio.dz',
+  terms_url: 'https://dzaffilio.dz/terms',
+  privacy_url: 'https://dzaffilio.dz/privacy',
   maintenance_mode: false,
 }
 

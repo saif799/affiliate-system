@@ -206,6 +206,71 @@ describe('processAttributedOrder — النسب الصحيح', () => {
   })
 })
 
+describe('extractCustomer — مصادر بديلة لبيانات الزبون', () => {
+  it('يأخذ البيانات من billingAddress عند غياب customer/shipping', async () => {
+    const payload = ForwardPayloadSchema.parse(
+      makePayload({
+        customer: null,
+        shippingAddress: null,
+        billingAddress: {
+          firstName: 'Amine',
+          lastName: 'Brahimi',
+          phone: '0671122334',
+          address1: 'Cité 200 logements',
+          city: 'Oran',
+          province: 'Oran',
+        },
+      } as never),
+    )
+    const { deps, inserted } = makeDeps()
+    await processAttributedOrder(payload, deps)
+    expect(inserted[0].customer_name).toBe('Amine Brahimi')
+    expect(inserted[0].customer_phone).toBe('0671122334')
+    expect(inserted[0].customer_wilaya).toBe('Oran')
+    expect(inserted[0].customer_address).toBe('Cité 200 logements')
+  })
+
+  it('يأخذ البيانات من noteAttributes (EasySell/COD) عند غيابها في الكائنات', async () => {
+    const payload = ForwardPayloadSchema.parse(
+      makePayload({
+        customer: null,
+        shippingAddress: null,
+        billingAddress: null,
+        noteAttributes: [
+          { name: 'الاسم الكامل', value: 'سمير علواش' },
+          { name: 'رقم الهاتف', value: '+213555667788' },
+          { name: 'الولاية', value: 'Constantine' },
+          { name: 'البلدية', value: 'El Khroub' },
+          { name: 'العنوان', value: 'حي الرياض' },
+        ],
+      } as never),
+    )
+    const { deps, inserted } = makeDeps()
+    await processAttributedOrder(payload, deps)
+    expect(inserted[0].customer_name).toBe('سمير علواش')
+    expect(inserted[0].customer_phone).toBe('0555667788')
+    expect(inserted[0].customer_wilaya).toBe('Constantine')
+    expect(inserted[0].customer_commune).toBe('El Khroub')
+    expect(inserted[0].customer_address).toBe('حي الرياض')
+  })
+
+  it('يلجأ إلى قيم افتراضية آمنة عند غياب كلّ المصادر (لا حقول فارغة صلبة)', async () => {
+    const payload = ForwardPayloadSchema.parse(
+      makePayload({
+        customer: null,
+        shippingAddress: null,
+        billingAddress: null,
+        noteAttributes: [],
+      } as never),
+    )
+    const { deps, inserted } = makeDeps()
+    await processAttributedOrder(payload, deps)
+    expect(inserted[0].customer_name).toBe('زبون')
+    expect(inserted[0].customer_phone).toBe('غير متوفّر')
+    expect(inserted[0].customer_wilaya).toBe('غير محدد')
+  })
+})
+
 describe('verifyHmac', () => {
   const secret = 'shared-secret'
   const body = JSON.stringify({ hello: 'world' })

@@ -48,7 +48,7 @@ export function Step2UserInfo({
         type="email"
         value={email}
         onChange={onEmailChange}
-        placeholder="example@dzdrop.dz"
+        placeholder="example@dzaffilio.dz"
         disabled={isLoading}
         icon={
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

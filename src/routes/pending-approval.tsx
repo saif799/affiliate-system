@@ -134,7 +134,7 @@ function PendingApprovalPage() {
 
       {/* Footer */}
       <p className="absolute bottom-5 text-slate-700 text-xs">
-        DzDrop © {new Date().getFullYear()} — منصة التسويق بالعمولة
+        DzAffilio © {new Date().getFullYear()} — منصة التسويق بالعمولة
       </p>
     </div>
   )

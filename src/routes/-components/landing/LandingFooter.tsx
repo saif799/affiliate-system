@@ -14,7 +14,7 @@ export function LandingFooter() {
         >
           {/* Brand */}
           <div>
-            <div className="mb-3 text-[22px] font-black text-white">DzDrop</div>
+            <div className="mb-3 text-[22px] font-black text-white">DzAffilio</div>
             <p className="text-[13px] leading-[1.7]">
               المنصة الأولى للتجارة الإلكترونية والتسويق بالعمولة في الجزائر.
               نربط التجار بالمسوقين لبناء اقتصاد رقمي جزائري حقيقي.
@@ -43,7 +43,7 @@ export function LandingFooter() {
         {/* Bottom */}
         <div className="flex items-center justify-between border-t border-white/10 pt-6">
           <span className="text-xs">
-            © {new Date().getFullYear()} DzDrop. جميع الحقوق محفوظة · التجارة الإلكترونية في
+            © {new Date().getFullYear()} DzAffilio. جميع الحقوق محفوظة · التجارة الإلكترونية في
             الجزائر
           </span>
           <span className="rounded-full border border-violet-500/50 bg-violet-900/30 px-3 py-1 text-[11px] font-bold text-violet-400">

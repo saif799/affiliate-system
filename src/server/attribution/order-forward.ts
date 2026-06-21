@@ -28,6 +28,22 @@ const LineItemSchema = z.object({
 })
 export type ForwardLineItem = z.infer<typeof LineItemSchema>
 
+// عنوان (شحن/فوترة) — Shopify يوفّر name و/أو first_name+last_name.
+const AddressSchema = z.object({
+  name: z.string().nullish(),
+  firstName: z.string().nullish(),
+  lastName: z.string().nullish(),
+  phone: z.string().nullish(),
+  address1: z.string().nullish(),
+  address2: z.string().nullish(),
+  city: z.string().nullish(),
+  province: z.string().nullish(),
+  country: z.string().nullish(),
+  countryCode: z.string().nullish(),
+  zip: z.string().nullish(),
+})
+type ForwardAddress = z.infer<typeof AddressSchema>
+
 export const ForwardPayloadSchema = z.object({
   event: z.string(),
   sentAt: z.string().nullish(),
@@ -48,8 +64,14 @@ export const ForwardPayloadSchema = z.object({
     totalShipping: z.string().nullish(),
     financialStatus: z.string().nullish(),
     note: z.string().nullish(),
+    // قيم قد تأتي كأرقام — نُرغمها لنصّ كي لا يسقط السطر كلّه عند التحقّق.
     noteAttributes: z
-      .array(z.object({ name: z.string(), value: z.string() }))
+      .array(
+        z.object({
+          name: z.string(),
+          value: z.coerce.string().nullish(),
+        }),
+      )
       .catch([]),
     lineItems: z.array(LineItemSchema).default([]),
     customer: z
@@ -60,19 +82,10 @@ export const ForwardPayloadSchema = z.object({
         phone: z.string().nullish(),
       })
       .nullish(),
-    shippingAddress: z
-      .object({
-        name: z.string().nullish(),
-        phone: z.string().nullish(),
-        address1: z.string().nullish(),
-        address2: z.string().nullish(),
-        city: z.string().nullish(),
-        province: z.string().nullish(),
-        country: z.string().nullish(),
-        countryCode: z.string().nullish(),
-        zip: z.string().nullish(),
-      })
-      .nullish(),
+    // عنوان الشحن والفوترة بنفس الشكل (Shopify يملأ أحدهما حسب الطلب؛ طلبات COD
+    // عبر EasySell كثيراً ما تضع بيانات الزبون في billingAddress أو noteAttributes).
+    shippingAddress: AddressSchema.nullish(),
+    billingAddress: AddressSchema.nullish(),
   }),
 })
 export type ForwardPayload = z.infer<typeof ForwardPayloadSchema>
@@ -130,13 +143,125 @@ export function pickLineItem(
   return items[0]
 }
 
-function customerName(payload: ForwardPayload): string {
-  const c = payload.order.customer
-  const fromParts = [c?.firstName, c?.lastName]
+// يدمج جزأي الاسم (الأوّل/الأخير) إن وُجدا.
+function joinName(
+  first: string | null | undefined,
+  last: string | null | undefined,
+): string {
+  return [first, last]
     .filter((p): p is string => Boolean(p && p.trim()))
     .join(' ')
     .trim()
-  return fromParts || payload.order.shippingAddress?.name?.trim() || 'زبون'
+}
+
+function addressName(a: ForwardAddress | null | undefined): string {
+  if (!a) return ''
+  return a.name?.trim() || joinName(a.firstName, a.lastName)
+}
+
+// قراءة قيمة من noteAttributes بمطابقة مرنة للمفتاح (عربي/فرنسي/إنجليزي).
+// EasySell وتطبيقات COD تضع حقول النموذج هنا غالباً.
+function attr(
+  payload: ForwardPayload,
+  keys: string[],
+): string | null {
+  const list = payload.order.noteAttributes ?? []
+  const norm = (s: string) => s.toLowerCase().trim()
+  // مطابقة تامّة أوّلاً، ثم جزئية احتياطية.
+  for (const exact of [true, false]) {
+    for (const want of keys) {
+      const w = norm(want)
+      const hit = list.find((a) => {
+        const name = norm(a.name)
+        return exact ? name === w : name.includes(w)
+      })
+      const v = hit?.value
+      if (v && v.trim()) return v.trim()
+    }
+  }
+  return null
+}
+
+// ── استخراج بيانات الزبون من كلّ المصادر الممكنة بترتيب أولويّة ──────
+// COD عبر Shopify قد يملأ shippingAddress أو billingAddress أو يضع كلّ شيء في
+// noteAttributes. نجرّبها بالترتيب كي لا تبقى الحقول فارغة.
+export function extractCustomer(payload: ForwardPayload): {
+  name: string
+  phone: string | null
+  wilaya: string | null
+  commune: string | null
+  address: string | null
+} {
+  const o = payload.order
+  const ship = o.shippingAddress
+  const bill = o.billingAddress
+  const cust = o.customer
+
+  const name =
+    joinName(cust?.firstName, cust?.lastName) ||
+    addressName(ship) ||
+    addressName(bill) ||
+    attr(payload, [
+      'name',
+      'full name',
+      'customer name',
+      'الاسم',
+      'الاسم الكامل',
+      'اسم',
+      'nom',
+      'nom complet',
+    ]) ||
+    'زبون'
+
+  const phone =
+    normalizeDzPhone(
+      cust?.phone ||
+        ship?.phone ||
+        bill?.phone ||
+        attr(payload, [
+          'phone',
+          'phone number',
+          'telephone',
+          'téléphone',
+          'tel',
+          'الهاتف',
+          'رقم الهاتف',
+          'هاتف',
+          'تليفون',
+        ]),
+    ) || null
+
+  const wilaya =
+    (
+      ship?.province ||
+      ship?.city ||
+      bill?.province ||
+      bill?.city ||
+      attr(payload, ['wilaya', 'الولاية', 'ولاية', 'province', 'state']) ||
+      ''
+    ).trim() || null
+
+  const commune =
+    (
+      ship?.city ||
+      bill?.city ||
+      attr(payload, ['commune', 'البلدية', 'بلدية', 'city', 'daira', 'دائرة']) ||
+      ''
+    ).trim() || null
+
+  const address =
+    [ship?.address1, ship?.address2]
+      .filter((p): p is string => Boolean(p && p.trim()))
+      .join('، ')
+      .trim() ||
+    [bill?.address1, bill?.address2]
+      .filter((p): p is string => Boolean(p && p.trim()))
+      .join('، ')
+      .trim() ||
+    attr(payload, ['address', 'العنوان', 'عنوان', 'adresse', 'address1', 'street']) ||
+    null
+
+  return { name, phone, wilaya, commune, address }
 }
 
 // ── العقود (DI) — تُحقَّق بقاعدة البيانات في المسار، وبمزيّفات في الاختبار ──
@@ -220,25 +345,19 @@ export function buildOrderInsert(args: {
     })() ??
     product.merchantPrice
 
-  const addr = payload.order.shippingAddress
-  const phone = normalizeDzPhone(
-    payload.order.customer?.phone ?? addr?.phone ?? null,
-  )
-  const address = [addr?.address1, addr?.address2]
-    .filter((p): p is string => Boolean(p && p.trim()))
-    .join('، ')
-    .trim()
+  // استخراج بيانات الزبون من كلّ المصادر (shipping/billing/customer/noteAttributes).
+  const c = extractCustomer(payload)
 
   return {
     product_id: product.id,
     affiliate_id: link.affiliateId,
     merchant_id: product.merchantId,
     tracking_link_id: link.id,
-    customer_name: customerName(payload),
-    customer_phone: phone ?? 'غير متوفّر',
-    customer_wilaya: (addr?.province || addr?.city || 'غير محدد').trim(),
-    customer_commune: addr?.city?.trim() || null,
-    customer_address: address || null,
+    customer_name: c.name,
+    customer_phone: c.phone ?? 'غير متوفّر',
+    customer_wilaya: c.wilaya ?? 'غير محدد',
+    customer_commune: c.commune,
+    customer_address: c.address,
     quantity,
     unit_affiliate_price_dzd: Math.max(0, unitAffiliate),
     unit_merchant_price_dzd: product.merchantPrice,

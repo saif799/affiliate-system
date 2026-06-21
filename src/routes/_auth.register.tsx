@@ -101,7 +101,7 @@ function RegisterPage() {
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
             </div>
-            <span className="text-white font-bold text-lg tracking-tight">DzDrop</span>
+            <span className="text-white font-bold text-lg tracking-tight">DzAffilio</span>
           </div>
           <p className="text-slate-600 text-xs">منصة التسويق بالعمولة</p>
         </div>
@@ -176,7 +176,7 @@ function RegisterPage() {
         </div>
 
         <p className="text-center text-slate-700 text-[11px] mt-4">
-          DzDrop © {new Date().getFullYear()} — منصة التسويق بالعمولة
+          DzAffilio © {new Date().getFullYear()} — منصة التسويق بالعمولة
         </p>
       </div>
 

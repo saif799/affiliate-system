@@ -122,7 +122,7 @@ export const testimonials = [
     tagColor: 'text-violet-700 bg-violet-50 border-violet-200',
   },
   {
-    text: 'كمسوق، DzDrop أعطتني الحرية الكاملة. أختار ما يناسب جمهوري وأقبض عمولتي مباشرة عبر Baridimob.',
+    text: 'كمسوق، DzAffilio أعطتني الحرية الكاملة. أختار ما يناسب جمهوري وأقبض عمولتي مباشرة عبر Baridimob.',
     name: 'سلمى عيسى',
     role: 'مسوقة رقمية · سطيف',
     initial: 'س.ع',

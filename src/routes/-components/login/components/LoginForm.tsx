@@ -30,7 +30,7 @@ export function LoginForm({
         type="email"
         value={email}
         onChange={onEmailChange}
-        placeholder="example@dzdrop.dz"
+        placeholder="example@dzaffilio.dz"
         disabled={loading}
         autoFocus
         icon={

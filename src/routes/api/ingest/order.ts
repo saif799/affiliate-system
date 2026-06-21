@@ -15,7 +15,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { db } from '#/server/db'
 import {
   affiliateProfiles,
-  users,
   trackingLinks,
   products,
   orders,
@@ -70,32 +69,11 @@ export const Route = createFileRoute('/api/ingest/order')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // 1) المصادقة بمفتاح المسوّق (ترويسة x-api-key)
-        const apiKey = request.headers.get('x-api-key')?.trim()
-        if (!apiKey || apiKey.length < 16) {
-          return json({ success: false, error: 'unauthorized' }, 401)
-        }
+        // ملاحظة: لا مصادقة حالياً (بطلب صريح) — المسوّق يُشتقّ من الكود (slug)
+        // مباشرةً، فالـ slug يخصّ مسوّقاً واحداً أصلاً. يمكن إعادة مفتاح x-api-key
+        // لاحقاً دون تغيير منطق النسب.
 
-        const [affiliate] = await db
-          .select({
-            id: affiliateProfiles.id,
-            userId: affiliateProfiles.user_id,
-            status: users.status,
-          })
-          .from(affiliateProfiles)
-          .innerJoin(users, eq(users.id, affiliateProfiles.user_id))
-          .where(
-            and(
-              eq(affiliateProfiles.ingest_api_key, apiKey),
-              isNull(affiliateProfiles.deleted_at),
-            ),
-          )
-          .limit(1)
-        // حساب معلَّق/غير نشِط لا يستورد طلبات
-        if (!affiliate || affiliate.status !== 'active')
-          return json({ success: false, error: 'unauthorized' }, 401)
-
-        // 2) قراءة وتحقّق الجسم
+        // 1) قراءة وتحقّق الجسم
         let raw: unknown
         try {
           raw = await request.json()
@@ -112,20 +90,33 @@ export const Route = createFileRoute('/api/ingest/order')({
         const data = parsed.data
         const source = data.source ?? 'external'
 
-        // 3) حلّ الكود ← رابط التتبّع، والتحقّق أنّه يخصّ المسوّق المصادَق
+        // 2) حلّ الكود ← رابط التتبّع (ومنه المسوّق + المنتج + مستخدم المسوّق للإشعار)
         const [link] = await db
           .select({
             id: trackingLinks.id,
             affiliateId: trackingLinks.affiliate_id,
             productId: trackingLinks.product_id,
+            affiliateUserId: affiliateProfiles.user_id,
           })
           .from(trackingLinks)
-          .where(and(eq(trackingLinks.slug, data.code), eq(trackingLinks.is_active, true)))
+          .innerJoin(
+            affiliateProfiles,
+            eq(affiliateProfiles.id, trackingLinks.affiliate_id),
+          )
+          .where(
+            and(
+              eq(trackingLinks.slug, data.code),
+              eq(trackingLinks.is_active, true),
+              isNull(affiliateProfiles.deleted_at),
+            ),
+          )
           .limit(1)
-        // كود غير موجود أو لا يخصّ هذا المسوّق — رسالة موحّدة كي لا تُسرّب وجود الـ slug
-        if (!link || link.affiliateId !== affiliate.id) {
+        // كود غير موجود — رسالة موحّدة كي لا تُسرّب وجود الـ slug
+        if (!link) {
           return json({ success: false, error: 'invalid_code' }, 404)
         }
+        // المسوّق المنسوب إليه (من الكود)
+        const affiliate = { id: link.affiliateId, userId: link.affiliateUserId }
 
         // 4) المنتج يجب أن يكون متاحاً ومتوفّراً (التاجر يُشتقّ من المنتج للربط)
         const [product] = await db

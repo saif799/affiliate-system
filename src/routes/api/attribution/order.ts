@@ -156,6 +156,28 @@ export const Route = createFileRoute('/api/attribution/order')({
           )
         }
 
+        // مؤقّت للتشخيص: نطبع شكل بيانات الزبون كما وصلت فعلاً (أزِله بعد التأكيد).
+        // يكشف إن كانت البيانات في shippingAddress أم billingAddress أم noteAttributes.
+        try {
+          const o = (raw as { order?: Record<string, unknown> })?.order ?? {}
+          console.log(
+            '[attribution] payload shape:',
+            JSON.stringify({
+              hasCustomer: !!o.customer,
+              hasShipping: !!o.shippingAddress,
+              hasBilling: !!o.billingAddress,
+              noteAttrNames: Array.isArray(o.noteAttributes)
+                ? (o.noteAttributes as Array<{ name?: string }>).map((a) => a?.name)
+                : [],
+              customer: o.customer ?? null,
+              shippingAddress: o.shippingAddress ?? null,
+              billingAddress: o.billingAddress ?? null,
+            }),
+          )
+        } catch {
+          /* تجاهل التسجيل */
+        }
+
         // 4) النسب + الإنشاء
         let result
         try {

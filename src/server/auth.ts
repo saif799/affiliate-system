@@ -34,9 +34,9 @@ const gmailTransporter = nodemailer.createTransport({
 function adminInviteHtml(url: string): string {
   return `
     <div dir="rtl" style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
-      <h2 style="color:#1d4ed8">مرحباً بك في DzDrop 🎉</h2>
+      <h2 style="color:#1d4ed8">مرحباً بك في DzAffilio 🎉</h2>
       <p style="color:#374151;line-height:1.7">
-        تمت دعوتك للانضمام كمدير على منصة <strong>DzDrop</strong>.<br/>
+        تمت دعوتك للانضمام كمدير على منصة <strong>DzAffilio</strong>.<br/>
         انقر على الزر أدناه لقبول الدعوة وتعيين كلمة المرور الخاصة بك والوصول إلى لوحة الإدارة.
       </p>
       <a href="${url}"
@@ -57,9 +57,9 @@ function adminInviteHtml(url: string): string {
 function merchantInviteHtml(url: string): string {
   return `
     <div dir="rtl" style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
-      <h2 style="color:#4f46e5">مرحباً بك في DzDrop 🎉</h2>
+      <h2 style="color:#4f46e5">مرحباً بك في DzAffilio 🎉</h2>
       <p style="color:#374151;line-height:1.7">
-        تمت دعوتك للانضمام كتاجر على منصة <strong>DzDrop</strong>.<br/>
+        تمت دعوتك للانضمام كتاجر على منصة <strong>DzAffilio</strong>.<br/>
         انقر على الزر أدناه لقبول الدعوة وتعيين كلمة المرور الخاصة بك والبدء في إدارة متجرك.
       </p>
       <a href="${url}"
@@ -80,9 +80,9 @@ function merchantInviteHtml(url: string): string {
 function affiliateInviteHtml(url: string): string {
   return `
     <div dir="rtl" style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px">
-      <h2 style="color:#7c3aed">مرحباً بك في DzDrop 🎉</h2>
+      <h2 style="color:#7c3aed">مرحباً بك في DzAffilio 🎉</h2>
       <p style="color:#374151;line-height:1.7">
-        تمت دعوتك للانضمام كمسوق على منصة <strong>DzDrop</strong>.<br/>
+        تمت دعوتك للانضمام كمسوق على منصة <strong>DzAffilio</strong>.<br/>
         انقر على الزر أدناه لقبول الدعوة وتعيين كلمة المرور الخاصة بك والبدء في رحلتك التسويقية.
       </p>
       <a href="${url}"
@@ -109,10 +109,10 @@ async function sendInviteEmail(
 ): Promise<void> {
   const subject =
     type === 'merchant'
-      ? 'دعوتك للانضمام كتاجر في DzDrop'
+      ? 'دعوتك للانضمام كتاجر في DzAffilio'
       : type === 'affiliate'
-        ? 'دعوتك للانضمام كمسوق في DzDrop'
-        : 'دعوتك للانضمام إلى DzDrop'
+        ? 'دعوتك للانضمام كمسوق في DzAffilio'
+        : 'دعوتك للانضمام إلى DzAffilio'
 
   const html =
     type === 'merchant'
@@ -123,14 +123,14 @@ async function sendInviteEmail(
 
   if (process.env.NODE_ENV === 'development') {
     await gmailTransporter.sendMail({
-      from: `"DzDrop" <${process.env.GMAIL_USER}>`,
+      from: `"DzAffilio" <${process.env.GMAIL_USER}>`,
       to,
       subject,
       html,
     })
   } else {
     const { data, error } = await resend.emails.send({
-      from: 'DzDrop <noreply@dzdrop.dz>',
+      from: 'DzAffilio <noreply@dzaffilio.dz>',
       to,
       subject,
       html,
