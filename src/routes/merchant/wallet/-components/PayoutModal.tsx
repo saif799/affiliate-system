@@ -121,7 +121,7 @@ export function PayoutModal({
                   MozAppearance: 'textfield',
                 }}
                 className="
-                  flex-1 px-4 py-2.5 text-sm font-semibold
+                  min-w-0 flex-1 px-4 py-2.5 text-sm font-semibold
                   placeholder:text-gray-300 placeholder:font-normal
                   text-right outline-none
                   [appearance:textfield]

@@ -130,7 +130,7 @@ export function SecurityTab({ security }: Props) {
                   type={show ? 'text' : 'password'}
                   value={form[key]}
                   onChange={(e) => handleField(key, e.target.value)}
-                  className="flex-1 px-3 py-2 text-xs outline-none"
+                  className="min-w-0 flex-1 px-3 py-2 text-xs outline-none"
                   placeholder="••••••••"
                 />
                 <button

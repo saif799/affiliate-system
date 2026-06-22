@@ -125,7 +125,7 @@ export function ProfileTab({ profile }: Props) {
               <input
                 value={form.username}
                 disabled
-                className="flex-1 bg-gray-50 px-2 py-2 text-xs text-gray-400 outline-none cursor-not-allowed"
+                className="min-w-0 flex-1 bg-gray-50 px-2 py-2 text-xs text-gray-400 outline-none cursor-not-allowed"
               />
             </div>
             <p className="mt-0.5 text-xs text-gray-400">يُولّده النظام ولا يمكن تغييره</p>

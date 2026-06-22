@@ -20,7 +20,7 @@ export function TickerBanner() {
             key={i}
             className="flex items-center gap-2 text-[12.5px] font-bold text-white/75"
           >
-            <span className="h-[5px] w-[5px] flex-shrink-0 rounded-full bg-violet-400" />
+            <span className="h-1.25 w-1.25 shrink-0 rounded-full bg-violet-400" />
             {item}
           </span>
         ))}

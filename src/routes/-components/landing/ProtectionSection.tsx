@@ -91,7 +91,7 @@ export function ProtectionSection() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-7">
 
         {/* ── حماية المسوّق (مميّزة) ── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-700 to-violet-900 p-6 shadow-[0_8px_40px_rgba(76,29,149,0.22)] sm:p-8">
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-violet-700 to-violet-900 p-6 shadow-[0_8px_40px_rgba(76,29,149,0.22)] sm:p-8">
           <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-white/5" />
           <div className="mb-5 flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white">

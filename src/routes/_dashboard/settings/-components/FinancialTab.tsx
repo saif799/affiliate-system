@@ -86,9 +86,9 @@ export function FinancialTab({ data }: Props) {
                 min={0}
                 value={merchantFee}
                 onChange={(e) => { setMerchantFee(e.target.value); setSaved(false) }}
-                className="flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
+                className="w-full min-w-0 flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
               />
-              <span className="px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
+              <span className="shrink-0 px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
                 DZD
               </span>
             </div>
@@ -107,9 +107,9 @@ export function FinancialTab({ data }: Props) {
                 min={0}
                 value={affiliateFee}
                 onChange={(e) => { setAffiliateFee(e.target.value); setSaved(false) }}
-                className="flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
+                className="w-full min-w-0 flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
               />
-              <span className="px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
+              <span className="shrink-0 px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
                 DZD
               </span>
             </div>
@@ -126,9 +126,9 @@ export function FinancialTab({ data }: Props) {
                 min={0}
                 value={minPayout}
                 onChange={(e) => { setMinPayout(e.target.value); setSaved(false) }}
-                className="flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
+                className="w-full min-w-0 flex-1 px-3 py-2.5 text-sm text-gray-900 bg-white outline-none text-right"
               />
-              <span className="px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
+              <span className="shrink-0 px-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-200 flex items-center py-2.5">
                 DZD
               </span>
             </div>
